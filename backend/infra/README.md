@@ -17,6 +17,7 @@ to get data. The data lives inside the docker volume that starts up with the com
 ```bash
 docker exec -t vitae-db pg_dump -U vitae -d vitae_dev > dump.sql
 ```
+This will dump your data into this file, and commit it to git for everyone else to pull.
 
 ## Start the DB (first time)
 From `infra/`:
