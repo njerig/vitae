@@ -12,7 +12,7 @@ VALUES (
 )
 ON CONFLICT (email) DO NOTHING;
 
--- Demo oauth mapping (fake provider_user_id)
+-- Demo oauth mapping 
 INSERT INTO oauth_accounts (user_id, provider, provider_user_id)
 SELECT id, 'google', 'demo-google-sub'
 FROM users

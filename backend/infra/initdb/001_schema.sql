@@ -1,4 +1,4 @@
--- Vitae: minimal schema (Option A: initdb SQL)
+-- Vitae schema
 -- Creates: users, oauth_accounts, experiences, experience_bullets
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- OAUTH ACCOUNTS (Google sign-in now; extensible later)
+-- OAUTH ACCOUNTS (Google sign-in now)
 CREATE TABLE IF NOT EXISTS oauth_accounts (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider          TEXT NOT NULL,        -- e.g., 'google'
+  provider          TEXT NOT NULL,        -- e.i., 'google'
   provider_user_id  TEXT NOT NULL,        -- provider subject / user id
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (provider, provider_user_id),
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS oauth_accounts (
 CREATE TABLE IF NOT EXISTS experiences (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title             TEXT NOT NULL,        -- role title
-  org               TEXT NOT NULL,        -- company / org
+  title             TEXT NOT NULL,        
+  org               TEXT NOT NULL,       
   org_location      TEXT,
   start_date        DATE,
   end_date          DATE,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS experiences (
 
 CREATE INDEX IF NOT EXISTS experiences_user_id_idx ON experiences(user_id);
 
--- EXPERIENCE BULLETS
+
 CREATE TABLE IF NOT EXISTS experience_bullets (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   experience_id     UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
