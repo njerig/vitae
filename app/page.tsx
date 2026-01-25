@@ -1,52 +1,326 @@
-import Image from "next/image";
+'use client'
+
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
 
 export default function Home() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!isLogin && !formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setLoading(true);
+    
+    // Simulate API call - replace with your actual authentication logic
+    setTimeout(() => {
+      console.log(isLogin ? 'Logging in...' : 'Signing up...', formData);
+      setLoading(false);
+      // TODO: Add your API call here
+    }, 1500);
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setErrors({});
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image className="dark:invert" src="/next.svg" alt="Next.js logo" width={100} height={20} priority />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center p-4 ${inter.className} relative overflow-hidden`}>
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-purple-950/30"></div>
+      
+      {/* Enhanced radial gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
+      
+      {/* NEW: Subtle pulsing gradient instead of shimmer */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 opacity-30 animate-pulse"></div>
+      
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,#2d3748_1px,transparent_1px),linear-gradient(180deg,#2d3748_1px,transparent_1px)] bg-[size:24px_24px] opacity-5"></div>
+      
+      {/* NEW: Subtle floating blobs with slow animation */}
+      <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl opacity-20 animate-[float_25s_ease-in-out_infinite]"></div>
+      <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl opacity-20 animate-[float_30s_ease-in-out_infinite_reverse]"></div>
+      
+      {/* Subtle glow behind the main content */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 rounded-full blur-3xl"></div>
+      
+      <div className="relative z-10 w-full max-w-lg">
+        {/* Logo/Brand with enhanced styling */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center mb-4">
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-xl opacity-30"></div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent relative">
+                Vitae
+              </h1>
+            </div>
+          </div>
+          <p className="text-zinc-200 text-lg font-medium tracking-wide">
+            Resume Version Control
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image className="dark:invert" src="/vercel.svg" alt="Vercel logomark" width={16} height={16} />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Enhanced Auth Card with better shadows and glow */}
+        <div className="relative">
+          {/* Outer glow */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 via-transparent to-purple-500/30 rounded-3xl blur opacity-30"></div>
+          
+          {/* Card with enhanced styling */}
+          <div className="relative bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/30 p-8">
+            {/* Inner subtle gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 rounded-2xl pointer-events-none"></div>
+            
+            <div className="relative z-10">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {isLogin ? 'Welcome back' : 'Create account'}
+                </h2>
+                <p className="text-zinc-200 text-sm">
+                  {isLogin ? 'Sign in to continue' : 'Get started with Vitae'}
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name field (signup only) */}
+                {!isLogin && (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
+                        errors.name ? 'border-red-500/50' : 'border-gray-600/50'
+                      } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg`}
+                      placeholder="John Doe"
+                    />
+                    {errors.name && (
+                      <p className="mt-2 text-sm text-red-400">{errors.name}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Email field */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
+                      errors.email ? 'border-red-500/50' : 'border-gray-600/50'
+                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg`}
+                    placeholder="example@example.com"
+                  />
+                  {errors.email && (
+                    <p className="mt-2 text-sm text-red-400">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password field */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
+                        errors.password ? 'border-red-500/50' : 'border-gray-600/50'
+                      } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg pr-12`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
+                    >
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="mt-2 text-sm text-red-400">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Confirm Password field (signup only) */}
+                {!isLogin && (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      Confirm Password
+                    </label>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
+                        errors.confirmPassword ? 'border-red-500/50' : 'border-gray-600/50'
+                      } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg`}
+                      placeholder="••••••••"
+                    />
+                    {errors.confirmPassword && (
+                      <p className="mt-2 text-sm text-red-400">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Forgot Password (login only) */}
+                {isLogin && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+
+                {/* Enhanced Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full relative group"
+                >
+                  {/* Button glow effect */}
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                  
+                  {/* Main button */}
+                  <div className="relative bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 disabled:from-gray-600 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-medium py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl active:scale-[0.99]">
+                    {loading ? (
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      isLogin ? 'Sign In' : 'Create Account'
+                    )}
+                  </div>
+                </button>
+              </form>
+
+              {/* Enhanced Toggle Mode */}
+              <div className="mt-8 pt-6 border-t border-gray-700/30 text-center">
+                <p className="text-gray-400 text-sm">
+                  {isLogin ? "Don't have an account?" : 'Already have an account?'}
+                  {' '}
+                  <button
+                    onClick={toggleMode}
+                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
+                  >
+                    {isLogin ? 'Sign up' : 'Sign in'}
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+
+        {/* Footer */}
+        {/* <p className="text-center text-gray-600 text-xs mt-10 tracking-wide">
+          Version control for resumes
+        </p> */}
+      </div>
+
+      {/* Add float animation keyframes to global styles */}
+      <style jsx global>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0);
+          }
+          33% {
+            transform: translate(30px, -30px);
+          }
+          66% {
+            transform: translate(-20px, 20px);
+          }
+        }
+      `}</style>
     </div>
   );
 }
