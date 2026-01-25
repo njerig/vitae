@@ -5,6 +5,28 @@ import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Google Icon Component
+const GoogleIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24">
+    <path
+      fill="#4285F4"
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+    />
+  </svg>
+);
+
 interface FormData {
   name: string;
   email: string;
@@ -23,6 +45,7 @@ export default function Home() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -77,7 +100,18 @@ export default function Home() {
     setTimeout(() => {
       console.log(isLogin ? 'Logging in...' : 'Signing up...', formData);
       setLoading(false);
-      // TODO: Add your API call here
+      // TODO: Add API call 
+    }, 1500);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    
+    // Simulate Google OAuth flow - replace with actual Google OAuth implementation
+    setTimeout(() => {
+      console.log('Signing in with Google...');
+      setGoogleLoading(false);
+      // TODO: Implement Google OAuth
     }, 1500);
   };
 
@@ -94,23 +128,17 @@ export default function Home() {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center p-4 ${inter.className} relative overflow-hidden`}>
-      {/* Enhanced Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-purple-950/30"></div>
       
-      {/* Enhanced radial gradient */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
       
-      {/* NEW: Subtle pulsing gradient instead of shimmer */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 opacity-30 animate-pulse"></div>
       
-      {/* Subtle grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(90deg,#2d3748_1px,transparent_1px),linear-gradient(180deg,#2d3748_1px,transparent_1px)] bg-[size:24px_24px] opacity-5"></div>
       
-      {/* NEW: Subtle floating blobs with slow animation */}
       <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl opacity-20 animate-[float_25s_ease-in-out_infinite]"></div>
       <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl opacity-20 animate-[float_30s_ease-in-out_infinite_reverse]"></div>
       
-      {/* Subtle glow behind the main content */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 rounded-full blur-3xl"></div>
       
       <div className="relative z-10 w-full max-w-lg">
@@ -124,7 +152,7 @@ export default function Home() {
               </h1>
             </div>
           </div>
-          <p className="text-zinc-200 text-lg font-medium tracking-wide">
+          <p className="text-zinc-100 text-lg font-medium tracking-wide">
             Resume Version Control
           </p>
         </div>
@@ -147,6 +175,37 @@ export default function Home() {
                 <p className="text-zinc-200 text-sm">
                   {isLogin ? 'Sign in to continue' : 'Get started with Vitae'}
                 </p>
+              </div>
+
+              {/* Google Sign In Button */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={googleLoading}
+                className="w-full mb-6 group relative"
+              >
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+                
+                <div className="relative flex items-center justify-center gap-3 w-full bg-gray-900/70 hover:bg-gray-800/70 backdrop-blur-sm border border-gray-700/50 text-white font-medium py-3.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.99]">
+                  {googleLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <GoogleIcon />
+                      <span>Continue with Google</span>
+                    </>
+                  )}
+                </div>
+              </button>
+
+              {/* Divider */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-700/50"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-3 bg-gray-900/80 text-gray-400">or continue with email</span>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -278,7 +337,7 @@ export default function Home() {
                     {loading ? (
                       <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      isLogin ? 'Sign In' : 'Create Account'
+                      isLogin ? 'Sign In with Email' : 'Create Account'
                     )}
                   </div>
                 </button>
@@ -300,11 +359,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        {/* <p className="text-center text-gray-600 text-xs mt-10 tracking-wide">
-          Version control for resumes
-        </p> */}
       </div>
 
       {/* Add float animation keyframes to global styles */}
