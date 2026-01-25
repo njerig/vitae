@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
 // Google Icon Component
 const GoogleIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24">
+  <svg className="w-8 h-8" viewBox="0 0 24 24">
     <path
       fill="#4285F4"
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -27,153 +27,459 @@ const GoogleIcon = () => (
   </svg>
 );
 
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
-interface FormErrors {
-  name?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
+// Interface for Canon Items 
+interface CanonItem {
+  id: string;
+  company: string;
+  position: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  skills: string[];
 }
 
 export default function Home() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{name: string; email: string} | null>(null);
+  
+  // Canon Items State
+  const [canonItems, setCanonItems] = useState<CanonItem[]>([]);
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [editingItem, setEditingItem] = useState<CanonItem | null>(null);
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    company: '',
+    position: '',
+    startDate: '',
+    endDate: '',
+    description: '',
+    skills: ''
   });
-  const [errors, setErrors] = useState<FormErrors>({});
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!isLogin && !formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  // Session Persistence: Check if user was logged in
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('isAuthenticated');
+    const savedUser = localStorage.getItem('user');
     
-    if (!validateForm()) return;
-
-    setLoading(true);
+    if (savedAuth === 'true' && savedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(savedUser));
+    }
     
-    // Simulate API call - replace with your actual authentication logic
-    setTimeout(() => {
-      console.log(isLogin ? 'Logging in...' : 'Signing up...', formData);
-      setLoading(false);
-      // TODO: Add API call 
-    }, 1500);
-  };
+    // Load canon items from localStorage
+    const savedItems = localStorage.getItem('canonItems');
+    if (savedItems) {
+      setCanonItems(JSON.parse(savedItems));
+    }
+  }, []);
+
+  // Save canon items to localStorage
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem('canonItems', JSON.stringify(canonItems));
+    }
+  }, [canonItems, isAuthenticated]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     
-    // Simulate Google OAuth flow - replace with actual Google OAuth implementation
+    // Simulate Google OAuth flow
     setTimeout(() => {
       console.log('Signing in with Google...');
       setGoogleLoading(false);
-      // TODO: Implement Google OAuth
+      // Simulate successful Google authentication
+      setIsAuthenticated(true);
+      const userData = {
+        name: 'Google User',
+        email: 'google.user@example.com'
+      };
+      setUser(userData);
+      
+      // Session Persistence: Save to localStorage
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify(userData));
     }, 1500);
   };
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setErrors({});
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    // Session Persistence: Clear from localStorage
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
+  };
+
+  // Canon Items Functions
+  const handleAddItem = () => {
+    if (editingItem) {
+      // Update existing item
+      setCanonItems(prev => prev.map(item => 
+        item.id === editingItem.id 
+          ? { ...editingItem, ...formData, skills: formData.skills.split(',').map(s => s.trim()) }
+          : item
+      ));
+      setEditingItem(null);
+    } else {
+      // Add new item
+      const newItem: CanonItem = {
+        id: Date.now().toString(),
+        company: formData.company,
+        position: formData.position,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        description: formData.description,
+        skills: formData.skills.split(',').map(s => s.trim())
+      };
+      setCanonItems(prev => [...prev, newItem]);
+    }
+    
+    // Reset form
     setFormData({
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
+      company: '',
+      position: '',
+      startDate: '',
+      endDate: '',
+      description: '',
+      skills: ''
+    });
+    setIsAddingItem(false);
+  };
+
+  const handleEditItem = (item: CanonItem) => {
+    setEditingItem(item);
+    setFormData({
+      company: item.company,
+      position: item.position,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      description: item.description,
+      skills: item.skills.join(', ')
+    });
+    setIsAddingItem(true);
+  };
+
+  const handleDeleteItem = (id: string) => {
+    if (confirm('Are you sure you want to delete this career item?')) {
+      setCanonItems(prev => prev.filter(item => item.id !== id));
+    }
+  };
+
+  const handleCancelForm = () => {
+    setIsAddingItem(false);
+    setEditingItem(null);
+    setFormData({
+      company: '',
+      position: '',
+      startDate: '',
+      endDate: '',
+      description: '',
+      skills: ''
     });
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // If user is authenticated, show the Canon Items management
+  if (isAuthenticated) {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex flex-col items-center justify-start p-4 md:p-8 ${inter.className} relative overflow-hidden`}>
+        {/* Simplified Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-purple-950/20"></div>
+        
+        {/* Header */}
+        <div className="relative z-10 w-full max-w-4xl">
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                Vitae
+              </h1>
+              <span className="text-zinc-300 hidden md:inline">| Career History</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="hidden md:block text-right">
+                <p className="text-white font-medium">{user?.name}</p>
+                <p className="text-gray-400 text-sm">{user?.email}</p>
+              </div>
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {user?.name?.charAt(0) || 'G'}
+              </div>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 text-sm"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+
+          {/* Main Content - Canon Items Management */}
+          <div className="space-y-8">
+            {/* Header Section */}
+            <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-2xl border border-gray-700/30 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">My Career History</h2>
+                  <p className="text-gray-300">Add, edit, and manage your entire career history. </p>
+                </div>
+                <button
+                  onClick={() => setIsAddingItem(true)}
+                  className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Career Item
+                </button>
+              </div>
+              
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-gray-800/30 rounded-xl">
+                  <div className="text-2xl font-bold text-white mb-1">{canonItems.length}</div>
+                  <p className="text-gray-400 text-sm">Total Items</p>
+                </div>
+                <div className="p-4 bg-gray-800/30 rounded-xl">
+                  <div className="text-2xl font-bold text-white mb-1">
+                    {canonItems.reduce((count, item) => count + item.skills.length, 0)}
+                  </div>
+                  <p className="text-gray-400 text-sm">Total Skills</p>
+                </div>
+                <div className="p-4 bg-gray-800/30 rounded-xl">
+                  <div className="text-2xl font-bold text-white mb-1">
+                    {new Set(canonItems.flatMap(item => item.skills)).size}
+                  </div>
+                  <p className="text-gray-400 text-sm">Unique Skills</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Add/Edit Form */}
+            {isAddingItem && (
+              <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-2xl border border-gray-700/30 p-6">
+                <h3 className="text-xl font-bold text-white mb-6">
+                  {editingItem ? 'Edit Career Item' : 'Add New Career Item'}
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Company *</label>
+                      <input
+                        type="text"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        placeholder="Google, Microsoft, etc."
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Position *</label>
+                      <input
+                        type="text"
+                        name="position"
+                        value={formData.position}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        placeholder="Software Engineer, Product Manager, etc."
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Start Date *</label>
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={formData.startDate}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">End Date</label>
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={formData.endDate}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                        placeholder="Present if current"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                      placeholder="Describe your responsibilities and achievements..."
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Skills</label>
+                    <input
+                      type="text"
+                      name="skills"
+                      value={formData.skills}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                      placeholder="JavaScript, React, Node.js (comma separated)"
+                    />
+                    <p className="text-gray-500 text-xs mt-1">Separate skills with commas</p>
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={handleAddItem}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-medium rounded-lg transition-all duration-200"
+                    >
+                      {editingItem ? 'Update Item' : 'Add Item'}
+                    </button>
+                    <button
+                      onClick={handleCancelForm}
+                      className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Canon Items List */}
+            <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-2xl border border-gray-700/30 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white">Career History ({canonItems.length})</h3>
+                {canonItems.length > 0 && (
+                  <p className="text-gray-400 text-sm">
+                    {canonItems.length} item{canonItems.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+              
+              {canonItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">No career items yet</div>
+                  <button
+                    onClick={() => setIsAddingItem(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 hover:from-blue-600/30 hover:to-cyan-500/30 text-blue-400 rounded-lg border border-blue-500/20 transition-all duration-200"
+                  >
+                    Add your first career item
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {canonItems.map((item) => (
+                    <div key={item.id} className="p-4 bg-gray-800/30 rounded-xl border border-gray-700/50 hover:border-gray-600/50 transition-colors">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-white font-medium text-lg">{item.position}</h4>
+                          <p className="text-blue-300">{item.company}</p>
+                          <p className="text-gray-400 text-sm mt-1">
+                            {item.startDate} → {item.endDate || 'Present'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditItem(item)}
+                            className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg text-sm transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-300 mb-3">{item.description}</p>
+                      
+                      {item.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {item.skills.map((skill, index) => (
+                            <span 
+                              key={index} 
+                              className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Login Page
   return (
     <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center p-4 ${inter.className} relative overflow-hidden`}>
+      {/* Background elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-purple-950/30"></div>
-      
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
-      
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 opacity-30 animate-pulse"></div>
-      
       <div className="absolute inset-0 bg-[linear-gradient(90deg,#2d3748_1px,transparent_1px),linear-gradient(180deg,#2d3748_1px,transparent_1px)] bg-[size:24px_24px] opacity-5"></div>
-      
       <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl opacity-20 animate-[float_25s_ease-in-out_infinite]"></div>
       <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl opacity-20 animate-[float_30s_ease-in-out_infinite_reverse]"></div>
-      
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 rounded-full blur-3xl"></div>
       
       <div className="relative z-10 w-full max-w-lg">
-        {/* Logo/Brand with enhanced styling */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
+        {/* Logo/Brand*/}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center mb-8">
             <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-xl opacity-30"></div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent relative">
+              <div className="absolute -inset-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-2xl opacity-30"></div>
+              <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent relative">
                 Vitae
               </h1>
             </div>
           </div>
-          <p className="text-zinc-100 text-lg font-medium tracking-wide">
+          <p className="text-zinc-100 text-2xl font-medium tracking-wide">
             Resume Version Control
           </p>
+          <p className="text-gray-300 text-xl mt-4">Track and manage your entire career history</p>
         </div>
 
-        {/* Enhanced Auth Card with better shadows and glow */}
+        {/* Auth Card - Bigger */}
         <div className="relative">
-          {/* Outer glow */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 via-transparent to-purple-500/30 rounded-3xl blur opacity-30"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 via-transparent to-purple-500/30 rounded-3xl blur-xl opacity-30"></div>
           
-          {/* Card with enhanced styling */}
-          <div className="relative bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/30 p-8">
-            {/* Inner subtle gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 rounded-2xl pointer-events-none"></div>
+          <div className="relative bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700/30 p-12">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 rounded-3xl pointer-events-none"></div>
             
             <div className="relative z-10">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {isLogin ? 'Welcome back' : 'Create account'}
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-white mb-4">
+                  Sign in to Vitae
                 </h2>
-                <p className="text-zinc-200 text-sm">
-                  {isLogin ? 'Sign in to continue' : 'Get started with Vitae'}
+                <p className="text-zinc-200 text-xl">
+                  Use your Google account to get started
                 </p>
               </div>
 
@@ -182,180 +488,22 @@ export default function Home() {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={googleLoading}
-                className="w-full mb-6 group relative"
+                className="w-full group relative"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition duration-500"></div>
                 
-                <div className="relative flex items-center justify-center gap-3 w-full bg-gray-900/70 hover:bg-gray-800/70 backdrop-blur-sm border border-gray-700/50 text-white font-medium py-3.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.99]">
+                <div className="relative flex items-center justify-center gap-4 w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 backdrop-blur-sm border border-blue-500/30 text-white font-semibold py-5 rounded-2xl transition-all duration-200 shadow-xl hover:shadow-2xl active:scale-[0.99]">
                   {googleLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
                       <GoogleIcon />
-                      <span>Continue with Google</span>
+                      <span className="text-xl">Sign in with Google</span>
                     </>
                   )}
                 </div>
               </button>
 
-              {/* Divider */}
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-700/50"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-gray-900/80 text-gray-400">or continue with email</span>
-                </div>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name field (signup only) */}
-                {!isLogin && (
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
-                        errors.name ? 'border-red-500/50' : 'border-gray-600/50'
-                      } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg`}
-                      placeholder="John Doe"
-                    />
-                    {errors.name && (
-                      <p className="mt-2 text-sm text-red-400">{errors.name}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Email field */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
-                      errors.email ? 'border-red-500/50' : 'border-gray-600/50'
-                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg`}
-                    placeholder="example@example.com"
-                  />
-                  {errors.email && (
-                    <p className="mt-2 text-sm text-red-400">{errors.email}</p>
-                  )}
-                </div>
-
-                {/* Password field */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
-                        errors.password ? 'border-red-500/50' : 'border-gray-600/50'
-                      } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg pr-12`}
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
-                    >
-                      {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="mt-2 text-sm text-red-400">{errors.password}</p>
-                  )}
-                </div>
-
-                {/* Confirm Password field (signup only) */}
-                {!isLogin && (
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
-                      Confirm Password
-                    </label>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 bg-gray-900/50 backdrop-blur-sm border ${
-                        errors.confirmPassword ? 'border-red-500/50' : 'border-gray-600/50'
-                      } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 shadow-lg`}
-                      placeholder="••••••••"
-                    />
-                    {errors.confirmPassword && (
-                      <p className="mt-2 text-sm text-red-400">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Forgot Password (login only) */}
-                {isLogin && (
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                )}
-
-                {/* Enhanced Submit Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full relative group"
-                >
-                  {/* Button glow effect */}
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                  
-                  {/* Main button */}
-                  <div className="relative bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 disabled:from-gray-600 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-medium py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl active:scale-[0.99]">
-                    {loading ? (
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      isLogin ? 'Sign In with Email' : 'Create Account'
-                    )}
-                  </div>
-                </button>
-              </form>
-
-              {/* Enhanced Toggle Mode */}
-              <div className="mt-8 pt-6 border-t border-gray-700/30 text-center">
-                <p className="text-gray-400 text-sm">
-                  {isLogin ? "Don't have an account?" : 'Already have an account?'}
-                  {' '}
-                  <button
-                    onClick={toggleMode}
-                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
-                  >
-                    {isLogin ? 'Sign up' : 'Sign in'}
-                  </button>
-                </p>
-              </div>
             </div>
           </div>
         </div>
