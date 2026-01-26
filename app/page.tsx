@@ -1,9 +1,10 @@
-'use client'
+import { auth, currentUser } from "@clerk/nextjs/server";
+("use client");
 
-import { useState, useEffect } from 'react';
-import { Inter } from 'next/font/google';
+import { useState, useEffect } from "react";
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 // Google Icon Component
 const GoogleIcon = () => (
@@ -27,7 +28,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Interface for Canon Items 
+// Interface for Canon Items
 interface CanonItem {
   id: string;
   company: string;
@@ -41,35 +42,35 @@ interface CanonItem {
 export default function Home() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{name: string; email: string} | null>(null);
-  
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
   // Canon Items State
   const [canonItems, setCanonItems] = useState<CanonItem[]>([]);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItem, setEditingItem] = useState<CanonItem | null>(null);
-  
+
   // Form State
   const [formData, setFormData] = useState({
-    company: '',
-    position: '',
-    startDate: '',
-    endDate: '',
-    description: '',
-    skills: ''
+    company: "",
+    position: "",
+    startDate: "",
+    endDate: "",
+    description: "",
+    skills: "",
   });
 
   // Session Persistence: Check if user was logged in
   useEffect(() => {
-    const savedAuth = localStorage.getItem('isAuthenticated');
-    const savedUser = localStorage.getItem('user');
-    
-    if (savedAuth === 'true' && savedUser) {
+    const savedAuth = localStorage.getItem("isAuthenticated");
+    const savedUser = localStorage.getItem("user");
+
+    if (savedAuth === "true" && savedUser) {
       setIsAuthenticated(true);
       setUser(JSON.parse(savedUser));
     }
-    
+
     // Load canon items from localStorage
-    const savedItems = localStorage.getItem('canonItems');
+    const savedItems = localStorage.getItem("canonItems");
     if (savedItems) {
       setCanonItems(JSON.parse(savedItems));
     }
@@ -78,28 +79,28 @@ export default function Home() {
   // Save canon items to localStorage
   useEffect(() => {
     if (isAuthenticated) {
-      localStorage.setItem('canonItems', JSON.stringify(canonItems));
+      localStorage.setItem("canonItems", JSON.stringify(canonItems));
     }
   }, [canonItems, isAuthenticated]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    
+
     // Simulate Google OAuth flow
     setTimeout(() => {
-      console.log('Signing in with Google...');
+      console.log("Signing in with Google...");
       setGoogleLoading(false);
       // Simulate successful Google authentication
       setIsAuthenticated(true);
       const userData = {
-        name: 'Google User',
-        email: 'google.user@example.com'
+        name: "Google User",
+        email: "google.user@example.com",
       };
       setUser(userData);
-      
+
       // Session Persistence: Save to localStorage
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(userData));
     }, 1500);
   };
 
@@ -107,19 +108,19 @@ export default function Home() {
     setIsAuthenticated(false);
     setUser(null);
     // Session Persistence: Clear from localStorage
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("user");
   };
 
   // Canon Items Functions
   const handleAddItem = () => {
     if (editingItem) {
       // Update existing item
-      setCanonItems(prev => prev.map(item => 
-        item.id === editingItem.id 
-          ? { ...editingItem, ...formData, skills: formData.skills.split(',').map(s => s.trim()) }
-          : item
-      ));
+      setCanonItems((prev) =>
+        prev.map((item) =>
+          item.id === editingItem.id ? { ...editingItem, ...formData, skills: formData.skills.split(",").map((s) => s.trim()) } : item,
+        ),
+      );
       setEditingItem(null);
     } else {
       // Add new item
@@ -130,19 +131,19 @@ export default function Home() {
         startDate: formData.startDate,
         endDate: formData.endDate,
         description: formData.description,
-        skills: formData.skills.split(',').map(s => s.trim())
+        skills: formData.skills.split(",").map((s) => s.trim()),
       };
-      setCanonItems(prev => [...prev, newItem]);
+      setCanonItems((prev) => [...prev, newItem]);
     }
-    
+
     // Reset form
     setFormData({
-      company: '',
-      position: '',
-      startDate: '',
-      endDate: '',
-      description: '',
-      skills: ''
+      company: "",
+      position: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+      skills: "",
     });
     setIsAddingItem(false);
   };
@@ -155,14 +156,14 @@ export default function Home() {
       startDate: item.startDate,
       endDate: item.endDate,
       description: item.description,
-      skills: item.skills.join(', ')
+      skills: item.skills.join(", "),
     });
     setIsAddingItem(true);
   };
 
   const handleDeleteItem = (id: string) => {
-    if (confirm('Are you sure you want to delete this career item?')) {
-      setCanonItems(prev => prev.filter(item => item.id !== id));
+    if (confirm("Are you sure you want to delete this career item?")) {
+      setCanonItems((prev) => prev.filter((item) => item.id !== id));
     }
   };
 
@@ -170,44 +171,44 @@ export default function Home() {
     setIsAddingItem(false);
     setEditingItem(null);
     setFormData({
-      company: '',
-      position: '',
-      startDate: '',
-      endDate: '',
-      description: '',
-      skills: ''
+      company: "",
+      position: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+      skills: "",
     });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // If user is authenticated, show the Canon Items management
   if (isAuthenticated) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex flex-col items-center justify-start p-4 md:p-8 ${inter.className} relative overflow-hidden`}>
+      <div
+        className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex flex-col items-center justify-start p-4 md:p-8 ${inter.className} relative overflow-hidden`}
+      >
         {/* Simplified Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-purple-950/20"></div>
-        
+
         {/* Header */}
         <div className="relative z-10 w-full max-w-4xl">
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Vitae
-              </h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Vitae</h1>
               <span className="text-zinc-300 hidden md:inline">| Career History</span>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="hidden md:block text-right">
                 <p className="text-white font-medium">{user?.name}</p>
                 <p className="text-gray-400 text-sm">{user?.email}</p>
               </div>
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {user?.name?.charAt(0) || 'G'}
+                {user?.name?.charAt(0) || "G"}
               </div>
               <button
                 onClick={handleLogout}
@@ -237,7 +238,7 @@ export default function Home() {
                   Add Career Item
                 </button>
               </div>
-              
+
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-800/30 rounded-xl">
@@ -245,15 +246,11 @@ export default function Home() {
                   <p className="text-gray-400 text-sm">Total Items</p>
                 </div>
                 <div className="p-4 bg-gray-800/30 rounded-xl">
-                  <div className="text-2xl font-bold text-white mb-1">
-                    {canonItems.reduce((count, item) => count + item.skills.length, 0)}
-                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">{canonItems.reduce((count, item) => count + item.skills.length, 0)}</div>
                   <p className="text-gray-400 text-sm">Total Skills</p>
                 </div>
                 <div className="p-4 bg-gray-800/30 rounded-xl">
-                  <div className="text-2xl font-bold text-white mb-1">
-                    {new Set(canonItems.flatMap(item => item.skills)).size}
-                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">{new Set(canonItems.flatMap((item) => item.skills)).size}</div>
                   <p className="text-gray-400 text-sm">Unique Skills</p>
                 </div>
               </div>
@@ -262,10 +259,8 @@ export default function Home() {
             {/* Add/Edit Form */}
             {isAddingItem && (
               <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-2xl border border-gray-700/30 p-6">
-                <h3 className="text-xl font-bold text-white mb-6">
-                  {editingItem ? 'Edit Career Item' : 'Add New Career Item'}
-                </h3>
-                
+                <h3 className="text-xl font-bold text-white mb-6">{editingItem ? "Edit Career Item" : "Add New Career Item"}</h3>
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -293,7 +288,7 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Start Date *</label>
@@ -318,7 +313,7 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
                     <textarea
@@ -331,7 +326,7 @@ export default function Home() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Skills</label>
                     <input
@@ -344,13 +339,13 @@ export default function Home() {
                     />
                     <p className="text-gray-500 text-xs mt-1">Separate skills with commas</p>
                   </div>
-                  
+
                   <div className="flex gap-3 pt-4">
                     <button
                       onClick={handleAddItem}
                       className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-medium rounded-lg transition-all duration-200"
                     >
-                      {editingItem ? 'Update Item' : 'Add Item'}
+                      {editingItem ? "Update Item" : "Add Item"}
                     </button>
                     <button
                       onClick={handleCancelForm}
@@ -369,11 +364,11 @@ export default function Home() {
                 <h3 className="text-xl font-bold text-white">Career History ({canonItems.length})</h3>
                 {canonItems.length > 0 && (
                   <p className="text-gray-400 text-sm">
-                    {canonItems.length} item{canonItems.length !== 1 ? 's' : ''}
+                    {canonItems.length} item{canonItems.length !== 1 ? "s" : ""}
                   </p>
                 )}
               </div>
-              
+
               {canonItems.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-gray-400 mb-4">No career items yet</div>
@@ -393,7 +388,7 @@ export default function Home() {
                           <h4 className="text-white font-medium text-lg">{item.position}</h4>
                           <p className="text-blue-300">{item.company}</p>
                           <p className="text-gray-400 text-sm mt-1">
-                            {item.startDate} → {item.endDate || 'Present'}
+                            {item.startDate} → {item.endDate || "Present"}
                           </p>
                         </div>
                         <div className="flex gap-2">
@@ -411,16 +406,13 @@ export default function Home() {
                           </button>
                         </div>
                       </div>
-                      
+
                       <p className="text-gray-300 mb-3">{item.description}</p>
-                      
+
                       {item.skills.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {item.skills.map((skill, index) => (
-                            <span 
-                              key={index} 
-                              className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded"
-                            >
+                            <span key={index} className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded">
                               {skill}
                             </span>
                           ))}
@@ -439,7 +431,9 @@ export default function Home() {
 
   // Login Page
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center p-4 ${inter.className} relative overflow-hidden`}>
+    <div
+      className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center p-4 ${inter.className} relative overflow-hidden`}
+    >
       {/* Background elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-transparent to-purple-950/30"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
@@ -448,50 +442,37 @@ export default function Home() {
       <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl opacity-20 animate-[float_25s_ease-in-out_infinite]"></div>
       <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl opacity-20 animate-[float_30s_ease-in-out_infinite_reverse]"></div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 rounded-full blur-3xl"></div>
-      
+
       <div className="relative z-10 w-full max-w-lg">
         {/* Logo/Brand*/}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center mb-8">
             <div className="relative">
               <div className="absolute -inset-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-2xl opacity-30"></div>
-              <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent relative">
-                Vitae
-              </h1>
+              <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent relative">Vitae</h1>
             </div>
           </div>
-          <p className="text-zinc-100 text-2xl font-medium tracking-wide">
-            Resume Version Control
-          </p>
+          <p className="text-zinc-100 text-2xl font-medium tracking-wide">Resume Version Control</p>
           <p className="text-gray-300 text-xl mt-4">Track and manage your entire career history</p>
         </div>
 
         {/* Auth Card - Bigger */}
         <div className="relative">
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 via-transparent to-purple-500/30 rounded-3xl blur-xl opacity-30"></div>
-          
+
           <div className="relative bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700/30 p-12">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 rounded-3xl pointer-events-none"></div>
-            
+
             <div className="relative z-10">
               <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Sign in to Vitae
-                </h2>
-                <p className="text-zinc-200 text-xl">
-                  Use your Google account to get started
-                </p>
+                <h2 className="text-3xl font-bold text-white mb-4">Sign in to Vitae</h2>
+                <p className="text-zinc-200 text-xl">Use your Google account to get started</p>
               </div>
 
               {/* Google Sign In Button */}
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={googleLoading}
-                className="w-full group relative"
-              >
+              <button type="button" onClick={handleGoogleSignIn} disabled={googleLoading} className="w-full group relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition duration-500"></div>
-                
+
                 <div className="relative flex items-center justify-center gap-4 w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 backdrop-blur-sm border border-blue-500/30 text-white font-semibold py-5 rounded-2xl transition-all duration-200 shadow-xl hover:shadow-2xl active:scale-[0.99]">
                   {googleLoading ? (
                     <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -503,7 +484,6 @@ export default function Home() {
                   )}
                 </div>
               </button>
-
             </div>
           </div>
         </div>
@@ -512,7 +492,8 @@ export default function Home() {
       {/* Add float animation keyframes to global styles */}
       <style jsx global>{`
         @keyframes float {
-          0%, 100% {
+          0%,
+          100% {
             transform: translate(0, 0);
           }
           33% {
