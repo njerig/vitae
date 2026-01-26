@@ -4,7 +4,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+Firstly, download packages: `npm install`
+
+Second, set up `next-env.d.ts` and `.env` with correct credentials and keys
+
+Finally, run the development server:
 
 ```bash
 npm run dev
