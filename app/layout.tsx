@@ -1,7 +1,6 @@
 import { type Metadata } from "next"
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import { Geist, Geist_Mono } from "next/font/google"
-
 // @ts-ignore
 import "./globals.css"
 
@@ -29,26 +28,35 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang='en'>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {/* Header component*/}
-          <header className='flex justify-end items-center p-4 gap-4 h-16'>
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton>
-                <button className='bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer'>
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <div className='flex justify-start self-start'>
-                <div className='flex items-center gap-4'>
-                  <h1 className='text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent'>Vitae</h1>
-                  <span className='text-zinc-300 hidden md:inline'>| Career History</span>
-                </div>
+          {/* Header component - Apple-inspired design */}
+          <header className='absolute top-0 left-0 right-0 z-50 px-8 py-6 bg-white/80 backdrop-blur-md border-b border-gray-200'>
+            <div className='max-w-7xl mx-auto flex justify-between items-center'>
+              {/* Logo - always visible */}
+              <div className='text-2xl font-semibold tracking-tight text-gray-900'>
+                Vitae
               </div>
-              <UserButton showName />
-            </SignedIn>
+              
+              {/* Right side buttons */}
+              <div className='flex items-center gap-4'>
+                <SignedOut>
+                  <SignInButton>
+                    <button className='text-gray-600 hover:text-gray-900 transition-colors font-medium cursor-pointer'>
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className='btn-primary'>
+                      Sign Up
+                    </button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton showName />
+                </SignedIn>
+              </div>
+            </div>
           </header>
+          
           {children}
         </body>
       </html>
