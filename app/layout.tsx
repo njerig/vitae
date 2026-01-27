@@ -40,7 +40,7 @@ export default function RootLayout({
               <div className='flex items-center gap-4'>
                 <SignedOut>
                   <SignInButton>
-                    <button className='text-gray-600 hover:text-gray-900 transition-colors font-medium cursor-pointer'>
+                    <button className='btn-secondary'>
                       Sign In
                     </button>
                   </SignInButton>
