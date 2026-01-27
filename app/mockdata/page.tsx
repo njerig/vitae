@@ -6,7 +6,7 @@ export default async function Home() {
   return (
     <div className='flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black'>
       <SignedIn>
-        <p>Hello, you are signed in</p>
+        <p>Hello, you are signed in, you are in MOCKDATA </p>
       </SignedIn>
       <SignedOut>
         <p>SHOULD NOT be able to see this page. This text shouldnt even be able to appear</p>
