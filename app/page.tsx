@@ -1,8 +1,15 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 ("use client");
 
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { Inter } from "next/font/google";
+=======
+export default async function Home() {
+  const { userId } = await auth(); // uses current session information
+  const user = await currentUser(); // makes an API request to clerk to get the name
+  const userName = user!.username;
+>>>>>>> c092224 (Removed duplicate code)
 
 const inter = Inter({ subsets: ["latin"] });
 

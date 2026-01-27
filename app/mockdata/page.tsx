@@ -3,12 +3,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 
 export default async function Home() {
-  const { userId } = await auth(); // uses current session information
-  const user = await currentUser(); // makes an API request to clerk to get the name
-  const userName = user?.username;
-
-  const welcomeSuffix = userName ? `Hello 👋, ${userName}\n Your userId: ${userId}` : `Signed out`;
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <SignedIn>
