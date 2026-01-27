@@ -1,55 +1,47 @@
--- Vitae schema
--- Creates: users, oauth_accounts, experiences, experience_bullets
+-- Vitae schema 
+-- users.id is TEXT (Clerk user id, e.g. "user_abc123")
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- USERS
 CREATE TABLE IF NOT EXISTS users (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email             TEXT UNIQUE NOT NULL,
-  full_name         TEXT,
-  phone_number      TEXT,
-  location          TEXT,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+  id            TEXT PRIMARY KEY,          -- Clerk user id
+  email         TEXT UNIQUE,
+  full_name     TEXT,
+  phone_number  TEXT,
+  location      TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- OAUTH ACCOUNTS (Google sign-in now)
-CREATE TABLE IF NOT EXISTS oauth_accounts (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider          TEXT NOT NULL,        -- e.i., 'google'
-  provider_user_id  TEXT NOT NULL,        -- provider subject / user id
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (provider, provider_user_id),
-  UNIQUE (user_id, provider)
+CREATE TABLE IF NOT EXISTS canon_items (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+  item_type   TEXT NOT NULL CHECK (item_type IN ('education','work','project','skill','link')),
+  title       TEXT NOT NULL DEFAULT '',
+  position    INT  NOT NULL DEFAULT 0,
+  content     JSONB NOT NULL DEFAULT '{}'::jsonb,
+
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- CANONICAL EXPERIENCES
-CREATE TABLE IF NOT EXISTS experiences (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title             TEXT NOT NULL,        
-  org               TEXT NOT NULL,       
-  org_location      TEXT,
-  start_date        DATE,
-  end_date          DATE,
-  is_current        BOOLEAN NOT NULL DEFAULT false,
-  summary           TEXT,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+CREATE INDEX IF NOT EXISTS canon_items_user_idx ON canon_items(user_id);
+CREATE INDEX IF NOT EXISTS canon_items_user_type_idx ON canon_items(user_id, item_type);
+
+CREATE TABLE IF NOT EXISTS working_state (
+  user_id     TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  state       JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS experiences_user_id_idx ON experiences(user_id);
-
-
-CREATE TABLE IF NOT EXISTS experience_bullets (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  experience_id     UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
-  bullet_text       TEXT NOT NULL,
-  position          INT NOT NULL DEFAULT 0,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+CREATE TABLE IF NOT EXISTS versions (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  snapshot    JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS experience_bullets_exp_idx ON experience_bullets(experience_id);
+CREATE INDEX IF NOT EXISTS versions_user_idx ON versions(user_id);
+CREATE INDEX IF NOT EXISTS versions_user_created_idx ON versions(user_id, created_at DESC);
