@@ -24,7 +24,10 @@ app.use(
 app.use(express.json())
 app.use(clerkMiddleware())
 
-app.get("/api/health", (_req, res) => res.json({ ok: true }))
+app.get("/api/health", (_req, res) => {
+  const userId = requireUserId(_req, res)
+  res.json({ ok: true })
+})
 
 const ALLOWED_ITEM_TYPES = new Set(["education", "work", "project", "skill", "link"])
 
@@ -36,7 +39,7 @@ function requireUserId(req, res) {
   const { userId } = getAuth(req)
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" })
-    return null
+    return 
   }
   return userId
 }
@@ -56,7 +59,6 @@ async function ensureUserRow(userId) {
 app.get("/api/canon", async (req, res) => {
   try {
     const userId = requireUserId(req, res)
-    if (!userId) return
 
     await ensureUserRow(userId)
 
