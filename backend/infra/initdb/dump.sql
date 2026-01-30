@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict uPsHetgwTtpEoInP49d1tcin2p16niuRcNm1FCVQyX01gC54eqourCVuXkckU5q
+\restrict kRq92pMikVZAEIvQjmVZ3S1T2OmflB4ozbrCkAKko4A9vsrJKCHKoWeaYpri0dh
 
 -- Dumped from database version 16.11 (Debian 16.11-1.pgdg13+1)
 -- Dumped by pg_dump version 16.11 (Debian 16.11-1.pgdg13+1)
@@ -105,6 +105,8 @@ ALTER TABLE public.working_state OWNER TO vitae;
 --
 
 COPY public.canon_items (id, user_id, item_type, title, "position", content, created_at, updated_at) FROM stdin;
+16c1dd76-cfe8-4698-a5c1-1059a07cd27f	user_38lpYYaQZHnvNA02qPhqPozxfP5	work	Googler	0	{"end": "2026-01-29", "org": "Googler", "role": "SWE", "start": "2026-01-11", "skills": ["JavaScript"], "bullets": ["one bullet per line", "imporved x", "improved y"]}	2026-01-30 09:52:21.530134+00	2026-01-30 09:52:21.530134+00
+70e1ee8b-9216-45a8-a9e0-a1253affb1c2	user_38lpYYaQZHnvNA02qPhqPozxfP5	work	wow	0	{"end": "2026-02-11", "org": "wow", "role": "wea", "start": "2026-02-06", "skills": ["123123", "3123"], "bullets": ["e", "ewa", "e", "awe", "awe"]}	2026-01-30 09:58:07.558681+00	2026-01-30 09:58:07.558681+00
 \.
 
 
@@ -114,6 +116,8 @@ COPY public.canon_items (id, user_id, item_type, title, "position", content, cre
 
 COPY public.users (id, email, full_name, phone_number, location, created_at, updated_at) FROM stdin;
 e6ab665f-6233-4019-a353-e3de823ad360	demo@vitae.local	Demo User	+1 (555) 010-0000	Santa Clara, CA	2026-01-30 03:38:33.77617+00	2026-01-30 03:38:33.77617+00
+user_38lpYYaQZHnvNA02qPhqPozxfP5	\N	\N	\N	\N	2026-01-30 09:46:36.37086+00	2026-01-30 09:46:36.37086+00
+user_38m1Ywt0kBI0RH7FvVhcB599dLj	\N	\N	\N	\N	2026-01-30 09:47:32.184825+00	2026-01-30 09:47:32.184825+00
 \.
 
 
@@ -229,5 +233,5 @@ ALTER TABLE ONLY public.working_state
 -- PostgreSQL database dump complete
 --
 
-\unrestrict uPsHetgwTtpEoInP49d1tcin2p16niuRcNm1FCVQyX01gC54eqourCVuXkckU5q
+\unrestrict kRq92pMikVZAEIvQjmVZ3S1T2OmflB4ozbrCkAKko4A9vsrJKCHKoWeaYpri0dh
 
