@@ -33,22 +33,18 @@ export default function RootLayout({
           <header className='absolute top-0 left-0 right-0 z-50 px-8 py-6 bg-white/80 backdrop-blur-md border-b border-gray-200'>
             <div className='max-w-7xl mx-auto flex justify-between items-center'>
               {/* Logo - always visible */}
-              <Link href="/" className='text-2xl font-semibold tracking-tight text-gray-900 hover:opacity-80 transition-opacity cursor-pointer'>
+              <Link href='/' className='text-2xl font-semibold tracking-tight text-gray-900 hover:opacity-80 transition-opacity cursor-pointer'>
                 Vitae
               </Link>
 
               {/* Right side buttons */}
               <div className='flex items-center gap-4'>
                 <SignedOut>
-                  <a href="/auth/sign-in">
-                    <button className='btn-secondary'>
-                      Sign In
-                    </button>
+                  <a href='/auth/sign-in'>
+                    <button className='btn-secondary'>Sign In</button>
                   </a>
-                  <a href="/auth/sign-up">
-                    <button className='btn-primary'>
-                      Sign Up
-                    </button>
+                  <a href='/auth/sign-up'>
+                    <button className='btn-primary'>Sign Up</button>
                   </a>
                 </SignedOut>
                 <SignedIn>
