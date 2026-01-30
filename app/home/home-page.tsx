@@ -105,8 +105,6 @@ export default function HomeClient({ userName, userId }: { userName: string; use
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // If user is authenticated, show the Canon Items management
-  if (isAuthenticated) {
     return (
       <div className="page-container">
         <div className="page-bg-gradient"></div>
@@ -121,17 +119,14 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                   <h2 className="text-3xl font-semibold text-gray-900 mb-2">My Career History</h2>
                   <p className="text-lg text-gray-600">Add, edit, and manage your entire career history.</p>
                 </div>
-                <button
-                  onClick={() => setIsAddingItem(true)}
-                  className="btn-primary flex items-center gap-2"
-                >
+                <button onClick={() => setIsAddingItem(true)} className="btn-primary flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Add Item
                 </button>
               </div>
-              
+
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-50 rounded-xl">
@@ -139,15 +134,11 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                   <p className="text-gray-600 text-sm">Total Items</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="text-3xl font-semibold text-gray-900 mb-1">
-                    {canonItems.reduce((count, item) => count + item.skills.length, 0)}
-                  </div>
+                  <div className="text-3xl font-semibold text-gray-900 mb-1">{canonItems.reduce((count, item) => count + item.skills.length, 0)}</div>
                   <p className="text-gray-600 text-sm">Total Skills</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="text-3xl font-semibold text-gray-900 mb-1">
-                    {new Set(canonItems.flatMap((item) => item.skills)).size}
-                  </div>
+                  <div className="text-3xl font-semibold text-gray-900 mb-1">{new Set(canonItems.flatMap((item) => item.skills)).size}</div>
                   <p className="text-gray-600 text-sm">Unique Skills</p>
                 </div>
               </div>
@@ -156,9 +147,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
             {/* Add/Edit Form */}
             {isAddingItem && (
               <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-                <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-                  {editingItem ? "Edit Career Item" : "Add New Career Item"}
-                </h3>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-6">{editingItem ? "Edit Career Item" : "Add New Career Item"}</h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -186,7 +175,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Start Date *</label>
@@ -210,7 +199,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Description *</label>
                     <textarea
@@ -223,7 +212,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Skills</label>
                     <input
@@ -236,7 +225,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                     />
                     <p className="text-gray-500 text-xs mt-1">Separate skills with commas</p>
                   </div>
-                  
+
                   <div className="flex gap-3 pt-4">
                     <button onClick={handleAddItem} className="btn-primary">
                       {editingItem ? "Update Item" : "Add Item"}
@@ -252,28 +241,20 @@ export default function HomeClient({ userName, userId }: { userName: string; use
             {/* Canon Items List */}
             <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-gray-900">
-                  Career History ({canonItems.length})
-                </h3>
+                <h3 className="text-2xl font-semibold text-gray-900">Career History ({canonItems.length})</h3>
               </div>
-              
+
               {canonItems.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-gray-600 mb-4 text-lg">No career items yet</div>
-                  <button
-                    onClick={() => setIsAddingItem(true)}
-                    className="btn-secondary"
-                  >
+                  <button onClick={() => setIsAddingItem(true)} className="btn-secondary">
                     Add your first career item
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {canonItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-6 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
-                    >
+                    <div key={item.id} className="p-6 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="text-gray-900 font-semibold text-xl">{item.position}</h4>
@@ -301,10 +282,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                       {item.skills.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {item.skills.map((skill, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 bg-white border border-gray-200 text-gray-700 text-sm rounded-full"
-                            >
+                            <span key={index} className="px-3 py-1 bg-white border border-gray-200 text-gray-700 text-sm rounded-full">
                               {skill}
                             </span>
                           ))}
@@ -319,7 +297,4 @@ export default function HomeClient({ userName, userId }: { userName: string; use
         </div>
       </div>
     )
-  }
-
-  return null
 }

@@ -1,17 +1,31 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server"
+import { Pool } from "pg"
+const POOL = new Pool({ connectionString: process.env.DATABASE_URL })
 
 export async function syncCurrentUser() {
   try {
-    const clerk_user = await currentUser();
+    const { userId } = await auth()
+    if (!userId) throw new Error("Unauthorized")
 
-    if (!clerk_user) {
-      return null
+    let email: string | null = null
+    let full_name: string | null = null
+
+    const u = await currentUser()
+    if (u) {
+      email = u.emailAddresses?.[0]?.emailAddress ?? null
+      full_name = u.fullName ?? null
     }
 
-    // sync with postgres database
+    await POOL.query(
+      `
+      INSERT INTO users (id, email, full_name)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (id) DO NOTHING
+     `,
+      [userId, email, full_name],
+    )
 
-
-    return clerk_user;
+    return userId
   } catch (error) {
     console.error(`Error while syncing user from Clerk: ${error}`)
   }
