@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ApjdX1HFNioU6a3t0iwTomMDN8bnjugdkVPa31xPJMoViZgQR7r4VUf8xUcXoSl
+\restrict kRq92pMikVZAEIvQjmVZ3S1T2OmflB4ozbrCkAKko4A9vsrJKCHKoWeaYpri0dh
 
 -- Dumped from database version 16.11 (Debian 16.11-1.pgdg13+1)
 -- Dumped by pg_dump version 16.11 (Debian 16.11-1.pgdg13+1)
@@ -105,7 +105,8 @@ ALTER TABLE public.working_state OWNER TO vitae;
 --
 
 COPY public.canon_items (id, user_id, item_type, title, "position", content, created_at, updated_at) FROM stdin;
-b0dfc775-3454-403b-8d73-36aba02df237	user_abc123	work	Broadcom	0	{"end": null, "org": "Broadcom", "role": "Software Engineer Intern", "start": "2024-06", "bullets": ["Automated release workflows and reduced manual steps.", "Improved pipeline reliability with validation checks."], "location": "Palo Alto, CA", "is_current": true}	2026-01-27 06:48:17.377977+00	2026-01-27 06:48:17.377977+00
+16c1dd76-cfe8-4698-a5c1-1059a07cd27f	user_38lpYYaQZHnvNA02qPhqPozxfP5	work	Googler	0	{"end": "2026-01-29", "org": "Googler", "role": "SWE", "start": "2026-01-11", "skills": ["JavaScript"], "bullets": ["one bullet per line", "imporved x", "improved y"]}	2026-01-30 09:52:21.530134+00	2026-01-30 09:52:21.530134+00
+70e1ee8b-9216-45a8-a9e0-a1253affb1c2	user_38lpYYaQZHnvNA02qPhqPozxfP5	work	wow	0	{"end": "2026-02-11", "org": "wow", "role": "wea", "start": "2026-02-06", "skills": ["123123", "3123"], "bullets": ["e", "ewa", "e", "awe", "awe"]}	2026-01-30 09:58:07.558681+00	2026-01-30 09:58:07.558681+00
 \.
 
 
@@ -114,8 +115,9 @@ b0dfc775-3454-403b-8d73-36aba02df237	user_abc123	work	Broadcom	0	{"end": null, "
 --
 
 COPY public.users (id, email, full_name, phone_number, location, created_at, updated_at) FROM stdin;
-9b3839d3-5ff9-4e79-8edd-5e2f0a36ab41	demo@vitae.local	Demo User	+1 (555) 010-0000	Santa Clara, CA	2026-01-27 06:47:17.256999+00	2026-01-27 06:47:17.256999+00
-user_abc123	alex@example.com	Alex Lio	+1 555 222 3333	Santa Clara, CA	2026-01-27 06:48:02.045492+00	2026-01-27 06:48:02.045492+00
+e6ab665f-6233-4019-a353-e3de823ad360	demo@vitae.local	Demo User	+1 (555) 010-0000	Santa Clara, CA	2026-01-30 03:38:33.77617+00	2026-01-30 03:38:33.77617+00
+user_38lpYYaQZHnvNA02qPhqPozxfP5	\N	\N	\N	\N	2026-01-30 09:46:36.37086+00	2026-01-30 09:46:36.37086+00
+user_38m1Ywt0kBI0RH7FvVhcB599dLj	\N	\N	\N	\N	2026-01-30 09:47:32.184825+00	2026-01-30 09:47:32.184825+00
 \.
 
 
@@ -231,5 +233,5 @@ ALTER TABLE ONLY public.working_state
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ApjdX1HFNioU6a3t0iwTomMDN8bnjugdkVPa31xPJMoViZgQR7r4VUf8xUcXoSl
+\unrestrict kRq92pMikVZAEIvQjmVZ3S1T2OmflB4ozbrCkAKko4A9vsrJKCHKoWeaYpri0dh
 
