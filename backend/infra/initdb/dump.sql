@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ApjdX1HFNioU6a3t0iwTomMDN8bnjugdkVPa31xPJMoViZgQR7r4VUf8xUcXoSl
+\restrict uPsHetgwTtpEoInP49d1tcin2p16niuRcNm1FCVQyX01gC54eqourCVuXkckU5q
 
 -- Dumped from database version 16.11 (Debian 16.11-1.pgdg13+1)
 -- Dumped by pg_dump version 16.11 (Debian 16.11-1.pgdg13+1)
@@ -105,7 +105,6 @@ ALTER TABLE public.working_state OWNER TO vitae;
 --
 
 COPY public.canon_items (id, user_id, item_type, title, "position", content, created_at, updated_at) FROM stdin;
-b0dfc775-3454-403b-8d73-36aba02df237	user_abc123	work	Broadcom	0	{"end": null, "org": "Broadcom", "role": "Software Engineer Intern", "start": "2024-06", "bullets": ["Automated release workflows and reduced manual steps.", "Improved pipeline reliability with validation checks."], "location": "Palo Alto, CA", "is_current": true}	2026-01-27 06:48:17.377977+00	2026-01-27 06:48:17.377977+00
 \.
 
 
@@ -114,8 +113,7 @@ b0dfc775-3454-403b-8d73-36aba02df237	user_abc123	work	Broadcom	0	{"end": null, "
 --
 
 COPY public.users (id, email, full_name, phone_number, location, created_at, updated_at) FROM stdin;
-9b3839d3-5ff9-4e79-8edd-5e2f0a36ab41	demo@vitae.local	Demo User	+1 (555) 010-0000	Santa Clara, CA	2026-01-27 06:47:17.256999+00	2026-01-27 06:47:17.256999+00
-user_abc123	alex@example.com	Alex Lio	+1 555 222 3333	Santa Clara, CA	2026-01-27 06:48:02.045492+00	2026-01-27 06:48:02.045492+00
+e6ab665f-6233-4019-a353-e3de823ad360	demo@vitae.local	Demo User	+1 (555) 010-0000	Santa Clara, CA	2026-01-30 03:38:33.77617+00	2026-01-30 03:38:33.77617+00
 \.
 
 
@@ -231,5 +229,5 @@ ALTER TABLE ONLY public.working_state
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ApjdX1HFNioU6a3t0iwTomMDN8bnjugdkVPa31xPJMoViZgQR7r4VUf8xUcXoSl
+\unrestrict uPsHetgwTtpEoInP49d1tcin2p16niuRcNm1FCVQyX01gC54eqourCVuXkckU5q
 
