@@ -10,7 +10,7 @@ export default function Page() {
       <div className="relative z-10">
         <div className="hero-section">
           <div className="w-full max-w-md">
-            {/* Clickable Logo */}
+            {}
             <Link href="/">
               <h1 className="text-5xl font-semibold text-center mb-2 text-gray-900 cursor-pointer hover:opacity-80 transition-opacity" style={{ textAlign: 'center', marginLeft: '-50px' }}>
                 Vitae
