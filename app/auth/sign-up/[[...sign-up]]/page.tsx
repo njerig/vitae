@@ -3,26 +3,29 @@ import Link from "next/link"
 
 export default function Page() {
   return (
-    <div className="page-container">
-      <div className="page-bg-gradient"></div>
-      <div className="page-accent-light"></div>
+    <div className='page-container'>
+      <div className='page-bg-gradient'></div>
+      <div className='page-accent-light'></div>
 
-      <div className="relative z-10">
-        <div className="hero-section">
-          <div className="w-full max-w-md">
-            <Link href="/">
-              <h1 className="text-5xl font-semibold text-center mb-2 text-gray-900 cursor-pointer hover:opacity-80 transition-opacity" style={{ textAlign: 'center', marginLeft: '-50px' }}>
+      <div className='relative z-10'>
+        <div className='hero-section'>
+          <div className='w-full max-w-md'>
+            <Link href='/'>
+              <h1
+                className='text-5xl font-semibold text-center mb-2 text-gray-900 cursor-pointer hover:opacity-80 transition-opacity'
+                style={{ textAlign: "center", marginLeft: "-50px" }}
+              >
                 Vitae
               </h1>
             </Link>
-            <p className="text-center text-gray-600 mb-8" style={{ textAlign: 'center', marginLeft: '-50px' }}>
+            <p className='text-center text-gray-600 mb-8' style={{ textAlign: "center", marginLeft: "-50px" }}>
               Resume Version Control
             </p>
 
             <SignUp
-              routing="path"
-              path="/auth/sign-up"
-              signInUrl="/auth/sign-in"
+              routing='path'
+              path='/auth/sign-up'
+              signInUrl='/auth/sign-in'
               appearance={{
                 layout: {
                   socialButtonsPlacement: "top",
@@ -52,7 +55,7 @@ export default function Page() {
                   colorText: "#111827",
                   colorTextSecondary: "#4b5563",
                   borderRadius: "1rem",
-                }
+                },
               }}
             />
           </div>
