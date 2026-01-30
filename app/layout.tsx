@@ -1,7 +1,6 @@
 import { type Metadata } from "next"
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import { Geist, Geist_Mono } from "next/font/google"
-// @ts-ignore
 import Link from "next/link"
 import "./globals.css"
 
