@@ -20,6 +20,7 @@ app.get("/api/me", (_req, res) => {
 });
 
 // GET /canon/:userId
+// Gets ALL career history for a user
 app.get("/api/canon/:userId", async (req,res) => {
   try {
      const { userId } = req.params;
@@ -40,6 +41,7 @@ app.get("/api/canon/:userId", async (req,res) => {
 });
 
 // PUT /canon/:userId
+// Creates a new career history item for a particular user
 app.put("/api/canon/:userId", async (req,res) => {
   try {
      const { userId } = req.params;
@@ -60,7 +62,8 @@ app.put("/api/canon/:userId", async (req,res) => {
 });
 
 
-const port = Number(process.env.PORT ?? 8000);
+// start app
+const port = Number(process.env.PORT);
 app.listen(port, () => {
   console.log(`Express API listening on http://localhost:${port}`);
 });
