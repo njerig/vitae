@@ -4,17 +4,17 @@
   /* Background colors */
   --background: #ffffff;
   --foreground: #171717;
-  
+
   /* Theme colors */
   --bg-primary: #ffffff;
   --bg-subtle: #f9fafb;
   --text-primary: #111827;
   --text-secondary: #4b5563;
   --accent: #3b82f6;
-  
+
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  
+
   /* Spacing */
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
@@ -39,7 +39,7 @@
 }
 
 body {
-  background: #ffffff;  
+  background: #ffffff;
   color: var(--text-primary);
   font-family: var(--font-sans);
 }
@@ -170,14 +170,17 @@ button {
 
 /* Animations */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0);
   }
+
   33% {
     transform: translate(30px, -30px);
   }
+
   66% {
     transform: translate(-20px, 20px);
   }
 }
-
