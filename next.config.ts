@@ -1,14 +1,15 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   async rewrites() {
+    const apiUrl = process.env.API_URL
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.API_URL}/api/:path*`, // so we don't need to hardcode anymore when making api requests
+        destination: `${apiUrl}/api/:path*`,
       },
-    ];
+    ]
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
