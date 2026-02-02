@@ -5,7 +5,7 @@ import { CanonItem, WorkContent } from "@/lib/types"
 import { useState } from "react"
 import { CanonList } from "@/lib/canon/components/CanonList"
 
-export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
+export default function HomePage({ userName, userId }: { userName: string; userId: string }) {
   const { items, stats, loading, saving, error, createWork, patchWork, removeWork } = useCanonWork()
 
   const [isAddingItem, setIsAddingItem] = useState(false)
