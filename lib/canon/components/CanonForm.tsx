@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react"
 import type { CanonItem, WorkContent } from "@/lib/types"
+import type { FormError } from "../useCanonWork"
 
 type Props = {
   editing?: CanonItem<WorkContent> | null
   onCancel: () => void
   onSubmit: (payload: { title: string; position: number; content: WorkContent }) => Promise<void> | void
   saving?: boolean
-  error?: string | null
+  error?: FormError
 }
 
 export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props) {
@@ -43,10 +44,10 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
       .filter(Boolean)
 
     const content: WorkContent = {
-      org: form.org || undefined,
-      role: form.role || undefined,
-      start: form.start || undefined,
-      end: form.end ? form.end : null,
+      org: form.org,
+      role: form.role,
+      start: form.start,
+      end: form.end || null,
       bullets,
       skills,
     }
@@ -59,11 +60,18 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
     })
   }
 
+  // Helper to check if a field has a validation error
+  const hasError = (field: string) => error?.fields.includes(field) ?? false
+
+  // Base input styles
+  const inputBase = "w-full px-4 py-2 bg-white rounded-lg text-gray-900 border"
+  const inputBorder = (field: string) => (hasError(field) ? "border-red-500" : "border-gray-300")
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
       <h3 className="text-2xl font-semibold text-gray-900 mb-6">{editing ? "Edit Career Item" : "Add New Career Item"}</h3>
 
-      {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
+      {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">{error.message}</div>}
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -73,7 +81,7 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
               type="text"
               value={form.org}
               onChange={(e) => setForm((p) => ({ ...p, org: e.target.value }))}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900"
+              className={`${inputBase} ${inputBorder("org")}`}
               placeholder="Google, Microsoft, etc."
             />
           </div>
@@ -83,7 +91,7 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
               type="text"
               value={form.role}
               onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900"
+              className={`${inputBase} ${inputBorder("role")}`}
               placeholder="Software Engineer, Product Manager, etc."
             />
           </div>
@@ -94,18 +102,20 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
             <label className="block text-sm font-medium text-gray-900 mb-2">Start Date *</label>
             <input
               type="date"
+              max="9999-12-31"
               value={form.start}
               onChange={(e) => setForm((p) => ({ ...p, start: e.target.value }))}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900"
+              className={`${inputBase} ${inputBorder("start")}`}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">End Date</label>
             <input
               type="date"
+              max="9999-12-31"
               value={form.end}
               onChange={(e) => setForm((p) => ({ ...p, end: e.target.value }))}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900"
+              className={`${inputBase} ${inputBorder("end")}`}
             />
           </div>
         </div>
@@ -116,7 +126,7 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
             value={form.bullets}
             onChange={(e) => setForm((p) => ({ ...p, bullets: e.target.value }))}
             rows={4}
-            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900"
+            className={`${inputBase} ${inputBorder("bullets")}`}
             placeholder={"One bullet per line\nBuilt X\nImproved Y"}
           />
         </div>
@@ -127,7 +137,7 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
             type="text"
             value={form.skills}
             onChange={(e) => setForm((p) => ({ ...p, skills: e.target.value }))}
-            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900"
+            className={`${inputBase} ${inputBorder("skills")}`}
             placeholder="JavaScript, React, Node.js"
           />
           <p className="text-gray-500 text-xs mt-1">Separate skills with commas</p>

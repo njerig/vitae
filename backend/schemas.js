@@ -7,17 +7,23 @@ const { z } = require("zod")
 // Content Schemas (per item type, matching docs/schema.md)
 // ─────────────────────────────────────────────────────────────
 
-const WorkContentSchema = z.object({
-  org: z.string().min(1, "Company is required"),
-  role: z.string().min(1, "Position is required"),
-  start: z.string().min(1, "Start date is required"),
-  end: z.string().nullable().optional(),
-  bullets: z.array(z.string()).min(1, "At least one bullet point is required"),
-  skills: z.array(z.string()).optional(),
-}).refine(
-  (data) => !data.start || !data.end || data.start <= data.end,
-  { message: "Start date must be before or equal to end date" }
-)
+const WorkContentSchema = z
+  .object({
+    org: z.string().min(1, "Company is required"),
+    role: z.string().min(1, "Position is required"),
+    start: z
+      .string()
+      .min(1, "Start date is required")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (use YYYY-MM-DD)"),
+    end: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+      .nullable()
+      .optional(),
+    bullets: z.array(z.string()).min(1, "At least one bullet point is required"),
+    skills: z.array(z.string()).optional(),
+  })
+  .refine((data) => !data.start || !data.end || data.start <= data.end, { message: "Start date must be before or equal to end date" })
 
 const EducationContentSchema = z.object({
   institution: z.string().optional(),

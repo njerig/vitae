@@ -21,6 +21,13 @@ export function CanonList({
     )
   }
 
+  // Format date from YYYY-MM-DD to MM-DD-YYYY
+  const formatDate = (dateStr: string | undefined | null) => {
+    if (!dateStr) return ""
+    const [year, month, day] = dateStr.split("-")
+    return `${month}-${day}-${year}`
+  }
+
   return (
     <div className="space-y-4">
       {/* For each canon item, display all possible fields if not empty*/}
@@ -33,7 +40,7 @@ export function CanonList({
                 <h4 className="text-gray-900 font-semibold text-xl">{c.role ?? ""}</h4>
                 <p className="text-blue-600 font-medium">{c.org ?? ""}</p>
                 <p className="text-gray-600 text-sm mt-1">
-                  {c.start ?? ""} → {c.end || "Present"}
+                  {formatDate(c.start)} → {c.end ? formatDate(c.end) : "Present"}
                 </p>
               </div>
               <div className="flex gap-2">

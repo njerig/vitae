@@ -4,7 +4,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useAuth } from "@clerk/nextjs"
 import type { CanonItem, ItemType, WorkContent } from "@/lib/types"
-import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchCanonItem } from "./api"
+import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchCanonItem, ValidationError } from "./api"
+
+// Error state type for structured validation errors
+export type FormError = { message: string; fields: string[] } | null
 
 // handles loading and error states for the UI
 // gets the user's auth token and sends it to API
@@ -15,7 +18,7 @@ export function useCanonWork() {
   const [itemTypes, setItemTypes] = useState<ItemType[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<FormError>(null)
 
   // Find the "Work Experience" item type ID
   const workTypeId = useMemo(() => {
@@ -42,8 +45,12 @@ export function useCanonWork() {
         setItems([])
       }
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to load"
-      setError(message)
+      if (e instanceof ValidationError) {
+        setError({ message: e.message, fields: e.fields })
+      } else {
+        const message = e instanceof Error ? e.message : "Failed to load"
+        setError({ message, fields: [] })
+      }
     } finally {
       setLoading(false)
     }
@@ -70,8 +77,12 @@ export function useCanonWork() {
         setItems((prev) => [...prev, created].sort((a, b) => a.position - b.position))
         return created
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : "Create failed"
-        setError(message)
+        if (e instanceof ValidationError) {
+          setError({ message: e.message, fields: e.fields })
+        } else {
+          const message = e instanceof Error ? e.message : "Create failed"
+          setError({ message, fields: [] })
+        }
         throw e
       } finally {
         setSaving(false)
@@ -92,8 +103,12 @@ export function useCanonWork() {
         setItems((prev) => prev.map((x) => (x.id === id ? updated : x)))
         return updated
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : "Update failed"
-        setError(message)
+        if (e instanceof ValidationError) {
+          setError({ message: e.message, fields: e.fields })
+        } else {
+          const message = e instanceof Error ? e.message : "Update failed"
+          setError({ message, fields: [] })
+        }
         throw e
       } finally {
         setSaving(false)
@@ -113,8 +128,12 @@ export function useCanonWork() {
         await deleteCanonItem(token, id)
         setItems((prev) => prev.filter((x) => x.id !== id))
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : "Delete failed"
-        setError(message)
+        if (e instanceof ValidationError) {
+          setError({ message: e.message, fields: e.fields })
+        } else {
+          const message = e instanceof Error ? e.message : "Delete failed"
+          setError({ message, fields: [] })
+        }
         throw e
       } finally {
         setSaving(false)
