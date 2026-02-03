@@ -27,12 +27,16 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   }
 
   const submit = async (payload: { title: string; position: number; content: WorkContent }) => {
-    if (editingItem) {
-      await patchWork(editingItem.id, payload)
-    } else {
-      await createWork(payload)
+    try {
+      if (editingItem) {
+        await patchWork(editingItem.id, payload)
+      } else {
+        await createWork(payload)
+      }
+      cancel() // Only close form on success
+    } catch {
+      // Error is already set in the hook state, keep form open
     }
-    cancel()
   }
 
   const del = async (id: string) => {
@@ -80,7 +84,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
             </div>
           </div>
 
-          {isAddingItem && <CanonForm editing={editingItem} onCancel={cancel} onSubmit={submit} saving={saving} />}
+          {isAddingItem && <CanonForm editing={editingItem} onCancel={cancel} onSubmit={submit} saving={saving} error={error} />}
 
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
             <div className="flex justify-between items-center mb-6">
