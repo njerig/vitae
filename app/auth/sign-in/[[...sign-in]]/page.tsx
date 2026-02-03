@@ -27,6 +27,7 @@ export default function Page() {
               routing='path'
               path='/auth/sign-in'
               signUpUrl='/auth/sign-up'
+              forceRedirectUrl='/home'
               appearance={{
                 layout: {
                   socialButtonsPlacement: "top",

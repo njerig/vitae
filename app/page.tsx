@@ -10,7 +10,7 @@ export default function Page() {
       <div className='relative z-10'>
         {/* Hero Section */}
         <div className='hero-section'>
-          <div className='w-full max-w-3xl'>
+          <div className='w-full max-w-3xl mx-auto'>
             <h1 className='hero-title'>Vitae</h1>
             <p className='hero-subtitle'>Resume Version Control</p>
             <p className='hero-description'>Manage your career and resumes all in one place.</p>

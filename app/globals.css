@@ -1,186 +1,161 @@
 @import "tailwindcss";
 
 :root {
-  /* Background colors */
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* Theme colors */
-  --bg-primary: #ffffff;
-  --bg-subtle: #f9fafb;
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --accent: #3b82f6;
-
-  /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
-  /* Spacing */
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 4rem;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --bg-primary: #0a0a0a;
-    --text-primary: #ededed;
-    --text-secondary: #9ca3af;
-  }
+  --paper: #faf8f5;
+  --paper-dark: #f5f2ed;
+  --ink: #1a1614;
+  --ink-fade: #5a5654;
+  --ink-light: #8a8684;
+  --accent: #9b4522;
+  --accent-hover: #7d3619;
+  --grid: #e8e4de;
 }
 
 body {
-  background: #ffffff;
-  color: var(--text-primary);
+  --font-serif: var(--font-crimson-pro, Georgia, serif);
+  --font-sans: var(--font-inter, -apple-system, sans-serif);
+  
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans);
 }
 
-/* Page Layout */
-.page-container {
-  min-height: 100vh;
-  background-color: white;
-  position: relative;
-  overflow: hidden;
+/* Headings use Crimson Pro */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
 }
 
-.page-bg-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, #f9fafb, #ffffff, #f9fafb);
+/* Header styles */
+header {
+  background-color: var(--paper);
+  border-color: var(--grid);
 }
 
-.page-accent-light {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 800px;
-  height: 600px;
-  background: rgba(59, 130, 246, 0.05);
-  border-radius: 9999px;
-  filter: blur(80px);
-}
-
-/* Content Sections */
-.hero-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  padding-top: 8rem;
-  padding-bottom: 4rem;
-}
-
-.content-section {
-  max-width: 48rem;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 1rem;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-/* Typography */
-.hero-title {
-  font-size: 6rem;
+.logo {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: #111827;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: #111827;
-  font-weight: 500;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.hero-description {
-  font-size: 1.25rem;
-  color: #4b5563;
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
-
-.section-title {
-  font-size: 2.25rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 1rem;
-}
-
-.section-text {
-  font-size: 1.25rem;
-  color: #4b5563;
-  line-height: 1.75;
-}
-
-/* Buttons */
-
-button {
+  color: var(--ink);
+  transition: opacity 200ms;
   cursor: pointer;
 }
 
+.logo:hover {
+  opacity: 0.8;
+}
+
+/* Editorial grid background */
+.page-container {
+  min-height: 100vh;
+  background: 
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(180deg, var(--grid) 1px, transparent 1px),
+    var(--paper);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  background-position: -1px -1px, -1px -1px, 0 0;
+}
+
+.hero-section {
+  display: flex;
+  justify-content: center;
+  padding: 8rem 2rem 6rem;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: 8rem;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  margin-bottom: 2rem;
+  line-height: 0.95;
+}
+
+.hero-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 3rem;
+}
+
+.hero-description {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  color: var(--ink-fade);
+  line-height: 1.6;
+  max-width: 600px;
+  margin-bottom: 3rem;
+}
+
+/* Stamp-like button */
 .btn-primary {
+  font-family: var(--font-sans);
   padding: 0.75rem 2rem;
-  background-color: #3b82f6;
-  color: white;
-  font-weight: 500;
-  border-radius: 9999px;
+  background: var(--accent);
+  color: var(--paper);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 2px solid var(--accent);
+  border-radius: 0;
   transition: all 200ms;
-  border: none;
   cursor: pointer;
 }
 
 .btn-primary:hover {
-  background-color: #2563eb;
+  background: transparent;
+  color: var(--accent);
+}
+
+/* Content cards with paper feel */
+.content-section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  background: white;
+  border: 1px solid var(--grid);
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 0 var(--grid);
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.section-text {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  color: var(--ink-fade);
+  line-height: 1.8;
 }
 
 .btn-secondary {
+  font-family: var(--font-sans);
   padding: 0.75rem 2rem;
-  background-color: white;
-  color: #111827;
-  font-weight: 500;
-  border-radius: 9999px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 2px solid var(--ink);
+  border-radius: 0;
   transition: all 200ms;
-  border: 1px solid #e5e7eb;
   cursor: pointer;
 }
 
 .btn-secondary:hover {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
-}
-
-button {
-  cursor: pointer;
-}
-
-/* Animations */
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-
-  33% {
-    transform: translate(30px, -30px);
-  }
-
-  66% {
-    transform: translate(-20px, 20px);
-  }
+  background: var(--ink);
+  color: var(--paper);
 }
