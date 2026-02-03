@@ -25,13 +25,10 @@ async function ensureUserWithDefaults(userId) {
   try {
     await client.query("BEGIN")
 
-    // Insert user if not exists
-    await client.query(
-      `INSERT INTO users (id) VALUES ($1) ON CONFLICT (id) DO NOTHING`,
-      [userId]
-    )
+    // Insert user if they do not exist yet
+    await client.query(`INSERT INTO users (id) VALUES ($1) ON CONFLICT (id) DO NOTHING`, [userId])
 
-    // Create default item_types if user is new (uses INSERT ... WHERE NOT EXISTS)
+    // Create default item_types if user is new
     for (const displayName of DEFAULT_ITEM_TYPES) {
       await client.query(
         `INSERT INTO item_types (user_id, display_name)
@@ -40,7 +37,7 @@ async function ensureUserWithDefaults(userId) {
            SELECT 1 FROM item_types
            WHERE user_id = $1 AND display_name = $2
          )`,
-        [userId, displayName]
+        [userId, displayName],
       )
     }
 

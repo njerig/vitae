@@ -1,18 +1,13 @@
-// lib/canon/useCanonWork.ts
 // Frontend hook for work experience items
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useAuth } from "@clerk/nextjs"
 import type { CanonItem, ItemType, WorkContent } from "@/lib/types"
-import {
-  createCanonItem,
-  deleteCanonItem,
-  listCanonItems,
-  listItemTypes,
-  patchCanonItem,
-} from "./api"
+import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchCanonItem } from "./api"
 
+// handles loading and error states for the UI
+// gets the user's auth token and sends it to API
 export function useCanonWork() {
   const { getToken } = useAuth()
 
@@ -31,7 +26,7 @@ export function useCanonWork() {
     setLoading(true)
     setError(null)
     try {
-      const token = (await getToken()) ?? ""
+      const token = await getToken()
       if (!token) throw new Error("Missing auth token")
 
       // Fetch item types first
@@ -65,16 +60,14 @@ export function useCanonWork() {
       setSaving(true)
       setError(null)
       try {
-        const token = (await getToken()) ?? ""
+        const token = await getToken()
         if (!token) throw new Error("Missing auth token")
 
         const created = await createCanonItem<WorkContent>(token, {
           item_type_id: workTypeId,
           ...input,
         })
-        setItems((prev) =>
-          [...prev, created].sort((a, b) => a.position - b.position)
-        )
+        setItems((prev) => [...prev, created].sort((a, b) => a.position - b.position))
         return created
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : "Create failed"
@@ -84,18 +77,15 @@ export function useCanonWork() {
         setSaving(false)
       }
     },
-    [getToken, workTypeId]
+    [getToken, workTypeId],
   )
 
   const patchWork = useCallback(
-    async (
-      id: string,
-      patch: { title?: string; position?: number; content?: WorkContent }
-    ) => {
+    async (id: string, patch: { title?: string; position?: number; content?: WorkContent }) => {
       setSaving(true)
       setError(null)
       try {
-        const token = (await getToken()) ?? ""
+        const token = await getToken()
         if (!token) throw new Error("Missing auth token")
 
         const updated = await patchCanonItem<WorkContent>(token, id, patch)
@@ -109,7 +99,7 @@ export function useCanonWork() {
         setSaving(false)
       }
     },
-    [getToken]
+    [getToken],
   )
 
   const removeWork = useCallback(
@@ -117,7 +107,7 @@ export function useCanonWork() {
       setSaving(true)
       setError(null)
       try {
-        const token = (await getToken()) ?? ""
+        const token = await getToken()
         if (!token) throw new Error("Missing auth token")
 
         await deleteCanonItem(token, id)
@@ -130,7 +120,7 @@ export function useCanonWork() {
         setSaving(false)
       }
     },
-    [getToken]
+    [getToken],
   )
 
   const stats = useMemo(() => {

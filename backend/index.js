@@ -26,7 +26,7 @@ const {
 const app = express()
 
 // ─────────────────────────────────────────────────────────────
-// Global Middleware
+// Global Middleware Configurations
 // ─────────────────────────────────────────────────────────────
 
 app.use(
@@ -41,10 +41,7 @@ app.use(
 app.use(express.json())
 app.use(clerkMiddleware())
 
-// ─────────────────────────────────────────────────────────────
 // Health Check
-// ─────────────────────────────────────────────────────────────
-
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true })
 })
@@ -98,40 +95,47 @@ app.post(
 // ─────────────────────────────────────────────────────────────
 
 // GET /api/canon?item_type_id=<uuid> - List canon items
-app.get("/api/canon", requireAuth, validateQuery(ItemTypeQuerySchema), asyncHandler(async (req, res) => {
+app.get(
+  "/api/canon",
+  requireAuth,
+  validateQuery(ItemTypeQuerySchema),
+  asyncHandler(async (req, res) => {
     await ensureUserWithDefaults(req.userId)
 
     const { item_type_id } = req.validatedQuery
 
+    // retrieve either all canon items or just a specific type of them
     const { rows } = await pool.query(
       item_type_id
         ? `SELECT id, user_id, item_type_id, title, position, content, created_at, updated_at
-           FROM canon_items
-           WHERE user_id = $1 AND item_type_id = $2
-           ORDER BY position ASC NULLS LAST, created_at ASC`
+            FROM canon_items
+            WHERE user_id = $1 AND item_type_id = $2
+            ORDER BY position ASC NULLS LAST, created_at ASC`
         : `SELECT id, user_id, item_type_id, title, position, content, created_at, updated_at
-           FROM canon_items
-           WHERE user_id = $1
-           ORDER BY item_type_id ASC, position ASC NULLS LAST, created_at ASC`,
-      item_type_id ? [req.userId, item_type_id] : [req.userId]
+            FROM canon_items
+            WHERE user_id = $1
+            ORDER BY item_type_id ASC, position ASC NULLS LAST, created_at ASC`,
+      item_type_id ? [req.userId, item_type_id] : [req.userId],
     )
 
     res.json(rows)
-  })
+  }),
 )
 
 // POST /api/canon - Create a new canon item
-app.post("/api/canon", requireAuth, validateBody(CreateCanonItemSchema), asyncHandler(async (req, res) => {
+app.post(
+  "/api/canon",
+  requireAuth,
+  validateBody(CreateCanonItemSchema),
+  asyncHandler(async (req, res) => {
     await ensureUserWithDefaults(req.userId)
 
     const { item_type_id, title, position, content } = req.validatedBody
 
     // Verify item_type_id belongs to this user and get display_name
-    const typeCheck = await pool.query(
-      `SELECT id, display_name FROM item_types WHERE id = $1 AND user_id = $2`,
-      [item_type_id, req.userId]
-    )
+    const typeCheck = await pool.query(`SELECT id, display_name FROM item_types WHERE id = $1 AND user_id = $2`, [item_type_id, req.userId])
 
+    // if, somehow, they requested an item type that does not exist yet in their table
     if (typeCheck.rows.length === 0) {
       return res.status(400).json({ error: "Invalid item_type_id" })
     }
@@ -150,11 +154,11 @@ app.post("/api/canon", requireAuth, validateBody(CreateCanonItemSchema), asyncHa
       `INSERT INTO canon_items (user_id, item_type_id, title, position, content)
        VALUES ($1, $2, $3, $4, $5::jsonb)
        RETURNING id, user_id, item_type_id, title, position, content, created_at, updated_at`,
-      [req.userId, item_type_id, title, position, JSON.stringify(content)]
+      [req.userId, item_type_id, title, position, JSON.stringify(content)],
     )
 
     res.status(201).json(rows[0])
-  })
+  }),
 )
 
 // PATCH /api/canon?id=<uuid> - Update a canon item
@@ -163,7 +167,7 @@ app.patch( "/api/canon", requireAuth, validateQuery(IdQuerySchema), validateBody
     const { id } = req.validatedQuery
     const { title, position, content } = req.validatedBody
 
-    // Build dynamic SET clause
+    // Build dynamic SET clause so we can update only what is needed
     const sets = []
     const vals = [id, req.userId]
     let paramIndex = 3
@@ -188,7 +192,7 @@ app.patch( "/api/canon", requireAuth, validateQuery(IdQuerySchema), validateBody
        SET ${sets.join(", ")}, updated_at = now()
        WHERE id = $1 AND user_id = $2
        RETURNING id, user_id, item_type_id, title, position, content, created_at, updated_at`,
-      vals
+      vals,
     )
 
     if (rows.length === 0) {
@@ -217,16 +221,10 @@ app.delete("/api/canon", requireAuth, validateQuery(IdQuerySchema), asyncHandler
   })
 )
 
-// ─────────────────────────────────────────────────────────────
-// Error Handler (must be last)
-// ─────────────────────────────────────────────────────────────
-
+// Error Handler middleware
 app.use(errorHandler)
 
-// ─────────────────────────────────────────────────────────────
 // Start Server
-// ─────────────────────────────────────────────────────────────
-
 const port = Number(process.env.PORT)
 app.listen(port, () =>
   console.log(`Express API listening on http://localhost:${port}`)

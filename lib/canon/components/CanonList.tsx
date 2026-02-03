@@ -8,6 +8,8 @@ export function CanonList({
   onDelete,
 }: {
   items: CanonItem<WorkContent>[]
+
+  // These functions allow us to edit and delete items by passing it from this list component to the parent component
   onEdit: (item: CanonItem<WorkContent>) => void
   onDelete: (id: string) => void | Promise<void>
 }) {
