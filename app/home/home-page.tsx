@@ -69,7 +69,6 @@ export default function HomeClient({ userName, userId }: { userName: string; use
               </button>
             </div>
 
-            {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
 
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-gray-50 rounded-xl">
