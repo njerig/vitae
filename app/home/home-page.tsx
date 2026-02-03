@@ -8,7 +8,10 @@ import { CanonList } from "@/lib/canon/components/CanonList"
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, stats, loading, saving, error, createWork, patchWork, removeWork } = useCanonWork()
 
+  // whether or not to display the CanonForm to the screen
   const [isAddingItem, setIsAddingItem] = useState(false)
+
+  // save the current item that is being edited to state variable
   const [editingItem, setEditingItem] = useState<CanonItem<WorkContent> | null>(null)
 
   const startAdd = () => {

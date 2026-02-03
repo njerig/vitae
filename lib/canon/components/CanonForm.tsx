@@ -12,6 +12,7 @@ type Props = {
 }
 
 export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props) {
+  // fills the form with initial values depending on if its in edit or not
   const initial = useMemo(() => {
     const c = editing?.content ?? {}
     return {
@@ -50,6 +51,7 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
       skills,
     }
 
+    // calls the onSubmit function passed in from the parent component
     await onSubmit({
       title: form.title || form.org || "",
       position: Number.isFinite(Number(form.position)) ? Number(form.position) : 0,
@@ -61,11 +63,7 @@ export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props)
     <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
       <h3 className="text-2xl font-semibold text-gray-900 mb-6">{editing ? "Edit Career Item" : "Add New Career Item"}</h3>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
