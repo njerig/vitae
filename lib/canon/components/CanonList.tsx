@@ -21,6 +21,7 @@ export function CanonList({
 
   return (
     <div className="space-y-4">
+      {/* For each canon item, display all possible fields if not empty*/}
       {items.map((item) => {
         const c = item.content ?? {}
         return (
@@ -49,6 +50,7 @@ export function CanonList({
               </div>
             </div>
 
+            {/* Displaying bullet points if there are any */}
             {(c.bullets?.length ?? 0) > 0 && (
               <ul className="text-gray-700 mb-3 list-disc pl-5 space-y-1">
                 {(c.bullets ?? []).map((b, i) => (
@@ -57,6 +59,7 @@ export function CanonList({
               </ul>
             )}
 
+            {/* Displaying skills if there are any */}
             {(c.skills?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-2">
                 {(c.skills ?? []).map((skill, i) => (

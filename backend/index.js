@@ -98,11 +98,7 @@ app.post(
 // ─────────────────────────────────────────────────────────────
 
 // GET /api/canon?item_type_id=<uuid> - List canon items
-app.get(
-  "/api/canon",
-  requireAuth,
-  validateQuery(ItemTypeQuerySchema),
-  asyncHandler(async (req, res) => {
+app.get("/api/canon", requireAuth, validateQuery(ItemTypeQuerySchema), asyncHandler(async (req, res) => {
     await ensureUserWithDefaults(req.userId)
 
     const { item_type_id } = req.validatedQuery
@@ -125,11 +121,7 @@ app.get(
 )
 
 // POST /api/canon - Create a new canon item
-app.post(
-  "/api/canon",
-  requireAuth,
-  validateBody(CreateCanonItemSchema),
-  asyncHandler(async (req, res) => {
+app.post("/api/canon", requireAuth, validateBody(CreateCanonItemSchema), asyncHandler(async (req, res) => {
     await ensureUserWithDefaults(req.userId)
 
     const { item_type_id, title, position, content } = req.validatedBody
@@ -166,11 +158,7 @@ app.post(
 )
 
 // PATCH /api/canon?id=<uuid> - Update a canon item
-app.patch(
-  "/api/canon",
-  requireAuth,
-  validateQuery(IdQuerySchema),
-  validateBody(PatchCanonItemSchema),
+app.patch( "/api/canon", requireAuth, validateQuery(IdQuerySchema), validateBody(PatchCanonItemSchema),
   asyncHandler(async (req, res) => {
     const { id } = req.validatedQuery
     const { title, position, content } = req.validatedBody
@@ -212,11 +200,7 @@ app.patch(
 )
 
 // DELETE /api/canon?id=<uuid> - Delete a canon item
-app.delete(
-  "/api/canon",
-  requireAuth,
-  validateQuery(IdQuerySchema),
-  asyncHandler(async (req, res) => {
+app.delete("/api/canon", requireAuth, validateQuery(IdQuerySchema), asyncHandler(async (req, res) => {
     const { id } = req.validatedQuery
 
     const result = await pool.query(
@@ -229,7 +213,7 @@ app.delete(
       return res.status(404).json({ error: "Not found" })
     }
 
-    res.status(204).send()
+    res.status(204).send() // "No Content", so .send() ends the api call/connection
   })
 )
 

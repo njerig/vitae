@@ -1,10 +1,7 @@
 // lib/types.ts
 // Shared TypeScript types for Vitae
 
-// ─────────────────────────────────────────────────────────────
-// Item Types
-// ─────────────────────────────────────────────────────────────
-
+// General Item type used to create new item types
 export type ItemType = {
   id: string // UUID
   user_id: string
@@ -64,7 +61,7 @@ export type CanonItem<TContent = unknown> = {
   item_type_id: string // UUID referencing item_types
   title: string
   position: number
-  content: TContent
+  content: TContent // flexibile type to handle different item_types
   created_at: string
   updated_at: string
 }
