@@ -162,10 +162,43 @@ app.post(
 )
 
 // PATCH /api/canon?id=<uuid> - Update a canon item
-app.patch( "/api/canon", requireAuth, validateQuery(IdQuerySchema), validateBody(PatchCanonItemSchema),
+app.patch(
+  "/api/canon",
+  requireAuth,
+  validateQuery(IdQuerySchema),
+  validateBody(PatchCanonItemSchema),
   asyncHandler(async (req, res) => {
     const { id } = req.validatedQuery
     const { title, position, content } = req.validatedBody
+
+    // If content is being updated, we need to validate it
+    if (content !== undefined) {
+      // Fetch the existing item to get its type and current content
+      const existing = await pool.query(
+        `SELECT ci.content, it.display_name 
+         FROM canon_items ci
+         JOIN item_types it ON ci.item_type_id = it.id
+         WHERE ci.id = $1 AND ci.user_id = $2`,
+        [id, req.userId],
+      )
+
+      if (existing.rows.length === 0) {
+        return res.status(404).json({ error: "Not found" })
+      }
+
+      // Merge existing content with new content (new values override old)
+      const mergedContent = { ...existing.rows[0].content, ...content }
+
+      // Validate the merged content against the appropriate schema
+      const contentSchema = getContentSchema(existing.rows[0].display_name)
+      const contentResult = contentSchema.safeParse(mergedContent)
+      if (!contentResult.success) {
+        return res.status(400).json({
+          error: "Validation failed",
+          issues: contentResult.error.issues,
+        })
+      }
+    }
 
     // Build dynamic SET clause so we can update only what is needed
     const sets = []
@@ -187,6 +220,10 @@ app.patch( "/api/canon", requireAuth, validateQuery(IdQuerySchema), validateBody
       vals.push(JSON.stringify(content))
     }
 
+    if (sets.length === 0) {
+      return res.status(400).json({ error: "No fields to update" })
+    }
+
     const { rows } = await pool.query(
       `UPDATE canon_items
        SET ${sets.join(", ")}, updated_at = now()
@@ -200,7 +237,7 @@ app.patch( "/api/canon", requireAuth, validateQuery(IdQuerySchema), validateBody
     }
 
     res.json(rows[0])
-  })
+  }),
 )
 
 // DELETE /api/canon?id=<uuid> - Delete a canon item

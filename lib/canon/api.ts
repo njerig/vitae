@@ -2,6 +2,30 @@
 
 import type { CanonItem, ItemType } from "@/lib/types"
 
+// Custom error class that carries both a readable message and the list of invalid field names
+export class ValidationError extends Error {
+  fields: string[]
+
+  constructor(message: string, fields: string[]) {
+    super(message)
+    this.name = "ValidationError"
+    this.fields = fields
+  }
+}
+
+// Human-readable labels for field names
+const FIELD_LABELS: Record<string, string> = {
+  org: "Company",
+  role: "Position",
+  start: "Start Date",
+  end: "End Date",
+  bullets: "Bullets",
+  skills: "Skills",
+  title: "Title",
+  position: "Position Order",
+  content: "Content",
+}
+
 // Returns a success or error message from the API to the frontend
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -9,10 +33,14 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
     // Extract readable error from Zod issues if present
     if (data?.issues && Array.isArray(data.issues)) {
-      const messages = data.issues.map((i: { message?: string; path?: string[] }) =>
-        i.path?.length ? `${i.path.join(".")}: ${i.message}` : i.message,
-      )
-      throw new Error(messages.join("; "))
+      const fields: string[] = []
+      const messages = data.issues.map((i: { message?: string; path?: string[] }) => {
+        const field = i.path?.[0] ?? ""
+        if (field) fields.push(field)
+        const label = FIELD_LABELS[field] || field || "Field"
+        return `• ${label}: ${i.message}`
+      })
+      throw new ValidationError(messages.join("\n"), fields)
     }
 
     // catch any other errors that didn't come from zod
