@@ -1,20 +1,69 @@
-export type CanonItemType = "work" | "education" | "project" | "skill" | "link" | string
+// lib/types.ts
+// Shared TypeScript types for Vitae
+
+// ─────────────────────────────────────────────────────────────
+// Item Types
+// ─────────────────────────────────────────────────────────────
+
+export type ItemType = {
+  id: string // UUID
+  user_id: string
+  display_name: string
+  created_at: string
+}
+
+// ─────────────────────────────────────────────────────────────
+// Content Schemas (per item type)
+// ─────────────────────────────────────────────────────────────
 
 export type WorkContent = {
   org?: string
   role?: string
-  start?: string // "YYYY-MM-DD" if you used <input type="date" />
+  start?: string // "YYYY-MM-DD"
   end?: string | null
   bullets?: string[]
   skills?: string[]
 }
 
+export type EducationContent = {
+  institution?: string
+  degree?: string
+  field?: string
+  start?: string
+  end?: string | null
+  gpa?: string
+  bullets?: string[]
+}
+
+export type ProjectContent = {
+  description?: string
+  url?: string
+  start?: string
+  end?: string | null
+  bullets?: string[]
+  skills?: string[]
+}
+
+export type SkillContent = {
+  category?: string
+  skills?: string[]
+}
+
+export type LinkContent = {
+  url: string
+  label?: string
+}
+
+// ─────────────────────────────────────────────────────────────
+// Canon Items
+// ─────────────────────────────────────────────────────────────
+
 export type CanonItem<TContent = unknown> = {
-  id: string
+  id: string // UUID
   user_id: string
-  item_type: CanonItemType
-  title: string | null
-  position: number | null
+  item_type_id: string // UUID referencing item_types
+  title: string
+  position: number
   content: TContent
   created_at: string
   updated_at: string
