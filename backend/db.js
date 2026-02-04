@@ -11,9 +11,9 @@ const pool = new Pool({
 const DEFAULT_ITEM_TYPES = [
   "Work Experience",
   "Education",
-  "Projects",
-  "Skills",
-  "Links",
+  "Project",
+  "Skill",
+  "Link",
 ]
 
 /**
