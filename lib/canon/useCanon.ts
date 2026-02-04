@@ -136,11 +136,26 @@ export function useCanon() {
     [getToken],
   )
 
-  // Filter items by selected type
+  // Type priority for sorting (lower number = higher priority)
+  const getTypePriority = useCallback((typeId: string) => {
+    const typeName = getTypeName(typeId).toLowerCase()
+    if (typeName.includes('work')) return 1
+    if (typeName.includes('education')) return 2
+    if (typeName.includes('project')) return 3
+    if (typeName.includes('skill')) return 4
+    if (typeName.includes('link')) return 5
+    return 99 // Unknown types go last
+  }, [getTypeName])
+
+  // Filter items by selected type and sort by type priority, then position
   const filteredItems = useMemo(() => {
-    if (!selectedTypeId) return items
-    return items.filter((item) => item.item_type_id === selectedTypeId)
-  }, [items, selectedTypeId])
+    const filtered = selectedTypeId ? items.filter((item) => item.item_type_id === selectedTypeId) : items
+    return filtered.sort((a, b) => {
+      const typeDiff = getTypePriority(a.item_type_id) - getTypePriority(b.item_type_id)
+      if (typeDiff !== 0) return typeDiff
+      return a.position - b.position
+    })
+  }, [items, selectedTypeId, getTypePriority])
 
   // Stats
   const stats = useMemo(() => {

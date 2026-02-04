@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  /* Colors */
   --paper: #faf8f5;
   --paper-dark: #f5f2ed;
   --ink: #1a1614;
@@ -9,6 +10,10 @@
   --accent: #9b4522;
   --accent-hover: #7d3619;
   --grid: #e8e4de;
+  
+  /* Border radii */
+  --radius-sharp: 0;
+  --radius-soft: 8px;
 }
 
 body {
@@ -20,10 +25,16 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Headings use Crimson Pro */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
 }
+
+h1 { font-size: 3rem; font-weight: 600; }
+h2 { font-size: 2.25rem; font-weight: 600; }
+h3 { font-size: 1.5rem; font-weight: 600; }
+h4 { font-size: 1.25rem; font-weight: 600; }
+h5 { font-size: 1.125rem; font-weight: 600; }
+h6 { font-size: 1rem; font-weight: 600; }
 
 /* Header styles */
 header {
@@ -102,7 +113,7 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 2px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--radius-sharp);
   transition: all 200ms;
   cursor: pointer;
 }
@@ -119,6 +130,7 @@ header {
   padding: 3rem 2rem;
   background: white;
   border: 1px solid var(--grid);
+  border-radius: var(--radius-soft);
   margin-bottom: 2rem;
   box-shadow: 0 2px 0 var(--grid);
 }
@@ -150,7 +162,7 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 2px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--radius-sharp);
   transition: all 200ms;
   cursor: pointer;
 }
@@ -158,4 +170,129 @@ header {
 .btn-secondary:hover {
   background: var(--ink);
   color: var(--paper);
+}
+
+/* -- Cards ---------------------------------------------------------------- */
+.card {
+  padding: 1.5rem;
+  background: var(--paper-dark);
+  border: 1px solid var(--grid);
+  border-radius: var(--radius-soft);
+  box-shadow: 0 1px 0 var(--grid);
+  transition: border-color 200ms;
+}
+
+.card:hover {
+  border-color: var(--accent);
+}
+
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+  font-family: var(--font-serif);
+  color: var(--ink);
+}
+
+.card-title {
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.card-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.card-text {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--ink-fade);
+  line-height: 1.6;
+}
+
+.card-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 200ms;
+}
+
+.card-link:hover {
+  opacity: 0.8;
+}
+
+.card-token {
+  padding: 0.25rem 0.75rem;
+  background: white;
+  border: 1px solid var(--grid);
+  border-radius: var(--radius-soft);
+  color: var(--ink-fade);
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+}
+
+.card-action-edit {
+  padding: 0.5rem 1rem;
+  background: var(--paper-dark);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-soft);
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: all 200ms;
+  cursor: pointer;
+}
+
+.card-action-edit:hover {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.card-action-delete {
+  padding: 0.5rem 1rem;
+  background: var(--paper-dark);
+  border: 1px solid var(--ink-light);
+  border-radius: var(--radius-soft);
+  color: var(--ink-light);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: all 200ms;
+  cursor: pointer;
+}
+
+.card-action-delete:hover {
+  background: var(--ink-light);
+  color: var(--paper);
+}
+
+/* Tab buttons */
+.tab-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border: 1px solid var(--grid);
+  border-radius: var(--radius-soft);
+  background: white;
+  color: var(--ink);
+  transition: all 200ms;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  border-color: var(--accent);
+}
+
+.tab-button-active {
+  background: var(--accent);
+  color: var(--paper);
+  border-color: var(--accent);
+}
+
+.tab-button-active:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
