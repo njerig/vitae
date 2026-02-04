@@ -3,6 +3,18 @@
 
 const { z } = require("zod")
 
+// Helper for date validation
+const dateString = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (use YYYY-MM-DD)")
+
+const optionalDateString = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (use YYYY-MM-DD)")
+  .nullable()
+  .optional()
+  .or(z.literal(""))
+
 // ─────────────────────────────────────────────────────────────
 // Content Schemas (per item type, matching docs/schema.md)
 // ─────────────────────────────────────────────────────────────
@@ -11,53 +23,51 @@ const WorkContentSchema = z
   .object({
     org: z.string().min(1, "Company is required"),
     role: z.string().min(1, "Position is required"),
-    start: z
-      .string()
-      .min(1, "Start date is required")
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (use YYYY-MM-DD)"),
-    end: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
-      .nullable()
-      .optional(),
+    start: dateString.refine((v) => v && v.length > 0, "Start date is required"),
+    end: optionalDateString,
     bullets: z.array(z.string()).min(1, "At least one bullet point is required"),
     skills: z.array(z.string()).optional(),
   })
-  .refine((data) => !data.start || !data.end || data.start <= data.end, { message: "Start date must be before or equal to end date" })
+  .refine((data) => !data.start || !data.end || data.start <= data.end, {
+    message: "Start date must be before or equal to end date",
+  })
 
-const EducationContentSchema = z.object({
-  institution: z.string().optional(),
-  degree: z.string().optional(),
-  field: z.string().optional(),
-  start: z.string().optional(),
-  end: z.string().nullable().optional(),
-  gpa: z.string().optional(),
-  bullets: z.array(z.string()).optional(),
-}).refine(
-  (data) => !data.start || !data.end || data.start <= data.end,
-  { message: "Start date must be before or equal to end date" }
-)
+const EducationContentSchema = z
+  .object({
+    institution: z.string().min(1, "Institution is required"),
+    degree: z.string().optional().or(z.literal("")),
+    field: z.string().optional().or(z.literal("")),
+    start: optionalDateString,
+    end: optionalDateString,
+    gpa: z.string().optional().or(z.literal("")),
+    bullets: z.array(z.string()).optional(),
+  })
+  .refine((data) => !data.start || !data.end || data.start <= data.end, {
+    message: "Start date must be before or equal to end date",
+  })
 
-const ProjectContentSchema = z.object({
-  description: z.string().optional(),
-  url: z.string().optional(),
-  start: z.string().optional(),
-  end: z.string().nullable().optional(),
-  bullets: z.array(z.string()).optional(),
-  skills: z.array(z.string()).optional(),
-}).refine(
-  (data) => !data.start || !data.end || data.start <= data.end,
-  { message: "Start date must be before or equal to end date" }
-)
+const ProjectContentSchema = z
+  .object({
+    title: z.string().min(1, "Project Name is required"),
+    description: z.string().optional().or(z.literal("")),
+    url: z.string().optional().or(z.literal("")),
+    start: optionalDateString,
+    end: optionalDateString,
+    bullets: z.array(z.string()).optional(),
+    skills: z.array(z.string()).optional(),
+  })
+  .refine((data) => !data.start || !data.end || data.start <= data.end, {
+    message: "Start date must be before or equal to end date",
+  })
 
 const SkillContentSchema = z.object({
-  category: z.string().optional(),
-  skills: z.array(z.string()).optional(),
+  category: z.string().min(1, "Category is required"),
+  skills: z.array(z.string()).min(1, "At least one skill is required"),
 })
 
 const LinkContentSchema = z.object({
-  url: z.string(),
-  label: z.string().optional(),
+  label: z.string().min(1, "Label is required"),
+  url: z.string().min(1, "URL is required"),
 })
 
 // Generic content schema (accepts any object)
