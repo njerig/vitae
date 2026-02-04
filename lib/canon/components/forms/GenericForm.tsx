@@ -1,10 +1,4 @@
-import { TextField, DateField, TextareaField } from "./shared"
-
-type Props = {
-  form: Record<string, string>
-  setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>
-  hasError: (field: string) => boolean
-}
+import { TextField, DateField, TextareaField, Props } from "./shared"
 
 export function GenericFormFields({ form, setForm, hasError }: Props) {
   const update = (key: string) => (val: string) => setForm((p) => ({ ...p, [key]: val }))

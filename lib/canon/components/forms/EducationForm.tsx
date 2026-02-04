@@ -1,10 +1,4 @@
-import { TextField, DateField, TextareaField } from "./shared"
-
-type Props = {
-  form: Record<string, string>
-  setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>
-  hasError: (field: string) => boolean
-}
+import { TextField, DateField, TextareaField, Props } from "./shared"
 
 export function EducationFormFields({ form, setForm, hasError }: Props) {
   const update = (key: string) => (val: string) => setForm((p) => ({ ...p, [key]: val }))
@@ -12,7 +6,14 @@ export function EducationFormFields({ form, setForm, hasError }: Props) {
   return (
     <div className="space-y-4">
       {/* Institution */}
-      <TextField label="Institution" required value={form.institution ?? ""} onChange={update("institution")} hasError={hasError("institution")} placeholder="UC Santa Cruz" />
+      <TextField
+        label="Institution"
+        required
+        value={form.institution ?? ""}
+        onChange={update("institution")}
+        hasError={hasError("institution")}
+        placeholder="UC Santa Cruz"
+      />
 
       {/* Row: Degree + Field */}
       <div className="grid grid-cols-2 gap-3">

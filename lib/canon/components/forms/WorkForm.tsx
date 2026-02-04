@@ -1,10 +1,4 @@
-import { TextField, DateField, TextareaField, TagsField } from "./shared"
-
-type Props = {
-  form: Record<string, string>
-  setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>
-  hasError: (field: string) => boolean
-}
+import { TextField, DateField, TextareaField, TagsField, Props } from "./shared"
 
 export function WorkFormFields({ form, setForm, hasError }: Props) {
   const update = (key: string) => (val: string) => setForm((p) => ({ ...p, [key]: val }))
