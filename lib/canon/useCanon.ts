@@ -32,7 +32,20 @@ export function useCanon() {
       if (!token) throw new Error("Missing auth token")
 
       const types = await listItemTypes(token)
-      setItemTypes(types)
+      
+      // Deduplicate by display_name, handling singular/plural variants
+      const normalize = (name: string) => {
+        const lower = name.toLowerCase().trim()
+        // Remove trailing 's' for plural forms
+        return lower.endsWith('s') && !lower.endsWith('ss') ? lower.slice(0, -1) : lower
+      }
+      
+      const uniqueTypes = types.filter((type, index, self) => {
+        const normalizedName = normalize(type.display_name)
+        return index === self.findIndex((t) => normalize(t.display_name) === normalizedName)
+      })
+      
+      setItemTypes(uniqueTypes)
 
       // Fetch items (all or filtered by type)
       const rows = await listCanonItems(token, selectedTypeId ?? undefined)
