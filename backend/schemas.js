@@ -117,9 +117,20 @@ const PatchCanonItemSchema = z
     message: "No fields to patch",
   })
 
-// ─────────────────────────────────────────────────────────────
+
+// Working State Schema
+
+const SectionStateSchema = z.object({
+  item_type_id: z.uuid("item_type_id must be a valid UUID"),
+  item_ids: z.array(z.uuid("item_ids must contain valid UUIDs")),
+})
+
+const WorkingStateSchema = z.object({
+  sections: z.array(SectionStateSchema),
+})
+
+
 // Query Param Schemas
-// ─────────────────────────────────────────────────────────────
 
 const IdQuerySchema = z.object({
   id: z.uuid("id must be a valid UUID"),
@@ -147,6 +158,10 @@ module.exports = {
   CreateItemTypeSchema,
   CreateCanonItemSchema,
   PatchCanonItemSchema,
+
+  // Working state schemas
+  SectionStateSchema,
+  WorkingStateSchema,
 
   // Query schemas
   IdQuerySchema,

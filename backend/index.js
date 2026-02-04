@@ -21,6 +21,7 @@ const {
   IdQuerySchema,
   ItemTypeQuerySchema,
   getContentSchema,
+  WorkingStateSchema,
 } = require("./schemas")
 
 const app = express()
@@ -255,6 +256,79 @@ app.delete("/api/canon", requireAuth, validateQuery(IdQuerySchema), asyncHandler
     }
 
     res.status(204).send() // "No Content", so .send() ends the api call/connection
+  })
+)
+
+// ─────────────────────────────────────────────────────────────
+// Working State Routes
+// ─────────────────────────────────────────────────────────────
+
+// GET /api/working-state - Get user's current working state
+app.get(
+  "/api/working-state",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    await ensureUserWithDefaults(req.userId)
+
+    const { rows } = await pool.query(
+      `SELECT state, updated_at FROM working_state WHERE user_id = $1`,
+      [req.userId]
+    )
+
+    // Return empty state if none exists yet
+    if (rows.length === 0) {
+      return res.json({ state: { sections: [] }, updated_at: null })
+    }
+
+    res.json({ state: rows[0].state, updated_at: rows[0].updated_at })
+  })
+)
+
+// PUT /api/working-state
+app.put(
+  "/api/working-state",
+  requireAuth,
+  validateBody(WorkingStateSchema),
+  asyncHandler(async (req, res) => {
+    await ensureUserWithDefaults(req.userId)
+
+    const state = req.validatedBody
+
+    // Validate that all item_type_ids belong to this user
+    const itemTypeIds = state.sections.map((s) => s.item_type_id)
+    if (itemTypeIds.length > 0) {
+      const { rows: validTypes } = await pool.query(
+        `SELECT id FROM item_types WHERE user_id = $1 AND id = ANY($2::uuid[])`,
+        [req.userId, itemTypeIds]
+      )
+      if (validTypes.length !== itemTypeIds.length) {
+        return res.status(400).json({ error: "Invalid item_type_id(s) - not found or not owned by user" })
+      }
+    }
+
+    // Validate that all item_ids belong to user
+    const allItemIds = state.sections.flatMap((s) => s.item_ids)
+    if (allItemIds.length > 0) {
+      const { rows: validItems } = await pool.query(
+        `SELECT id FROM canon_items WHERE user_id = $1 AND id = ANY($2::uuid[])`,
+        [req.userId, allItemIds]
+      )
+      if (validItems.length !== allItemIds.length) {
+        return res.status(400).json({ error: "Invalid item_id(s) - not found or not owned by user" })
+      }
+    }
+
+    // insert into the working state
+    const { rows } = await pool.query(
+      `INSERT INTO working_state (user_id, state, updated_at)
+       VALUES ($1, $2::jsonb, now())
+       ON CONFLICT (user_id)
+       DO UPDATE SET state = $2::jsonb, updated_at = now()
+       RETURNING state, updated_at`,
+      [req.userId, JSON.stringify(state)]
+    )
+
+    res.json({ state: rows[0].state, updated_at: rows[0].updated_at })
   })
 )
 
