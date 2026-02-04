@@ -1,50 +1,56 @@
 "use client"
-import { useCanonWork } from "@/lib/canon/useCanonWork"
+
+import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
-import { CanonItem, WorkContent } from "@/lib/types"
-import { useState } from "react"
 import { CanonList } from "@/lib/canon/components/CanonList"
+import type { CanonItem } from "@/lib/types"
+import { useState } from "react"
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
-  const { items, stats, loading, saving, error, createWork, patchWork, removeWork } = useCanonWork()
+  const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
 
-  // whether or not to display the CanonForm to the screen
+  // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
-
-  // save the current item that is being edited to state variable
-  const [editingItem, setEditingItem] = useState<CanonItem<WorkContent> | null>(null)
+  const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
 
   const startAdd = () => {
     setEditingItem(null)
+    setError(null)
     setIsAddingItem(true)
   }
 
-  const startEdit = (item: CanonItem<WorkContent>) => {
+  const startEdit = (item: CanonItem<unknown>) => {
     setEditingItem(item)
+    setError(null)
     setIsAddingItem(true)
   }
 
   const cancel = () => {
     setIsAddingItem(false)
     setEditingItem(null)
+    setError(null)
   }
 
-  const submit = async (payload: { title: string; position: number; content: WorkContent }) => {
+  const submit = async (payload: { item_type_id: string; title: string; position: number; content: Record<string, unknown> }) => {
     try {
       if (editingItem) {
-        await patchWork(editingItem.id, payload)
+        await patch(editingItem.id, {
+          title: payload.title,
+          position: payload.position,
+          content: payload.content,
+        })
       } else {
-        await createWork(payload)
+        await create(payload)
       }
-      cancel() // Only close form on success
+      cancel()
     } catch {
-      // Error is already set in the hook state, keep form open
+      // Error is already set in the hook, keep form open
     }
   }
 
   const del = async (id: string) => {
-    if (confirm("Delete this career item?")) {
-      await removeWork(id)
+    if (confirm("Delete this item?")) {
+      await remove(id)
     }
   }
 
@@ -55,11 +61,12 @@ export default function HomeClient({ userName, userId }: { userName: string; use
 
       <div className="relative z-10 pt-32 pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-3xl font-semibold text-gray-900 mb-2">My Career History</h2>
-                <p className="text-lg text-gray-600">Add, edit, and manage your career history.</p>
+                <p className="text-lg text-gray-600">Add, edit, and manage your career items.</p>
               </div>
               <button onClick={startAdd} className="btn-primary flex items-center gap-2" disabled={saving}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,31 +76,74 @@ export default function HomeClient({ userName, userId }: { userName: string; use
               </button>
             </div>
 
-
+            {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-gray-50 rounded-xl">
                 <div className="text-3xl font-semibold text-gray-900 mb-1">{stats.total}</div>
                 <p className="text-gray-600 text-sm">Total Items</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="text-3xl font-semibold text-gray-900 mb-1">{stats.totalSkills}</div>
-                <p className="text-gray-600 text-sm">Total Skills</p>
+                <div className="text-3xl font-semibold text-gray-900 mb-1">{itemTypes.length}</div>
+                <p className="text-gray-600 text-sm">Item Types</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="text-3xl font-semibold text-gray-900 mb-1">{stats.uniqueSkills}</div>
-                <p className="text-gray-600 text-sm">Unique Skills</p>
+                <div className="text-3xl font-semibold text-gray-900 mb-1">
+                  {stats.byType.reduce((max, t) => (t.count > max.count ? t : max), { count: 0, name: "—" }).name}
+                </div>
+                <p className="text-gray-600 text-sm">Most Items</p>
               </div>
             </div>
           </div>
 
-          {isAddingItem && <CanonForm editing={editingItem} onCancel={cancel} onSubmit={submit} saving={saving} error={error} />}
+          {/* Form */}
+          {isAddingItem && (
+            <CanonForm
+              itemTypes={itemTypes}
+              editing={editingItem}
+              defaultTypeId={selectedTypeId ?? undefined}
+              onCancel={cancel}
+              onSubmit={submit}
+              saving={saving}
+              error={error}
+            />
+          )}
 
+          {/* Item List */}
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-semibold text-gray-900">Career History ({loading ? "…" : items.length})</h3>
+            {/* Tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                onClick={() => setSelectedTypeId(null)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedTypeId === null ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                All ({items.length})
+              </button>
+              {itemTypes.map((t) => {
+                const count = stats.byType.find((s) => s.id === t.id)?.count ?? 0
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTypeId(t.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedTypeId === t.id ? "bg-blue-400 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {t.display_name} ({count})
+                  </button>
+                )
+              })}
             </div>
 
-            <CanonList items={items} onEdit={startEdit} onDelete={del} />
+            {/* List header */}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-semibold text-gray-900">
+                {selectedTypeId ? itemTypes.find((t) => t.id === selectedTypeId)?.display_name : "All Items"} ({loading ? "…" : items.length})
+              </h3>
+            </div>
+
+            <CanonList items={items} itemTypes={itemTypes} onEdit={startEdit} onDelete={del} />
           </div>
         </div>
       </div>

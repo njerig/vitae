@@ -115,7 +115,7 @@ export async function createCanonItem<T = unknown>(
 export async function patchCanonItem<T = unknown>(
   token: string,
   id: string,
-  patch: { title?: string; position?: number; content?: Partial<T> },
+  patch: { title?: string; position?: number; content?: T },
 ): Promise<CanonItem<T>> {
   const res = await fetch(`/api/canon?id=${encodeURIComponent(id)}`, {
     method: "PATCH",

@@ -1,151 +1,147 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import type { CanonItem, WorkContent } from "@/lib/types"
-import type { FormError } from "../useCanonWork"
+import type { CanonItem, ItemType } from "@/lib/types"
+import type { FormError } from "../useCanon"
+import { getFieldsForType, type FieldConfig } from "../fields"
+import { WorkFormFields, EducationFormFields, ProjectFormFields, SkillFormFields, LinkFormFields, GenericFormFields, inputBase } from "./forms"
 
 type Props = {
-  editing?: CanonItem<WorkContent> | null
+  itemTypes: ItemType[]
+  editing?: CanonItem<unknown> | null
+  defaultTypeId?: string
   onCancel: () => void
-  onSubmit: (payload: { title: string; position: number; content: WorkContent }) => Promise<void> | void
+  onSubmit: (payload: { item_type_id: string; title: string; position: number; content: Record<string, unknown> }) => Promise<void> | void
   saving?: boolean
   error?: FormError
 }
 
-export function CanonForm({ editing, onCancel, onSubmit, saving, error }: Props) {
-  // fills the form with initial values depending on if its in edit or not
-  const initial = useMemo(() => {
-    const c = editing?.content ?? {}
-    return {
-      title: editing?.title ?? c.org ?? "",
-      position: editing?.position ?? 0,
-      org: c.org ?? "",
-      role: c.role ?? "",
-      start: c.start ?? "",
-      end: c.end ?? "",
-      bullets: (c.bullets ?? []).join("\n"),
-      skills: (c.skills ?? []).join(", "),
+export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmit, saving, error }: Props) {
+  const [selectedTypeId, setSelectedTypeId] = useState<string>(editing?.item_type_id ?? defaultTypeId ?? itemTypes[0]?.id ?? "")
+
+  const selectedType = useMemo(() => itemTypes.find((t) => t.id === selectedTypeId), [itemTypes, selectedTypeId])
+  const typeName = selectedType?.display_name ?? ""
+  const fields = useMemo(() => getFieldsForType(typeName), [typeName])
+
+  const [form, setForm] = useState<Record<string, string>>({})
+
+  // Initialize form when editing or type changes
+  useEffect(() => {
+    const content = (editing?.content ?? {}) as Record<string, unknown>
+    const initial: Record<string, string> = {}
+
+    fields.forEach((field: FieldConfig) => {
+      const value = content[field.name]
+      if (field.type === "tags" && Array.isArray(value)) {
+        initial[field.name] = value.join(", ")
+      } else if (field.type === "textarea" && Array.isArray(value)) {
+        initial[field.name] = value.join("\n")
+      } else {
+        initial[field.name] = (value as string) ?? ""
+      }
+    })
+
+    setForm(initial)
+  }, [fields, editing])
+
+  useEffect(() => {
+    if (!editing && defaultTypeId) {
+      setSelectedTypeId(defaultTypeId)
     }
-  }, [editing])
+  }, [defaultTypeId, editing])
 
-  const [form, setForm] = useState(initial)
+  const hasError = (fieldName: string) => error?.fields.includes(fieldName) ?? false
 
-  useEffect(() => setForm(initial), [initial])
+  const buildContent = () => {
+    const content: Record<string, unknown> = {}
+
+    fields.forEach((field: FieldConfig) => {
+      const value = form[field.name] ?? ""
+
+      if (field.type === "tags") {
+        content[field.name] = value
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      } else if (field.type === "textarea") {
+        content[field.name] = value
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      } else if (field.type === "date") {
+        content[field.name] = value || null
+      } else {
+        content[field.name] = value
+      }
+    })
+
+    return content
+  }
 
   const submit = async () => {
-    const bullets = form.bullets
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean)
+    const content = buildContent()
+    const titleField = fields.find((f: FieldConfig) => f.name === "title") || fields.find((f: FieldConfig) => f.required && f.type === "text")
+    const title = titleField ? (form[titleField.name] ?? "") : ""
 
-    const skills = form.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-
-    const content: WorkContent = {
-      org: form.org,
-      role: form.role,
-      start: form.start,
-      end: form.end || null,
-      bullets,
-      skills,
-    }
-
-    // calls the onSubmit function passed in from the parent component
     await onSubmit({
-      title: form.title || form.org || "",
-      position: Number.isFinite(Number(form.position)) ? Number(form.position) : 0,
+      item_type_id: selectedTypeId,
+      title,
+      position: 0,
       content,
     })
   }
 
-  // Helper to check if a field has a validation error
-  const hasError = (field: string) => error?.fields.includes(field) ?? false
+  // Render type-specific form fields
+  const renderFormFields = () => {
+    const props = { form, setForm, hasError }
 
-  // Base input styles
-  const inputBase = "w-full px-4 py-2 bg-white rounded-lg text-gray-900 border"
-  const inputBorder = (field: string) => (hasError(field) ? "border-red-500" : "border-gray-300")
+    switch (typeName) {
+      case "Work Experience":
+        return <WorkFormFields {...props} />
+      case "Education":
+        return <EducationFormFields {...props} />
+      case "Projects":
+        return <ProjectFormFields {...props} />
+      case "Skills":
+        return <SkillFormFields {...props} />
+      case "Links":
+        return <LinkFormFields {...props} />
+      default:
+        return <GenericFormFields {...props} />
+    }
+  }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-      <h3 className="text-2xl font-semibold text-gray-900 mb-6">{editing ? "Edit Career Item" : "Add New Career Item"}</h3>
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <h3 className="text-xl font-semibold text-gray-900 mb-4">{editing ? "Edit Item" : "Add New Item"}</h3>
 
-      {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">{error.message}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">{error.message}</div>}
 
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">Company *</label>
-            <input
-              type="text"
-              value={form.org}
-              onChange={(e) => setForm((p) => ({ ...p, org: e.target.value }))}
-              className={`${inputBase} ${inputBorder("org")}`}
-              placeholder="Google, Microsoft, etc."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">Position *</label>
-            <input
-              type="text"
-              value={form.role}
-              onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-              className={`${inputBase} ${inputBorder("role")}`}
-              placeholder="Software Engineer, Product Manager, etc."
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">Start Date *</label>
-            <input
-              type="date"
-              max="9999-12-31"
-              value={form.start}
-              onChange={(e) => setForm((p) => ({ ...p, start: e.target.value }))}
-              className={`${inputBase} ${inputBorder("start")}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">End Date</label>
-            <input
-              type="date"
-              max="9999-12-31"
-              value={form.end}
-              onChange={(e) => setForm((p) => ({ ...p, end: e.target.value }))}
-              className={`${inputBase} ${inputBorder("end")}`}
-            />
-          </div>
-        </div>
-
+        {/* Type selector */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">Bullets *</label>
-          <textarea
-            value={form.bullets}
-            onChange={(e) => setForm((p) => ({ ...p, bullets: e.target.value }))}
-            rows={4}
-            className={`${inputBase} ${inputBorder("bullets")}`}
-            placeholder={"One bullet per line\nBuilt X\nImproved Y"}
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Item Type</label>
+          <select
+            value={selectedTypeId}
+            onChange={(e) => setSelectedTypeId(e.target.value)}
+            disabled={!!editing}
+            className={`${inputBase} ${editing ? "bg-gray-100 cursor-not-allowed" : ""} border-gray-300`}
+          >
+            {itemTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.display_name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">Skills</label>
-          <input
-            type="text"
-            value={form.skills}
-            onChange={(e) => setForm((p) => ({ ...p, skills: e.target.value }))}
-            className={`${inputBase} ${inputBorder("skills")}`}
-            placeholder="JavaScript, React, Node.js"
-          />
-          <p className="text-gray-500 text-xs mt-1">Separate skills with commas</p>
-        </div>
+        {/* Type-specific fields */}
+        {renderFormFields()}
 
-        <div className="flex gap-3 pt-4">
+        {/* Actions */}
+        <div className="flex gap-3 pt-2">
           <button onClick={submit} disabled={saving} className="btn-primary">
-            {editing ? "Update Item" : "Add Item"}
+            {editing ? "Update" : "Add Item"}
           </button>
           <button onClick={onCancel} disabled={saving} className="btn-secondary">
             Cancel

@@ -1,86 +1,52 @@
 "use client"
 
-import type { CanonItem, WorkContent } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/types"
+import { WorkCard, EducationCard, ProjectCard, SkillCard, LinkCard, GenericCard } from "./cards"
 
-export function CanonList({
-  items,
-  onEdit,
-  onDelete,
-}: {
-  items: CanonItem<WorkContent>[]
-
-  // These functions allow us to edit and delete items by passing it from this list component to the parent component
-  onEdit: (item: CanonItem<WorkContent>) => void
+type Props = {
+  items: CanonItem<unknown>[]
+  itemTypes: ItemType[]
+  onEdit: (item: CanonItem<unknown>) => void
   onDelete: (id: string) => void | Promise<void>
-}) {
+}
+
+export function CanonList({ items, itemTypes, onEdit, onDelete }: Props) {
+  const getTypeName = (typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown"
+
+  const renderItem = (item: CanonItem<unknown>) => {
+    const typeName = getTypeName(item.item_type_id)
+    const handleEdit = () => onEdit(item)
+    const handleDelete = () => onDelete(item.id)
+
+    switch (typeName) {
+      case "Work Experience":
+        return <WorkCard item={item} onEdit={handleEdit} onDelete={handleDelete} />
+      case "Education":
+        return <EducationCard item={item} onEdit={handleEdit} onDelete={handleDelete} />
+      case "Projects":
+        return <ProjectCard item={item} onEdit={handleEdit} onDelete={handleDelete} />
+      case "Skills":
+        return <SkillCard item={item} onEdit={handleEdit} onDelete={handleDelete} />
+      case "Links":
+        return <LinkCard item={item} onEdit={handleEdit} onDelete={handleDelete} />
+      default:
+        return <GenericCard item={item} typeName={typeName} onEdit={handleEdit} onDelete={handleDelete} />
+    }
+  }
+
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-600 mb-4 text-lg">No career items yet</div>
+        <div className="text-gray-600 mb-4 text-lg">No items yet</div>
       </div>
     )
   }
 
-  // Format date from YYYY-MM-DD to MM-DD-YYYY
-  const formatDate = (dateStr: string | undefined | null) => {
-    if (!dateStr) return ""
-    const [year, month, day] = dateStr.split("-")
-    return `${month}-${day}-${year}`
-  }
-
   return (
-    <div className="space-y-4">
-      {/* For each canon item, display all possible fields if not empty*/}
-      {items.map((item) => {
-        const c = item.content ?? {}
-        return (
-          <div key={item.id} className="p-6 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h4 className="text-gray-900 font-semibold text-xl">{c.role ?? ""}</h4>
-                <p className="text-blue-600 font-medium">{c.org ?? ""}</p>
-                <p className="text-gray-600 text-sm mt-1">
-                  {formatDate(c.start)} → {c.end ? formatDate(c.end) : "Present"}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onEdit(item)}
-                  className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(item.id)}
-                  className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-
-            {/* Displaying bullet points if there are any */}
-            {(c.bullets?.length ?? 0) > 0 && (
-              <ul className="text-gray-700 mb-3 list-disc pl-5 space-y-1">
-                {(c.bullets ?? []).map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            )}
-
-            {/* Displaying skills if there are any */}
-            {(c.skills?.length ?? 0) > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {(c.skills ?? []).map((skill, i) => (
-                  <span key={i} className="px-3 py-1 bg-white border border-gray-200 text-gray-700 text-sm rounded-full">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
+    <div className="space-y-3">
+      {items.map((item) => (
+        <div key={item.id}>{renderItem(item)}</div>
+      ))}
     </div>
   )
 }
