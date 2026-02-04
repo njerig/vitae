@@ -50,7 +50,7 @@ export const mockWorkContent3 = {
 export const mockWorkItem1 = {
   id: 'canon_work_1abc',
   user_id: 'user_2mAbCdEfGhIjKl',
-  item_type: 'work',
+  item_type_id: 'type_work_123',
   title: 'Software Engineer at Tech Corp',
   position: 0,
   content: mockWorkContent1,
@@ -61,7 +61,7 @@ export const mockWorkItem1 = {
 export const mockWorkItem2 = {
   id: 'canon_work_2def',
   user_id: 'user_2mAbCdEfGhIjKl',
-  item_type: 'work',
+  item_type_id: 'type_work_123',
   title: 'Junior Developer at Startup Inc',
   position: 1,
   content: mockWorkContent2,
@@ -72,7 +72,7 @@ export const mockWorkItem2 = {
 export const mockWorkItem3 = {
   id: 'canon_work_3ghi',
   user_id: 'user_2mAbCdEfGhIjKl',
-  item_type: 'work',
+  item_type_id: 'type_work_123',
   title: 'Freelance Web Developer',
   position: 2,
   content: mockWorkContent3,
@@ -83,11 +83,33 @@ export const mockWorkItem3 = {
 // Array of work items for testing
 export const mockWorkItems = [mockWorkItem1, mockWorkItem2, mockWorkItem3]
 
-// Mock stats matching useCanonWork return type
+// Mock item types matching lib/types.ts ItemType
+export const mockItemTypes = [
+  {
+    id: 'type_work_123',
+    name: 'work',
+    display_name: 'Work Experience',
+    schema: {},
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'type_education_456',
+    name: 'education',
+    display_name: 'Education',
+    schema: {},
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  }
+]
+
+// Mock stats matching useCanon return type
 export const mockStats = {
   total: 3,
-  totalSkills: 12, // Total count of all skills (including duplicates)
-  uniqueSkills: 10  // Unique skills count
+  byType: [
+    { id: 'type_work_123', name: 'Work Experience', count: 3 },
+    { id: 'type_education_456', name: 'Education', count: 0 }
+  ]
 }
 
 // Mock for createWork input

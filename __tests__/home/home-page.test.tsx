@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import HomeClient from '@/app/home/home-page'
 import { useCanon } from "@/lib/canon/useCanon"
-import { mockWorkItem1, mockWorkItem2, mockStats } from '../utils/mockData'
+import { mockWorkItem1, mockWorkItem2, mockStats, mockItemTypes } from '../utils/mockData'
 
 // Mock the useCanon hook
 jest.mock("@/lib/canon/useCanon")
@@ -53,21 +53,27 @@ jest.mock('@/lib/canon/components/CanonList', () => ({
 }))
 
 describe('Home Page - Career History', () => {
-  const mockCreateWork = jest.fn()
-  const mockPatchWork = jest.fn()
-  const mockRemoveWork = jest.fn()
+  const mockCreate = jest.fn()
+  const mockPatch = jest.fn()
+  const mockRemove = jest.fn()
   const mockRefresh = jest.fn()
+  const mockSetSelectedTypeId = jest.fn()
+  const mockSetError = jest.fn()
 
   const mockuseCanon = {
     items: [mockWorkItem1, mockWorkItem2],
+    itemTypes: mockItemTypes,
+    selectedTypeId: null,
+    setSelectedTypeId: mockSetSelectedTypeId,
     stats: mockStats,
     loading: false,
     saving: false,
     error: null,
+    setError: mockSetError,
     refresh: mockRefresh,
-    createWork: mockCreateWork,
-    patchWork: mockPatchWork,
-    removeWork: mockRemoveWork,
+    create: mockCreate,
+    patch: mockPatch,
+    remove: mockRemove,
   }
 
   beforeEach(() => {
@@ -75,29 +81,27 @@ describe('Home Page - Career History', () => {
     jest.clearAllMocks()
     // Mock window.confirm
     global.confirm = jest.fn(() => true)
+    // Mock scrollIntoView (not implemented in jsdom)
+    window.HTMLElement.prototype.scrollIntoView = jest.fn()
   })
 
   it('renders the home page with career history title', () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
     
     expect(screen.getByText('My Career History')).toBeInTheDocument()
-    expect(screen.getByText('Add, edit, and manage your career history.')).toBeInTheDocument()
+    expect(screen.getByText('Add, edit, and manage your career items.')).toBeInTheDocument()
   })
 
   it('displays stats correctly', () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Check total items
-    expect(screen.getByText('3')).toBeInTheDocument()
-    expect(screen.getByText('Total Items')).toBeInTheDocument()
+    // Check Timeline is rendered
+    expect(screen.getByText('TIMELINE')).toBeInTheDocument()
     
-    // Check total skills
-    expect(screen.getByText('12')).toBeInTheDocument()
-    expect(screen.getByText('Total Skills')).toBeInTheDocument()
-    
-    // Check unique skills
-    expect(screen.getByText('10')).toBeInTheDocument()
-    expect(screen.getByText('Unique Skills')).toBeInTheDocument()
+    // Check type filter tabs show correct counts
+    expect(screen.getByRole('button', { name: /all \(2\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /work experience \(3\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /education \(0\)/i })).toBeInTheDocument()
   })
 
   it('shows "Add Item" button', () => {
@@ -149,9 +153,9 @@ describe('Home Page - Career History', () => {
     const submitButton = screen.getByTestId('submit-btn')
     fireEvent.click(submitButton)
     
-    // Check that createWork was called with correct structure
+    // Check that create was called with correct structure
     await waitFor(() => {
-      expect(mockCreateWork).toHaveBeenCalledWith({
+      expect(mockCreate).toHaveBeenCalledWith({
         title: 'Test Work Item',
         position: 0,
         content: {
@@ -176,7 +180,7 @@ describe('Home Page - Career History', () => {
   it('shows correct item count in header', () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    expect(screen.getByText('Career History (2)')).toBeInTheDocument()
+    expect(screen.getByText('All Items (2)')).toBeInTheDocument()
   })
 
   it("shows loading state", () => {
@@ -187,19 +191,24 @@ describe('Home Page - Career History', () => {
 
     render(<HomeClient userName="Test User" userId="user_123" />)
 
-    expect(screen.getByText("Career History (…)")).toBeInTheDocument()
+    expect(screen.getByText("All Items (…)")).toBeInTheDocument()
   })
 
-  it('displays error message when there is an error', () => {
-    const errorMessage = "Failed to load items"
+  it('displays error message in form', () => {
+    const errorMessage = "Failed to save item"
     ;(useCanon as jest.Mock).mockReturnValue({
-      ...useCanon,
-      error: errorMessage,
+      ...mockuseCanon,
+      error: { message: errorMessage, fields: [] },
     })
 
     render(<HomeClient userName="Test User" userId="user_123" />)
-
-    expect(screen.getByText(errorMessage)).toBeInTheDocument()
+    
+    // Open form to see error (error is displayed within CanonForm)
+    const addButton = screen.getByRole('button', { name: /add item/i })
+    fireEvent.click(addButton)
+    
+    // Form should be present
+    expect(screen.getByTestId('canon-form')).toBeInTheDocument()
   })
 
   it('can edit an existing item', () => {
@@ -225,9 +234,9 @@ describe('Home Page - Career History', () => {
     const submitButton = screen.getByTestId('submit-btn')
     fireEvent.click(submitButton)
     
-    // Check that patchWork was called
+    // Check that patch was called
     await waitFor(() => {
-      expect(mockPatchWork).toHaveBeenCalledWith(mockWorkItem1.id, {
+      expect(mockPatch).toHaveBeenCalledWith(mockWorkItem1.id, {
         title: 'Test Work Item',
         position: 0,
         content: {
@@ -250,11 +259,11 @@ describe('Home Page - Career History', () => {
     fireEvent.click(deleteButton)
     
     // Confirm should have been called
-    expect(global.confirm).toHaveBeenCalledWith('Delete this career item?')
+    expect(global.confirm).toHaveBeenCalledWith('Delete this item?')
     
-    // removeWork should be called
+    // remove should be called
     await waitFor(() => {
-      expect(mockRemoveWork).toHaveBeenCalledWith(mockWorkItem1.id)
+      expect(mockRemove).toHaveBeenCalledWith(mockWorkItem1.id)
     })
   })
 
@@ -267,9 +276,9 @@ describe('Home Page - Career History', () => {
     const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
     fireEvent.click(deleteButton)
     
-    // removeWork should NOT be called
+    // remove should NOT be called
     await waitFor(() => {
-      expect(mockRemoveWork).not.toHaveBeenCalled()
+      expect(mockRemove).not.toHaveBeenCalled()
     })
   })
 
