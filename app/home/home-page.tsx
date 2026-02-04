@@ -4,7 +4,7 @@ import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
 import type { CanonItem } from "@/lib/types"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
@@ -12,6 +12,9 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
+
+  // Ref for scrolling to form
+  const formRef = useRef<HTMLDivElement>(null)
 
   const startAdd = () => {
     setEditingItem(null)
@@ -53,6 +56,13 @@ export default function HomeClient({ userName, userId }: { userName: string; use
       await remove(id)
     }
   }
+
+  // Auto-scroll to form when it opens
+  useEffect(() => {
+    if (isAddingItem && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }, [isAddingItem])
 
   return (
     <div className="page-container">
@@ -97,15 +107,17 @@ export default function HomeClient({ userName, userId }: { userName: string; use
 
           {/* Form */}
           {isAddingItem && (
-            <CanonForm
-              itemTypes={itemTypes}
-              editing={editingItem}
-              defaultTypeId={selectedTypeId ?? undefined}
-              onCancel={cancel}
-              onSubmit={submit}
-              saving={saving}
-              error={error}
-            />
+            <div ref={formRef}>
+              <CanonForm
+                itemTypes={itemTypes}
+                editing={editingItem}
+                defaultTypeId={selectedTypeId ?? undefined}
+                onCancel={cancel}
+                onSubmit={submit}
+                saving={saving}
+                error={error}
+              />
+            </div>
           )}
 
           {/* Item List */}

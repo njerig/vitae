@@ -13,8 +13,22 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
     <div className="space-y-4">
       {/* Row 1: Company + Role */}
       <div className="grid grid-cols-2 gap-3">
-        <TextField label="Company" required value={form.org ?? ""} onChange={update("org")} hasError={hasError("org")} placeholder="Google, Microsoft..." />
-        <TextField label="Position" required value={form.role ?? ""} onChange={update("role")} hasError={hasError("role")} placeholder="Software Engineer..." />
+        <TextField
+          label="Company"
+          required
+          value={form.org ?? ""}
+          onChange={update("org")}
+          hasError={hasError("org")}
+          placeholder="Google, Microsoft..."
+        />
+        <TextField
+          label="Position"
+          required
+          value={form.role ?? ""}
+          onChange={update("role")}
+          hasError={hasError("role")}
+          placeholder="Software Engineer..."
+        />
       </div>
 
       {/* Row 2: Dates */}
@@ -24,10 +38,23 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
       </div>
 
       {/* Bullets */}
-      <TextareaField label="Bullet Points" required value={form.bullets ?? ""} onChange={update("bullets")} hasError={hasError("bullets")} placeholder="One per line&#10;• Built X&#10;• Improved Y" />
+      <TextareaField
+        label="Bullet Points"
+        required
+        value={form.bullets ?? ""}
+        onChange={update("bullets")}
+        hasError={hasError("bullets")}
+        placeholder="Improved X by YY%"
+      />
 
       {/* Skills */}
-      <TagsField label="Skills" value={form.skills ?? ""} onChange={update("skills")} hasError={hasError("skills")} placeholder="JavaScript, React, Node.js" />
+      <TagsField
+        label="Skills"
+        value={form.skills ?? ""}
+        onChange={update("skills")}
+        hasError={hasError("skills")}
+        placeholder="JavaScript, React, Node.js"
+      />
     </div>
   )
 }
