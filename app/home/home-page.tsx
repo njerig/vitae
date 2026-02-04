@@ -3,6 +3,7 @@
 import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
+import { Timeline } from "@/app/_components/Timeline"
 import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 
@@ -12,6 +13,22 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
+
+  // Get most recent edit timestamp from all items
+  const getLastEditedDate = () => {
+    if (items.length === 0) return null
+    
+    const mostRecent = items.reduce((latest, item) => {
+      const itemDate = new Date(item.updated_at)
+      return itemDate > new Date(latest.updated_at) ? item : latest
+    })
+
+    return new Date(mostRecent.updated_at).toLocaleDateString("en-US", { 
+      month: "short", 
+      day: "numeric", 
+      year: "numeric" 
+    })
+  }
 
   // Ref for scrolling to form
   const formRef = useRef<HTMLDivElement>(null)
@@ -86,22 +103,14 @@ export default function HomeClient({ userName, userId }: { userName: string; use
               </button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="text-3xl font-semibold text-gray-900 mb-1">{stats.total}</div>
-                <p className="text-gray-600 text-sm">Total Items</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="text-3xl font-semibold text-gray-900 mb-1">{itemTypes.length}</div>
-                <p className="text-gray-600 text-sm">Item Types</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="text-3xl font-semibold text-gray-900 mb-1">
-                  {stats.byType.reduce((max, t) => (t.count > max.count ? t : max), { count: 0, name: "—" }).name}
-                </div>
-                <p className="text-gray-600 text-sm">Most Items</p>
-              </div>
+            {/* Summary */}
+            <div className="pt-4 border-t" style={{ borderColor: "var(--grid)" }}>
+              <Timeline items={items} itemTypes={itemTypes} />
+              {getLastEditedDate() && (
+                <p className="text-xs text-right" style={{ color: "var(--ink)", opacity: 0.4 }}>
+                  Last edited: {getLastEditedDate()}
+                </p>
+              )}
             </div>
           </div>
 
