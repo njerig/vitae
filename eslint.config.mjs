@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ignore test files to prevent linter from modifying them
+    "__tests__/**",
   ]),
 ]);
 
