@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react"
 import type { CanonItem, ItemType } from "@/lib/types"
 import type { FormError } from "../useCanon"
 import { getFieldsForType, type FieldConfig } from "../fields"
-import { WorkFormFields, EducationFormFields, ProjectFormFields, SkillFormFields, LinkFormFields, GenericFormFields, inputBase } from "./forms"
+import { WorkFormFields } from "./forms/WorkForm"
+import { EducationFormFields } from "./forms/EducationForm"
+import { ProjectFormFields } from "./forms/ProjectForm"
+import { SkillFormFields } from "./forms/SkillForm"
+import { LinkFormFields } from "./forms/LinkForm"
+import { GenericFormFields } from "./forms/GenericForm"
 
 type Props = {
   itemTypes: ItemType[]
@@ -15,6 +20,9 @@ type Props = {
   saving?: boolean
   error?: FormError
 }
+
+// Base input styles
+const inputBase = "w-full px-3 py-2 bg-white rounded-lg text-gray-900 border text-sm"
 
 export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmit, saving, error }: Props) {
   const [selectedTypeId, setSelectedTypeId] = useState<string>(editing?.item_type_id ?? defaultTypeId ?? itemTypes[0]?.id ?? "")
@@ -112,7 +120,7 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
       <h3 className="text-xl font-semibold text-gray-900 mb-4">{editing ? "Edit Item" : "Add New Item"}</h3>
 
       {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">{error.message}</div>}

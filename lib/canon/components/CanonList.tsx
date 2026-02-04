@@ -1,7 +1,12 @@
 "use client"
 
 import type { CanonItem, ItemType } from "@/lib/types"
-import { WorkCard, EducationCard, ProjectCard, SkillCard, LinkCard, GenericCard } from "./cards"
+import { WorkCard } from "./cards/WorkCard"
+import { EducationCard } from "./cards/EducationCard"
+import { ProjectCard } from "./cards/ProjectCard"
+import { SkillCard } from "./cards/SkillCard"
+import { LinkCard } from "./cards/LinkCard"
+import { GenericCard } from "./cards/GenericCard"
 
 type Props = {
   items: CanonItem<unknown>[]
@@ -37,7 +42,7 @@ export function CanonList({ items, itemTypes, onEdit, onDelete }: Props) {
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-600 mb-4 text-lg">No items yet</div>
+        <div className="text-(--ink-fade) mb-4 text-lg">No items yet</div>
       </div>
     )
   }
