@@ -1,11 +1,11 @@
 // __tests__/home/home-page.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import HomeClient from '@/app/home/home-page'
-import { useCanonWork } from '@/lib/canon/useCanonWork'
+import { useCanon } from "@/lib/canon/useCanon"
 import { mockWorkItem1, mockWorkItem2, mockStats } from '../utils/mockData'
 
-// Mock the useCanonWork hook
-jest.mock('@/lib/canon/useCanonWork')
+// Mock the useCanon hook
+jest.mock("@/lib/canon/useCanon")
 
 // Mock the child components
 jest.mock('@/lib/canon/components/CanonForm', () => ({
@@ -58,7 +58,7 @@ describe('Home Page - Career History', () => {
   const mockRemoveWork = jest.fn()
   const mockRefresh = jest.fn()
 
-  const mockUseCanonWork = {
+  const mockuseCanon = {
     items: [mockWorkItem1, mockWorkItem2],
     stats: mockStats,
     loading: false,
@@ -71,7 +71,7 @@ describe('Home Page - Career History', () => {
   }
 
   beforeEach(() => {
-    (useCanonWork as jest.Mock).mockReturnValue(mockUseCanonWork)
+    ;(useCanon as jest.Mock).mockReturnValue(mockuseCanon)
     jest.clearAllMocks()
     // Mock window.confirm
     global.confirm = jest.fn(() => true)
@@ -179,26 +179,26 @@ describe('Home Page - Career History', () => {
     expect(screen.getByText('Career History (2)')).toBeInTheDocument()
   })
 
-  it('shows loading state', () => {
-    (useCanonWork as jest.Mock).mockReturnValue({
-      ...mockUseCanonWork,
+  it("shows loading state", () => {
+    ;(useCanon as jest.Mock).mockReturnValue({
+      ...mockuseCanon,
       loading: true,
     })
-    
+
     render(<HomeClient userName="Test User" userId="user_123" />)
-    
-    expect(screen.getByText('Career History (…)')).toBeInTheDocument()
+
+    expect(screen.getByText("Career History (…)")).toBeInTheDocument()
   })
 
   it('displays error message when there is an error', () => {
-    const errorMessage = 'Failed to load items'
-    ;(useCanonWork as jest.Mock).mockReturnValue({
-      ...mockUseCanonWork,
+    const errorMessage = "Failed to load items"
+    ;(useCanon as jest.Mock).mockReturnValue({
+      ...useCanon,
       error: errorMessage,
     })
-    
+
     render(<HomeClient userName="Test User" userId="user_123" />)
-    
+
     expect(screen.getByText(errorMessage)).toBeInTheDocument()
   })
 
@@ -274,14 +274,14 @@ describe('Home Page - Career History', () => {
   })
 
   it('disables Add Item button when saving', () => {
-    (useCanonWork as jest.Mock).mockReturnValue({
-      ...mockUseCanonWork,
+    ;(useCanon as jest.Mock).mockReturnValue({
+      ...mockuseCanon,
       saving: true,
     })
-    
+
     render(<HomeClient userName="Test User" userId="user_123" />)
-    
-    const addButton = screen.getByRole('button', { name: /add item/i })
+
+    const addButton = screen.getByRole("button", { name: /add item/i })
     expect(addButton).toBeDisabled()
   })
 

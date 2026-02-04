@@ -32,11 +32,11 @@ describe('Sign Up Page', () => {
       replace: jest.fn(),
       prefetch: jest.fn(),
     })
-      ; (useAuth as jest.Mock).mockReturnValue({
-        isLoaded: true,
-        isSignedIn: false,
-        userId: null,
-      })
+    ;(useAuth as jest.Mock).mockReturnValue({
+      isLoaded: true,
+      isSignedIn: false,
+      userId: null,
+    })
   })
 
   afterEach(() => {
