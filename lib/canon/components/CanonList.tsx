@@ -6,7 +6,7 @@ import { EducationCard } from "./cards/EducationCard"
 import { ProjectCard } from "./cards/ProjectCard"
 import { SkillCard } from "./cards/SkillCard"
 import { LinkCard } from "./cards/LinkCard"
-import { GenericCard } from "./cards/GenericCard"
+import { MiscCard } from "./cards/MiscCard"
 
 type Props = {
   items: CanonItem<unknown>[]
@@ -35,7 +35,7 @@ export function CanonList({ items, itemTypes, onEdit, onDelete }: Props) {
       case "Links":
         return <LinkCard item={item} onEdit={handleEdit} onDelete={handleDelete} />
       default:
-        return <GenericCard item={item} typeName={typeName} onEdit={handleEdit} onDelete={handleDelete} />
+        return <MiscCard item={item} typeName={typeName} onEdit={handleEdit} onDelete={handleDelete} />
     }
   }
 

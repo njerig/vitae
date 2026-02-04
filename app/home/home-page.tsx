@@ -126,9 +126,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
             <div className="flex flex-wrap gap-2 mb-6">
               <button
                 onClick={() => setSelectedTypeId(null)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTypeId === null ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                className={`tab-button ${selectedTypeId === null ? "tab-button-active" : ""}`}
               >
                 All ({items.length})
               </button>
@@ -138,9 +136,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                   <button
                     key={t.id}
                     onClick={() => setSelectedTypeId(t.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedTypeId === t.id ? "bg-blue-400 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                    className={`tab-button ${selectedTypeId === t.id ? "tab-button-active" : ""}`}
                   >
                     {t.display_name} ({count})
                   </button>
@@ -149,8 +145,8 @@ export default function HomeClient({ userName, userId }: { userName: string; use
             </div>
 
             {/* List header */}
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-semibold text-gray-900">
+            <div className="mb-6">
+              <h3>
                 {selectedTypeId ? itemTypes.find((t) => t.id === selectedTypeId)?.display_name : "All Items"} ({loading ? "…" : items.length})
               </h3>
             </div>

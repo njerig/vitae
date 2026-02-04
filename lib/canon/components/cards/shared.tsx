@@ -18,10 +18,10 @@ export function formatDate(dateStr: string | undefined | null): string {
 export function CardActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   return (
     <div className="flex gap-2 shrink-0">
-      <button onClick={onEdit} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-medium transition-colors">
+      <button onClick={onEdit} className="card-action-edit">
         Edit
       </button>
-      <button onClick={onDelete} className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors">
+      <button onClick={onDelete} className="card-action-delete">
         Delete
       </button>
     </div>
