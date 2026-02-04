@@ -194,11 +194,14 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
             return hasNextItem ? (
               <span
                 key={segIdx}
+                className="cursor-pointer"
                 style={{
                   fontWeight: isHovered ? 600 : 400,
                   opacity: isHovered ? 1 : 0.6,
                   transition: "all 150ms",
                 }}
+                onMouseEnter={() => setHoveredSegmentIdx(segIdx)}
+                onMouseLeave={() => setHoveredSegmentIdx(null)}
               >
                 →
               </span>
@@ -208,11 +211,14 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
           return (
             <span
               key={segIdx}
+              className="cursor-pointer"
               style={{
                 fontWeight: isHovered ? 600 : 400,
                 opacity: isHovered ? 1 : 0.6,
                 transition: "all 150ms",
               }}
+              onMouseEnter={() => setHoveredSegmentIdx(segIdx)}
+              onMouseLeave={() => setHoveredSegmentIdx(null)}
             >
               {segment.name}
             </span>
