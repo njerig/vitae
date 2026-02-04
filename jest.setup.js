@@ -1,11 +1,18 @@
 // Jest setup file - runs before each test file
 import '@testing-library/jest-dom'
+import { config } from 'dotenv'
+import { resolve } from 'path'
 
-// Mock environment variables for testing
-process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = 'pk_test_bmF0aXZlLWFzcC00Ny5jbGVyay5hY2NvdW50cy5kZXYk'
-process.env.CLERK_SECRET_KEY = 'sk_test_mock_key_for_testing'
-process.env.API_URL = 'http://localhost:8000'
-process.env.DATABASE_URL = 'postgresql://vitae:vitae@localhost:5432/vitae_test'
+// Load environment variables from .env.local (preferred) or .env
+// These files should be in .gitignore, so secrets won't be committed
+config({ path: resolve(process.cwd(), '.env.local'), quiet: true })
+config({ path: resolve(process.cwd(), '.env'), quiet: true })
+
+// Fallback mock values for CI environments or when .env files don't exist
+process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+process.env.CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY
+process.env.API_URL = process.env.API_URL
+process.env.DATABASE_URL = process.env.DATABASE_URL
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
