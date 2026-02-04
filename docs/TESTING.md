@@ -19,7 +19,7 @@ Tests use fake data.
 
 ## Troubleshooting
 
--npm install
+npm install
 
--npm test
+npm test
 
