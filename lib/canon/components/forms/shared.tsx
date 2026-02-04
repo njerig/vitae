@@ -1,6 +1,12 @@
 // Shared form utilities and types
 import type { FormError } from "../../useCanon"
 
+export type Props = {
+  form: Record<string, string>
+  setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>
+  hasError: (field: string) => boolean
+}
+
 export type FormFieldProps = {
   value: string
   onChange: (value: string) => void

@@ -1,10 +1,4 @@
-import { TextField, DateField, TextareaField, TagsField } from "./shared"
-
-type Props = {
-  form: Record<string, string>
-  setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>
-  hasError: (field: string) => boolean
-}
+import { TextField, DateField, TextareaField, TagsField, Props } from "./shared"
 
 export function ProjectFormFields({ form, setForm, hasError }: Props) {
   const update = (key: string) => (val: string) => setForm((p) => ({ ...p, [key]: val }))
@@ -13,7 +7,14 @@ export function ProjectFormFields({ form, setForm, hasError }: Props) {
     <div className="space-y-4">
       {/* Row: Title + URL */}
       <div className="grid grid-cols-2 gap-3">
-        <TextField label="Project Name" required value={form.title ?? ""} onChange={update("title")} hasError={hasError("title")} placeholder="My Awesome Project" />
+        <TextField
+          label="Project Name"
+          required
+          value={form.title ?? ""}
+          onChange={update("title")}
+          hasError={hasError("title")}
+          placeholder="My Awesome Project"
+        />
         <TextField label="URL" value={form.url ?? ""} onChange={update("url")} placeholder="https://github.com/..." />
       </div>
 
