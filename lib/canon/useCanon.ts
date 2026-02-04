@@ -11,7 +11,7 @@ import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchC
 export type FormError = { message: string; fields: string[] } | null
 
 export function useCanon() {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded } = useAuth()
 
   const [items, setItems] = useState<CanonItem<unknown>[]>([])
   const [itemTypes, setItemTypes] = useState<ItemType[]>([])
@@ -22,6 +22,8 @@ export function useCanon() {
 
   // Fetch item types and items
   const refresh = useCallback(async () => {
+    if (!isLoaded) return // Wait for Clerk to load
+
     setLoading(true)
     setError(null)
     try {
@@ -44,7 +46,7 @@ export function useCanon() {
     } finally {
       setLoading(false)
     }
-  }, [getToken, selectedTypeId])
+  }, [getToken, isLoaded, selectedTypeId])
 
   useEffect(() => {
     void refresh()
