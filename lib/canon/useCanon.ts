@@ -1,4 +1,3 @@
-// lib/canon/useCanon.ts
 // Generic hook for managing canon items of any type
 "use client"
 
@@ -10,6 +9,8 @@ import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchC
 // Error state type for structured validation errors
 export type FormError = { message: string; fields: string[] } | null
 
+// handles loading and error states for the UI
+// gets the user's auth token and sends it to API
 export function useCanon() {
   const { getToken, isLoaded } = useAuth()
 
@@ -53,10 +54,7 @@ export function useCanon() {
   }, [refresh])
 
   // Get display name for a type ID
-  const getTypeName = useCallback(
-    (typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown",
-    [itemTypes]
-  )
+  const getTypeName = useCallback((typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown", [itemTypes])
 
   // Create a new item
   const create = useCallback(
@@ -82,7 +80,7 @@ export function useCanon() {
         setSaving(false)
       }
     },
-    [getToken]
+    [getToken],
   )
 
   // Update an item
@@ -109,7 +107,7 @@ export function useCanon() {
         setSaving(false)
       }
     },
-    [getToken]
+    [getToken],
   )
 
   // Delete an item
@@ -135,7 +133,7 @@ export function useCanon() {
         setSaving(false)
       }
     },
-    [getToken]
+    [getToken],
   )
 
   // Filter items by selected type
