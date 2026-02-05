@@ -105,6 +105,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Install psql
+      - name: Install PostgreSQL client
+        run: |
+          if ! command -v psql &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y postgresql-client
+          fi
+
       # Initialize the database schema (same as docker-entrypoint-initdb.d)
       - name: Initialize database schema
         run: psql -f infra/initdb/001_schema.sql
