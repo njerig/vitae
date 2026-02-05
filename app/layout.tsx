@@ -46,12 +46,12 @@ export default function RootLayout({
               {/* Right side buttons */}
               <div className='flex items-center gap-4'>
                 <SignedOut>
-                  <a href='/auth/sign-in'>
+                  <Link href='/auth/sign-in'>
                     <button className='btn-secondary'>Sign In</button>
-                  </a>
-                  <a href='/auth/sign-up'>
+                  </Link>
+                  <Link href='/auth/sign-up'>
                     <button className='btn-primary'>Sign Up</button>
-                  </a>
+                  </Link>
                 </SignedOut>
                 <SignedIn>
                   <UserButton showName />
