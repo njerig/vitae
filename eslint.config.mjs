@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Ignore test files to prevent linter from modifying them
     "__tests__/**",
+    // Backend uses CommonJS, messes up with linter
+    "backend/**",
+    "jest.config.js",
   ]),
 ]);
 

@@ -1,5 +1,6 @@
 "use client"
 import { SignUpButton } from "@clerk/nextjs"
+import Link from "next/link"
 
 export default function Page() {
   return (
@@ -15,9 +16,9 @@ export default function Page() {
             <p className='hero-subtitle'>Resume Version Control</p>
             <p className='hero-description'>Manage your career and resumes all in one place.</p>
             <div className='flex items-center justify-center gap-4'>
-              <a href='/auth/sign-up'>
+              <Link href='/auth/sign-up'>
                 <button className='btn-primary'>Get Started</button>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -57,7 +58,7 @@ export default function Page() {
           <h2 className='section-title'>How It Works</h2>
           <p className='section-text'>
             Once you sign up, save your complete career history. This becomes your canonical record. Every change you make automatically creates a
-            working commit (no staging required). When you're ready, name your commit to finalize a version. Branch your resume for different
+            working commit (no staging required). When you&apos;re ready, name your commit to finalize a version. Branch your resume for different
             industries and let AI help tailor each one.
           </p>
         </div>
