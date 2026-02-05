@@ -39,7 +39,7 @@ export default function RootLayout({
           <header className='absolute top-0 left-0 right-0 z-50 px-8 py-6 border-b'>
             <div className='max-w-7xl mx-auto flex justify-between items-center'>
               {/* Logo - always visible */}
-              <Link href='/' className='logo'>
+              <Link href='/home' className='logo'>
                 Vitae
               </Link>
 
@@ -54,6 +54,9 @@ export default function RootLayout({
                   </a>
                 </SignedOut>
                 <SignedIn>
+                  <Link href='/resume'>
+                    <button className='btn-secondary'>Resume Builder</button>
+                  </Link>
                   <UserButton showName />
                 </SignedIn>
               </div>
