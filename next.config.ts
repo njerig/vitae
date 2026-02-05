@@ -1,15 +1,7 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    const apiUrl = process.env.API_URL
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`,
-      },
-    ]
-  },
+  // API routes are now in app/api/ - no proxy needed
 }
 
 export default nextConfig

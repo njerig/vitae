@@ -1,7 +1,7 @@
-// backend/schemas.js
+// lib/schemas.ts
 // Centralized Zod v4 validation schemas
 
-const { z } = require("zod")
+import { z } from "zod"
 
 // Helper for date validation
 const dateString = z
@@ -19,7 +19,7 @@ const optionalDateString = z
 // Content Schemas (per item type, matching docs/schema.md)
 // ─────────────────────────────────────────────────────────────
 
-const WorkContentSchema = z
+export const WorkContentSchema = z
   .object({
     org: z.string().min(1, "Company is required"),
     role: z.string().min(1, "Position is required"),
@@ -32,7 +32,7 @@ const WorkContentSchema = z
     message: "Start date must be before or equal to end date",
   })
 
-const EducationContentSchema = z
+export const EducationContentSchema = z
   .object({
     institution: z.string().min(1, "Institution is required"),
     degree: z.string().optional().or(z.literal("")),
@@ -46,7 +46,7 @@ const EducationContentSchema = z
     message: "Start date must be before or equal to end date",
   })
 
-const ProjectContentSchema = z
+export const ProjectContentSchema = z
   .object({
     title: z.string().min(1, "Project Name is required"),
     description: z.string().optional().or(z.literal("")),
@@ -60,21 +60,21 @@ const ProjectContentSchema = z
     message: "Start date must be before or equal to end date",
   })
 
-const SkillContentSchema = z.object({
+export const SkillContentSchema = z.object({
   category: z.string().min(1, "Category is required"),
   skills: z.array(z.string()).min(1, "At least one skill is required"),
 })
 
-const LinkContentSchema = z.object({
+export const LinkContentSchema = z.object({
   label: z.string().min(1, "Label is required"),
   url: z.string().min(1, "URL is required"),
 })
 
 // Generic content schema (accepts any object)
-const GenericContentSchema = z.record(z.string(), z.unknown())
+export const GenericContentSchema = z.record(z.string(), z.unknown())
 
 // Map item type display names to their content schemas
-const CONTENT_SCHEMAS = {
+const CONTENT_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "Work Experience": WorkContentSchema,
   "Education": EducationContentSchema,
   "Projects": ProjectContentSchema,
@@ -86,7 +86,7 @@ const CONTENT_SCHEMAS = {
  * Returns the appropriate content schema for a given item type display name.
  * Falls back to GenericContentSchema for custom types.
  */
-function getContentSchema(displayName) {
+export function getContentSchema(displayName: string): z.ZodTypeAny {
   return CONTENT_SCHEMAS[displayName] || GenericContentSchema
 }
 
@@ -95,19 +95,19 @@ function getContentSchema(displayName) {
 // ─────────────────────────────────────────────────────────────
 
 // Item Types
-const CreateItemTypeSchema = z.object({
+export const CreateItemTypeSchema = z.object({
   display_name: z.string().min(1, "display_name is required"),
 })
 
 // Canon Items
-const CreateCanonItemSchema = z.object({
-  item_type_id: z.uuid("item_type_id must be a valid UUID"),
+export const CreateCanonItemSchema = z.object({
+  item_type_id: z.string().uuid("item_type_id must be a valid UUID"),
   title: z.string().optional().default(""),
   position: z.number().int().optional().default(0),
   content: GenericContentSchema.optional().default({}),
 })
 
-const PatchCanonItemSchema = z
+export const PatchCanonItemSchema = z
   .object({
     title: z.string().optional(),
     position: z.number().int().optional(),
@@ -117,53 +117,27 @@ const PatchCanonItemSchema = z
     message: "No fields to patch",
   })
 
-
+// ─────────────────────────────────────────────────────────────
 // Working State Schema
+// ─────────────────────────────────────────────────────────────
 
-const SectionStateSchema = z.object({
-  item_type_id: z.uuid("item_type_id must be a valid UUID"),
-  item_ids: z.array(z.uuid("item_ids must contain valid UUIDs")),
+export const SectionStateSchema = z.object({
+  item_type_id: z.string().uuid("item_type_id must be a valid UUID"),
+  item_ids: z.array(z.string().uuid("item_ids must contain valid UUIDs")),
 })
 
-const WorkingStateSchema = z.object({
+export const WorkingStateSchema = z.object({
   sections: z.array(SectionStateSchema),
 })
 
-
+// ─────────────────────────────────────────────────────────────
 // Query Param Schemas
-
-const IdQuerySchema = z.object({
-  id: z.uuid("id must be a valid UUID"),
-})
-
-const ItemTypeQuerySchema = z.object({
-  item_type_id: z.uuid().optional(),
-})
-
-// ─────────────────────────────────────────────────────────────
-// Exports
 // ─────────────────────────────────────────────────────────────
 
-module.exports = {
-  // Content schemas
-  WorkContentSchema,
-  EducationContentSchema,
-  ProjectContentSchema,
-  SkillContentSchema,
-  LinkContentSchema,
-  GenericContentSchema,
-  getContentSchema,
+export const IdQuerySchema = z.object({
+  id: z.string().uuid("id must be a valid UUID"),
+})
 
-  // Request schemas
-  CreateItemTypeSchema,
-  CreateCanonItemSchema,
-  PatchCanonItemSchema,
-
-  // Working state schemas
-  SectionStateSchema,
-  WorkingStateSchema,
-
-  // Query schemas
-  IdQuerySchema,
-  ItemTypeQuerySchema,
-}
+export const ItemTypeQuerySchema = z.object({
+  item_type_id: z.string().uuid().optional(),
+})

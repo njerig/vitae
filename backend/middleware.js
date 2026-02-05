@@ -10,8 +10,19 @@ const { getAuth } = require("@clerk/express")
 /**
  * Extracts userId from Clerk auth. Returns 401 if not authenticated.
  * Attaches userId to req.userId for downstream handlers.
+ * 
+ * DEV ONLY: Pass X-Dev-User-Id header to bypass Clerk auth for testing.
  */
 function requireAuth(req, res, next) {
+  // Dev-only bypass for testing with curl
+  if (process.env.NODE_ENV !== "production") {
+    const devUserId = req.headers["x-dev-user-id"]
+    if (devUserId) {
+      req.userId = devUserId
+      return next()
+    }
+  }
+
   const { userId } = getAuth(req)
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized" })
