@@ -1,9 +1,6 @@
-// app/page.tsx (SERVER COMPONENT) — NO "use client"
+// app/home/page.tsx (SERVER COMPONENT) — NO "use client"
 import { auth, currentUser } from "@clerk/nextjs/server"
 import Home from "./home-page"
-const { userId } = await auth() // uses current session information
-const user = await currentUser() // makes an API request to clerk to get the name
-const userName = user!.username
 
 export default async function Page() {
   const { userId } = await auth() // uses current session information
