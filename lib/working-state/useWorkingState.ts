@@ -17,7 +17,6 @@ export function useWorkingState() {
   const [saving, setSaving] = useState(false)
   const [updateCount, setUpdateCount] = useState(0)
 
-  // Fetch current working state on mount
   useEffect(() => {
     async function fetchState() {
       try {
@@ -43,7 +42,6 @@ export function useWorkingState() {
     return result
   }, [state, updateCount])
 
-  // Save state to API
   const saveState = useCallback(async (newState: WorkingState) => {
     setSaving(true)
     try {
@@ -64,41 +62,31 @@ export function useWorkingState() {
     }
   }, [])
 
-  // Toggle item selection (with auto-save)
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
     setState(prev => {
       const newState = { ...prev, sections: [...prev.sections] }
 
-      // Find the section for this item type
       let section = newState.sections.find(s => s.item_type_id === itemTypeId)
 
       if (!section) {
-        // Create new section if it doesn't exist
         section = { item_type_id: itemTypeId, item_ids: [] }
         newState.sections.push(section)
       } else {
-        // Create a new section object (for immutability)
         const sectionIndex = newState.sections.indexOf(section)
         section = { ...section, item_ids: [...section.item_ids] }
         newState.sections[sectionIndex] = section
       }
 
-      // Toggle the item
       const index = section.item_ids.indexOf(itemId)
       if (index > -1) {
-        // Remove item
         section.item_ids.splice(index, 1)
-        // Remove empty sections
         newState.sections = newState.sections.filter(s => s.item_ids.length > 0)
       } else {
-        // Add item
         section.item_ids.push(itemId)
       }
 
-      // Auto-save immediately
       saveState(newState)
 
-      // Force re-render
       setUpdateCount(c => c + 1)
 
       return newState
