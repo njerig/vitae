@@ -39,7 +39,6 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
         onChange={update("bullets")}
         hasError={hasError("bullets")}
         placeholder="Improved X by YY%"
-        bulleted
       />
 
       {/* Skills */}
