@@ -16,6 +16,18 @@
   --radius-soft: 8px;
 }
 
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html,
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-y: scroll;
+}
+
 body {
   --font-serif: var(--font-crimson-pro, Georgia, serif);
   --font-sans: var(--font-inter, -apple-system, sans-serif);
