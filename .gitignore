@@ -43,3 +43,6 @@ next-env.d.ts
 
 # agents
 .agent/
+
+# clerk configuration (can include secrets)
+/.clerk/
