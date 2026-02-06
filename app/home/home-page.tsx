@@ -12,7 +12,7 @@ import { Spinner } from "@/lib/components/Spinner"
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
-  const { state: workingState } = useWorkingState()
+  const { state: workingState, isSelected, toggleItem } = useWorkingState()
 
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
@@ -173,7 +173,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
               </h3>
             </div>
 
-            <CanonList items={items} itemTypes={itemTypes} onEdit={startEdit} onDelete={del} />
+            <CanonList items={items} itemTypes={itemTypes} onEdit={startEdit} onDelete={del} isSelected={isSelected} toggleItem={toggleItem} />
           </div>
         </div>
       </div>
