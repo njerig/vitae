@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { CanonItem, ItemType } from "@/lib/types"
 import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchCanonItem, ValidationError } from "./api"
+import toast from "react-hot-toast"
 
 // Error state type for structured validation errors
 export type FormError = { message: string; fields: string[] } | null

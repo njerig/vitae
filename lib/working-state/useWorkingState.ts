@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import toast from "react-hot-toast"
 
 type SectionState = {
   item_type_id: string
@@ -27,6 +28,7 @@ export function useWorkingState() {
         }
       } catch (error) {
         console.error("Failed to fetch working state:", error)
+        toast.error("Failed to load your working state")
       } finally {
         setLoading(false)
       }
@@ -52,11 +54,13 @@ export function useWorkingState() {
       })
       if (!res.ok) {
         console.error("Failed to save working state")
+        toast.error("Failed to save your working state")
       } else {
         console.log("Saved working state:", newState)
       }
     } catch (error) {
       console.error("Error saving working state:", error)
+      toast.error("Failed to save your working state")
     } finally {
       setSaving(false)
     }

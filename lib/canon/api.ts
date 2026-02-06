@@ -2,6 +2,7 @@
 // Auth is handled automatically via Clerk cookies - no token needed
 
 import type { CanonItem, ItemType } from "@/lib/types"
+import toast from "react-hot-toast"
 
 // Custom error class that carries both a readable message and the list of invalid field names
 export class ValidationError extends Error {
@@ -44,8 +45,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
       throw new ValidationError(messages.join("\n"), fields)
     }
 
-    // catch any other errors that didn't come from zod
-    throw new Error(data?.error || `HTTP ${res.status}: ${res.statusText}`)
+    // catch any other errors that didn't come from zod - show toast
+    const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
+    toast.error(errorMessage)
+    throw new Error(errorMessage)
   }
   return res.json()
 }
