@@ -1,9 +1,10 @@
 import { Globe } from "lucide-react"
 import { Card } from "./Card"
-import type { CardProps } from "./shared"
+import { getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function LinkCard({ item, onEdit, onDelete }: CardProps) {
   const c = (item.content ?? {}) as Record<string, unknown>
+  const bullets = getBullets(c)
   const url = typeof c.url === "string" ? c.url : ""
   const displayUrl = url.replace(/^https?:\/\//, "").slice(0, 40)
 
@@ -19,6 +20,7 @@ export function LinkCard({ item, onEdit, onDelete }: CardProps) {
       icon={<Globe className="w-5 h-5 text-(--accent)" />}
       title={String(c.label || "Link")}
       subtitle={subtitle}
+      body={renderBulletList(bullets)}
       onEdit={onEdit}
       onDelete={onDelete}
     />

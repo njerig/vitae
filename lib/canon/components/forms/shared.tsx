@@ -57,7 +57,15 @@ export function DateField({ label, required, value, onChange, hasError }: FormFi
 }
 
 // Textarea field
-export function TextareaField({ label, required, value, onChange, hasError, placeholder }: FormFieldProps & { rows?: number }) {
+export function TextareaField({
+  label,
+  required,
+  value,
+  onChange,
+  hasError,
+  placeholder,
+}: FormFieldProps & { rows?: number; }) {
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">

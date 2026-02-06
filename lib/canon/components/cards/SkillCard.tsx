@@ -1,20 +1,26 @@
 import { Tags } from "lucide-react"
 import { Card } from "./Card"
-import type { CardProps } from "./shared"
+import { getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function SkillCard({ item, onEdit, onDelete }: CardProps) {
   const c = (item.content ?? {}) as Record<string, unknown>
+  const bullets = getBullets(c)
   const skills = (c.skills as string[]) ?? []
 
-  const body = skills.length > 0 ? (
-    <div className="flex flex-wrap gap-1.5 mt-1">
-      {skills.map((s, i) => (
-        <span key={i} className="card-token">
-          {s}
-        </span>
-      ))}
-    </div>
-  ) : undefined
+  const body = (
+    <>
+      {renderBulletList(bullets)}
+      {skills.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-1">
+          {skills.map((s, i) => (
+            <span key={i} className="card-token">
+              {s}
+            </span>
+          ))}
+        </div>
+      )}
+    </>
+  )
 
   return (
     <Card

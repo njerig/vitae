@@ -1,6 +1,6 @@
 import { FileText } from "lucide-react"
 import { Card } from "./Card"
-import { formatDate, type CardProps } from "./shared"
+import { formatDate, getBullets, renderBulletList, type CardProps } from "./shared"
 
 type MiscCardProps = CardProps & {
   typeName: string
@@ -8,7 +8,7 @@ type MiscCardProps = CardProps & {
 
 export function MiscCard({ item, typeName, onEdit, onDelete }: MiscCardProps) {
   const c = (item.content ?? {}) as Record<string, unknown>
-  const bullets = (c.bullets as string[]) ?? []
+  const bullets = getBullets(c)
 
   const title = (
     <div className="flex items-center gap-2">
@@ -21,11 +21,7 @@ export function MiscCard({ item, typeName, onEdit, onDelete }: MiscCardProps) {
     ? `${formatDate(c.start as string)} → ${c.end ? formatDate(c.end as string) : "Present"}`
     : undefined
 
-  const body = bullets.length > 0 ? (
-    <ul className="card-text mt-2 list-disc pl-4">
-      {bullets.map((b, i) => <li key={i}>{b}</li>)}
-    </ul>
-  ) : undefined
+  const body = renderBulletList(bullets)
 
   return (
     <Card

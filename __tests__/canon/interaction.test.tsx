@@ -136,6 +136,10 @@ function submitForm() {
   fireEvent.click(screen.getByRole("button", { name: /^add item$/i }))
 }
 
+function getBulletedTextareas() {
+  return Array.from(document.querySelectorAll('textarea[data-bulleted="true"]'))
+}
+
 describe("Canon interaction flow", () => {
   let serverItems: CanonItem<unknown>[]
   let counter: number
@@ -198,19 +202,60 @@ describe("Canon interaction flow", () => {
     selectType("Education")
     expect(screen.getByText(/institution/i, { selector: "label" })).toBeInTheDocument()
     expect(screen.queryByText(/company/i, { selector: "label" })).not.toBeInTheDocument()
+    expect(getBulletedTextareas()).toHaveLength(1)
 
     selectType("Project")
     expect(screen.getByText(/project name/i, { selector: "label" })).toBeInTheDocument()
     expect(screen.queryByText(/institution/i, { selector: "label" })).not.toBeInTheDocument()
+    expect(getBulletedTextareas()).toHaveLength(1)
 
     selectType("Skill")
     expect(screen.getByText(/category/i, { selector: "label" })).toBeInTheDocument()
     expect(screen.queryByText(/project name/i, { selector: "label" })).not.toBeInTheDocument()
+    expect(getBulletedTextareas()).toHaveLength(0)
 
     selectType("Link")
     expect(screen.getByText(/label/i, { selector: "label" })).toBeInTheDocument()
     expect(screen.getByText(/^url/i, { selector: "label" })).toBeInTheDocument()
     expect(screen.queryByText(/category/i, { selector: "label" })).not.toBeInTheDocument()
+    expect(getBulletedTextareas()).toHaveLength(0)
+  })
+
+  it("shows visual bullet mode on bullet textareas and preserves raw pasted text", async () => {
+    render(<CanonFlowHarness />)
+
+    await waitFor(() => expect(screen.getByRole("button", { name: /open add item form/i })).toBeEnabled())
+    openForm()
+
+    const workBullets = getFieldControl(/bullet points/i)
+    expect(workBullets).toHaveAttribute("data-bulleted", "true")
+
+    const pastedParagraph = "This is one pasted paragraph without line breaks."
+    fireEvent.change(workBullets, { target: { value: pastedParagraph } })
+    expect((workBullets as HTMLTextAreaElement).value).toBe(pastedParagraph)
+    expect((workBullets as HTMLTextAreaElement).value.includes("•")).toBe(false)
+
+    fireEvent.change(getFieldControl(/company/i), { target: { value: "Acme Corp" } })
+    fireEvent.change(getFieldControl(/position/i), { target: { value: "Senior Engineer" } })
+    fireEvent.change(getFieldControl(/start date/i), { target: { value: "2024-01-01" } })
+    submitForm()
+
+    await waitFor(() => {
+      expect(mockedCreateCanonItem).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({
+            bullets: [pastedParagraph],
+          }),
+        }),
+      )
+    })
+
+    openForm()
+    selectType("Education")
+    expect(getFieldControl(/details/i)).toHaveAttribute("data-bulleted", "true")
+
+    selectType("Project")
+    expect(getFieldControl(/bullet points/i)).toHaveAttribute("data-bulleted", "true")
   })
 
   const flowCases = [
@@ -224,7 +269,7 @@ describe("Canon interaction flow", () => {
         fireEvent.change(getFieldControl(/start date/i), { target: { value: "2024-01-01" } })
         fireEvent.change(getFieldControl(/bullet points/i), { target: { value: "Built API platform" } })
       },
-      expectedListText: ["Senior Engineer", "Acme Corp"],
+      expectedListText: ["Senior Engineer", "Acme Corp", "Built API platform"],
     },
     {
       typeName: "Education",
@@ -232,8 +277,9 @@ describe("Canon interaction flow", () => {
       requiredErrorText: "Institution is required",
       fillValid: () => {
         fireEvent.change(getFieldControl(/institution/i), { target: { value: "UC Santa Cruz" } })
+        fireEvent.change(getFieldControl(/details/i), { target: { value: "Dean's List" } })
       },
-      expectedListText: ["UC Santa Cruz"],
+      expectedListText: ["UC Santa Cruz", "Dean's List"],
     },
     {
       typeName: "Project",
@@ -241,8 +287,9 @@ describe("Canon interaction flow", () => {
       requiredErrorText: "Project Name is required",
       fillValid: () => {
         fireEvent.change(getFieldControl(/project name/i), { target: { value: "Portfolio Builder" } })
+        fireEvent.change(getFieldControl(/bullet points/i), { target: { value: "Implemented auth flow" } })
       },
-      expectedListText: ["Portfolio Builder"],
+      expectedListText: ["Portfolio Builder", "Implemented auth flow"],
     },
     {
       typeName: "Skill",

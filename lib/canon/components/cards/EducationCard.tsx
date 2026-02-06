@@ -1,9 +1,10 @@
 import { GraduationCap } from "lucide-react"
 import { Card } from "./Card"
-import { formatDate, type CardProps } from "./shared"
+import { formatDate, getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function EducationCard({ item, onEdit, onDelete }: CardProps) {
   const c = (item.content ?? {}) as Record<string, unknown>
+  const bullets = getBullets(c)
 
   const subtitle = (
     <>
@@ -19,6 +20,7 @@ export function EducationCard({ item, onEdit, onDelete }: CardProps) {
       title={String(c.institution || "Untitled")}
       subtitle={subtitle}
       meta={`${formatDate(c.start as string)} → ${c.end ? formatDate(c.end as string) : "Present"}`}
+      body={renderBulletList(bullets)}
       onEdit={onEdit}
       onDelete={onDelete}
     />

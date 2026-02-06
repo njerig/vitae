@@ -1,9 +1,10 @@
 import { FolderKanban } from "lucide-react"
 import { Card } from "./Card"
-import type { CardProps } from "./shared"
+import { getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function ProjectCard({ item, onEdit, onDelete }: CardProps) {
   const c = (item.content ?? {}) as Record<string, unknown>
+  const bullets = getBullets(c)
   const skills = (c.skills as string[]) ?? []
 
   const title = (
@@ -20,6 +21,7 @@ export function ProjectCard({ item, onEdit, onDelete }: CardProps) {
   const body = (
     <>
       {typeof c.description === "string" && c.description && <p className="card-text mt-0.5 line-clamp-2">{c.description}</p>}
+      {renderBulletList(bullets)}
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {skills.slice(0, 4).map((s, i) => (

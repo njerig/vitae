@@ -52,6 +52,16 @@ Integration-style tests for canon form/list flow using real `useCanon`, `CanonFo
 - Each default item type can be filled and submitted successfully
 - Created items are rendered in `CanonList` with expected type-specific text
 
+### `list-bullets.test.tsx`
+
+Focused rendering coverage for `CanonList` bullet behavior.
+
+**What these tests cover:**
+
+#### 1. **Cross-Type Bullet Rendering**
+- If an item has `content.bullets`, bullet lines render in the card UI
+- Coverage includes Work, Education, Project, Skill, Link, and Misc/custom types
+
 ## Running These Tests
 
 ```bash
@@ -63,6 +73,9 @@ npm test -- __tests__/canon/api.test.ts
 
 # Run only interaction tests
 npm test -- __tests__/canon/interaction.test.tsx
+
+# Run list bullet rendering tests
+npm test -- __tests__/canon/list-bullets.test.tsx
 
 # Run in watch mode
 npm run test:watch -- __tests__/canon
