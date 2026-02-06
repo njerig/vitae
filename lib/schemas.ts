@@ -146,4 +146,5 @@ export const ItemTypeQuerySchema = z.object({
 // Versions Schemas
 // ─────────────────────────────────────────────────────────────
 
+// for the resume name
 export const ResumeNameSchema = z.object({name: z.string().min(1, "Resume name is required")})
