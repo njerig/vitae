@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
 import { useState, useEffect, useCallback } from "react"
 import { DragSection } from "../_components/resume/DragSection"
@@ -83,65 +84,101 @@ export default function ResumeClient({ userName, userId }: { userName: string; u
       <div className="page-bg-gradient"></div>
       <div className="page-accent-light"></div>
 
-      <div className="relative z-10 pt-32 pb-16 px-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="bg-white rounded-2xl border p-8 shadow-sm" style={{ 
-            borderColor: "var(--grid)",
-            backgroundColor: "var(--paper-dark)"
-          }}>
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-3xl font-semibold mb-2" style={{ 
-                  color: "var(--ink)",
-                  fontFamily: "var(--font-serif)"
-                }}>Resume Builder</h2>
-                <p className="text-lg" style={{ color: "var(--ink-fade)" }}>
-                  Drag to reorder sections and items
-                </p>
+      <div className="relative z-10 pt-32 pb-16 px-8">
+        <div className="max-w-full mx-auto px-4">
+          {/* Back to Home Button */}
+          <div className="mb-6">
+            <Link href="/home">
+              <button className="btn-secondary rounded-lg flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+              </button>
+            </Link>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Resume Builder */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border p-8 shadow-sm" style={{ 
+                borderColor: "var(--grid)",
+                backgroundColor: "var(--paper-dark)"
+              }}>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-3xl font-semibold mb-2" style={{ 
+                      color: "var(--ink)",
+                      fontFamily: "var(--font-serif)"
+                    }}>Resume Builder</h2>
+                    <p className="text-lg" style={{ color: "var(--ink-fade)" }}>
+                      Drag to reorder sections and items
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {(draggedItem !== null || draggedSection !== null) && (
+                <div className="rounded-xl p-4" style={{ 
+                  backgroundColor: "var(--accent)",
+                  borderColor: "var(--accent-hover)"
+                }}>
+                  <p className="text-sm" style={{ color: "var(--paper)" }}>
+                    <strong>Drop to reorder.</strong> Item order will be saved automatically.
+                  </p>
+                </div>
+              )}
+
+              {sections.length === 0 ? (
+                <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{ 
+                  borderColor: "var(--grid)",
+                  backgroundColor: "var(--paper-dark)"
+                }}>
+                  <p style={{ color: "var(--ink-fade)" }}>
+                    No items yet. Add some items from the home page to get started!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {sections.map((section, sectionIndex) => (
+                    <DragSection
+                      key={section.typeId}
+                      section={section}
+                      sectionIndex={sectionIndex}
+                      sections={sections}
+                      setSections={setSections}
+                      draggedSection={draggedSection}
+                      setDraggedSection={setDraggedSection}
+                      draggedItem={draggedItem}
+                      setDraggedItem={setDraggedItem}
+                      saveItemPosition={saveItemPosition}
+                      formatDate={formatDate}
+                      handleItemDragEnd={handleItemDragEnd}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Resume Preview */}
+            <div className="lg:sticky lg:top-32 h-fit">
+              <div className="bg-white rounded-2xl border p-8 shadow-sm min-h-[600px] flex items-center justify-center" style={{ 
+                borderColor: "var(--grid)",
+                backgroundColor: "var(--paper-dark)"
+              }}>
+                <div className="text-center">
+                  <h3 className="text-2xl font-semibold mb-4" style={{ 
+                    color: "var(--ink)",
+                    fontFamily: "var(--font-serif)"
+                  }}>Resume Preview</h3>
+                  <p className="text-lg" style={{ color: "var(--ink-fade)" }}>
+                    Your resume preview will appear here
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-
-          {(draggedItem !== null || draggedSection !== null) && (
-            <div className="rounded-xl p-4" style={{ 
-              backgroundColor: "var(--accent)",
-              borderColor: "var(--accent-hover)"
-            }}>
-              <p className="text-sm" style={{ color: "var(--paper)" }}>
-                <strong>Drop to reorder.</strong> Item order will be saved automatically.
-              </p>
-            </div>
-          )}
-
-          {sections.length === 0 ? (
-            <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{ 
-              borderColor: "var(--grid)",
-              backgroundColor: "var(--paper-dark)"
-            }}>
-              <p style={{ color: "var(--ink-fade)" }}>
-                No items yet. Add some items from the home page to get started!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {sections.map((section, sectionIndex) => (
-                <DragSection
-                  key={section.typeId}
-                  section={section}
-                  sectionIndex={sectionIndex}
-                  sections={sections}
-                  setSections={setSections}
-                  draggedSection={draggedSection}
-                  setDraggedSection={setDraggedSection}
-                  draggedItem={draggedItem}
-                  setDraggedItem={setDraggedItem}
-                  saveItemPosition={saveItemPosition}
-                  formatDate={formatDate}
-                  handleItemDragEnd={handleItemDragEnd}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>

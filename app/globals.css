@@ -16,6 +16,18 @@
   --radius-soft: 8px;
 }
 
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html,
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-y: scroll;
+}
+
 body {
   --font-serif: var(--font-crimson-pro, Georgia, serif);
   --font-sans: var(--font-inter, -apple-system, sans-serif);
@@ -113,7 +125,7 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 2px solid var(--accent);
-  border-radius: var(--radius-sharp);
+  border-radius: var(--radius-soft) !important;
   transition: all 200ms;
   cursor: pointer;
 }
@@ -172,7 +184,7 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 2px solid var(--ink);
-  border-radius: var(--radius-sharp);
+  border-radius: var(--radius-soft) !important;
   transition: all 200ms;
   cursor: pointer;
 }
@@ -180,6 +192,25 @@ header {
 .btn-secondary:hover {
   background: var(--ink);
   color: var(--paper);
+}
+
+/* Navigation buttons - subtle until hover */
+.btn-nav {
+  font-family: var(--font-sans);
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--ink-fade);
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: var(--radius-soft) !important;
+  transition: all 200ms;
+  cursor: pointer;
+}
+
+.btn-nav:hover {
+  background: var(--paper-dark);
+  color: var(--ink);
 }
 
 /* -- Cards ---------------------------------------------------------------- */
