@@ -2,7 +2,7 @@ import { Briefcase } from "lucide-react"
 import { Card } from "./Card"
 import { formatDate, type CardProps } from "./shared"
 
-export function WorkCard({ item, onEdit, onDelete }: CardProps) {
+export function WorkCard({ item, onEdit, onDelete, selected, onToggle }: CardProps) {
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = (c.bullets as string[]) ?? []
   const skills = (c.skills as string[]) ?? []
@@ -39,6 +39,8 @@ export function WorkCard({ item, onEdit, onDelete }: CardProps) {
       body={body}
       onEdit={onEdit}
       onDelete={onDelete}
+      selected={selected}
+      onToggle={onToggle}
     />
   )
 }

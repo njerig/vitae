@@ -2,6 +2,7 @@ import { type Metadata } from "next"
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import { Inter, Geist_Mono, Crimson_Pro } from "next/font/google"
 import Link from "next/link"
+import { Toaster } from "react-hot-toast"
 import "./globals.css"
 
 const inter = Inter({
@@ -46,12 +47,12 @@ export default function RootLayout({
               {/* Right side buttons */}
               <div className='flex items-center gap-4'>
                 <SignedOut>
-                  <a href='/auth/sign-in'>
+                  <Link href='/auth/sign-in'>
                     <button className='btn-secondary'>Sign In</button>
-                  </a>
-                  <a href='/auth/sign-up'>
+                  </Link>
+                  <Link href='/auth/sign-up'>
                     <button className='btn-primary'>Sign Up</button>
-                  </a>
+                  </Link>
                 </SignedOut>
                 <SignedIn>
                   <Link href='/resume'>
@@ -64,6 +65,35 @@ export default function RootLayout({
           </header>
 
           {children}
+          
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: 'var(--paper)',
+                color: 'var(--ink)',
+                border: '1px solid var(--grid)',
+                borderRadius: 'var(--radius-soft)',
+                fontFamily: 'var(--font-sans)',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#008000',
+                  secondary: 'var(--paper)',
+                },
+              },
+              error: {
+                style: {
+                  border: '1px solid #dc2626',
+                },
+                iconTheme: {
+                  primary: '#dc2626',
+                  secondary: 'var(--paper)',
+                },
+              },
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>

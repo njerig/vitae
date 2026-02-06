@@ -123,6 +123,16 @@ header {
   color: var(--accent);
 }
 
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled:hover {
+  background: var(--accent);
+  color: var(--paper);
+}
+
 /* Content cards with paper feel */
 .content-section {
   max-width: 800px;
@@ -295,4 +305,52 @@ header {
 .tab-button-active:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 22, 20, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 200ms ease-out;
+}
+
+.modal {
+  background: white;
+  border: 1px solid var(--grid);
+  border-radius: var(--radius-soft);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+  padding: 2rem;
+  animation: slideUp 200ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

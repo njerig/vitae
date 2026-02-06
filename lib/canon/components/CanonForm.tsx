@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import type { CanonItem, ItemType } from "@/lib/types"
 import type { FormError } from "../useCanon"
 import { getFieldsForType, type FieldConfig } from "../fields"
@@ -10,6 +10,7 @@ import { ProjectFormFields } from "./forms/ProjectForm"
 import { SkillFormFields } from "./forms/SkillForm"
 import { LinkFormFields } from "./forms/LinkForm"
 import { GenericFormFields } from "./forms/GenericForm"
+import { Spinner } from "@/lib/components/Spinner"
 
 type Props = {
   itemTypes: ItemType[]
@@ -25,16 +26,16 @@ type Props = {
 const inputBase = "w-full px-3 py-2 bg-white rounded-lg text-gray-900 border text-sm"
 
 export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmit, saving, error }: Props) {
-  const [selectedTypeId, setSelectedTypeId] = useState<string>(editing?.item_type_id ?? defaultTypeId ?? itemTypes[0]?.id ?? "")
+  // Compute initial type ID from props (no effect needed)
+  const initialTypeId = editing?.item_type_id ?? defaultTypeId ?? itemTypes[0]?.id ?? ""
+  const [selectedTypeId, setSelectedTypeId] = useState<string>(initialTypeId)
 
   const selectedType = useMemo(() => itemTypes.find((t) => t.id === selectedTypeId), [itemTypes, selectedTypeId])
   const typeName = selectedType?.display_name ?? ""
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
 
-  const [form, setForm] = useState<Record<string, string>>({})
-
-  // Initialize form when editing or type changes
-  useEffect(() => {
+  // Compute initial form values from props (no effect needed)
+  const initialForm = useMemo(() => {
     const content = (editing?.content ?? {}) as Record<string, unknown>
     const initial: Record<string, string> = {}
 
@@ -49,14 +50,10 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
       }
     })
 
-    setForm(initial)
+    return initial
   }, [fields, editing])
 
-  useEffect(() => {
-    if (!editing && defaultTypeId) {
-      setSelectedTypeId(defaultTypeId)
-    }
-  }, [defaultTypeId, editing])
+  const [form, setForm] = useState<Record<string, string>>(initialForm)
 
   const hasError = (fieldName: string) => error?.fields.includes(fieldName) ?? false
 
@@ -149,7 +146,14 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
         {/* Actions */}
         <div className="flex gap-3 pt-2">
           <button onClick={submit} disabled={saving} className="btn-primary">
-            {editing ? "Update" : "Add Item"}
+            {saving ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Spinner size={16} color="white" inline />
+                {editing ? "Updating..." : "Adding..."}
+              </span>
+            ) : (
+              editing ? "Update" : "Add Item"
+            )}
           </button>
           <button onClick={onCancel} disabled={saving} className="btn-secondary">
             Cancel

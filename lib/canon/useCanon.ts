@@ -2,7 +2,6 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useAuth } from "@clerk/nextjs"
 import type { CanonItem, ItemType } from "@/lib/types"
 import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchCanonItem, ValidationError } from "./api"
 
@@ -10,10 +9,8 @@ import { createCanonItem, deleteCanonItem, listCanonItems, listItemTypes, patchC
 export type FormError = { message: string; fields: string[] } | null
 
 // handles loading and error states for the UI
-// gets the user's auth token and sends it to API
+// Auth is handled automatically via Clerk cookies
 export function useCanon() {
-  const { getToken, isLoaded } = useAuth()
-
   const [items, setItems] = useState<CanonItem<unknown>[]>([])
   const [itemTypes, setItemTypes] = useState<ItemType[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,15 +20,10 @@ export function useCanon() {
 
   // Fetch item types and items
   const refresh = useCallback(async () => {
-    if (!isLoaded) return // Wait for Clerk to load
-
     setLoading(true)
     setError(null)
     try {
-      const token = await getToken()
-      if (!token) throw new Error("Missing auth token")
-
-      const types = await listItemTypes(token)
+      const types = await listItemTypes()
       
       // Deduplicate by display_name, handling singular/plural variants
       const normalize = (name: string) => {
@@ -48,7 +40,7 @@ export function useCanon() {
       setItemTypes(uniqueTypes)
 
       // Fetch items (all or filtered by type)
-      const rows = await listCanonItems(token, selectedTypeId ?? undefined)
+      const rows = await listCanonItems(selectedTypeId ?? undefined)
       setItems(rows)
     } catch (e: unknown) {
       if (e instanceof ValidationError) {
@@ -60,7 +52,7 @@ export function useCanon() {
     } finally {
       setLoading(false)
     }
-  }, [getToken, isLoaded, selectedTypeId])
+  }, [selectedTypeId])
 
   useEffect(() => {
     void refresh()
@@ -75,10 +67,7 @@ export function useCanon() {
       setSaving(true)
       setError(null)
       try {
-        const token = await getToken()
-        if (!token) throw new Error("Missing auth token")
-
-        const created = await createCanonItem(token, input)
+        const created = await createCanonItem(input)
         setItems((prev) => [...prev, created].sort((a, b) => a.position - b.position))
         return created
       } catch (e: unknown) {
@@ -93,7 +82,7 @@ export function useCanon() {
         setSaving(false)
       }
     },
-    [getToken],
+    [],
   )
 
   // Update an item
@@ -102,10 +91,7 @@ export function useCanon() {
       setSaving(true)
       setError(null)
       try {
-        const token = await getToken()
-        if (!token) throw new Error("Missing auth token")
-
-        const updated = await patchCanonItem(token, id, patchData)
+        const updated = await patchCanonItem(id, patchData)
         setItems((prev) => prev.map((x) => (x.id === id ? updated : x)))
         return updated
       } catch (e: unknown) {
@@ -120,7 +106,7 @@ export function useCanon() {
         setSaving(false)
       }
     },
-    [getToken],
+    [],
   )
 
   // Delete an item
@@ -129,10 +115,7 @@ export function useCanon() {
       setSaving(true)
       setError(null)
       try {
-        const token = await getToken()
-        if (!token) throw new Error("Missing auth token")
-
-        await deleteCanonItem(token, id)
+        await deleteCanonItem(id)
         setItems((prev) => prev.filter((x) => x.id !== id))
       } catch (e: unknown) {
         if (e instanceof ValidationError) {
@@ -146,7 +129,7 @@ export function useCanon() {
         setSaving(false)
       }
     },
-    [getToken],
+    [],
   )
 
   // Type priority for sorting (lower number = higher priority)
