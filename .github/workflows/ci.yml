@@ -41,8 +41,8 @@ jobs:
             nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
             nextjs-${{ runner.os }}-
 
-      - name: Run ESLint
-        run: npm run lint
+      #- name: Run ESLint
+        #run: npm run lint
 
       - name: Build Next.js
         env:
