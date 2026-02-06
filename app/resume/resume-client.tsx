@@ -1,0 +1,145 @@
+"use client"
+
+import { useCanon } from "@/lib/canon/useCanon"
+import { useState, useEffect, useCallback } from "react"
+import { DragSection } from "../_components/resume/DragSection"
+import { DragItem } from "../_components/resume/DragItem"
+
+const formatDate = (dateString: string): string => {
+  if (!dateString) return ""
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: '2-digit', 
+      day: '2-digit', 
+      year: 'numeric' 
+    })
+  } catch {
+    return dateString
+  }
+}
+
+export default function ResumeClient({ userName, userId }: { userName: string; userId: string }) {
+  const { allItems, itemTypes, loading, patch } = useCanon()
+  const [sections, setSections] = useState<any[]>([])
+  const [draggedItem, setDraggedItem] = useState<any>(null)
+  const [draggedSection, setDraggedSection] = useState<number | null>(null)
+
+  useEffect(() => {
+    const grouped = itemTypes
+      .map((type) => ({
+        typeName: type.display_name,
+        typeId: type.id,
+        items: allItems
+          .filter((item) => item.item_type_id === type.id)
+          .sort((a, b) => a.position - b.position),
+      }))
+      .filter(section => section.items.length > 0)
+    
+    setSections(grouped)
+  }, [allItems, itemTypes])
+
+  const saveItemPosition = useCallback(async (itemId: string, position: number) => {
+    try {
+      await patch(itemId, { position })
+    } catch (error) {
+      console.error("Failed to save item position:", error)
+    }
+  }, [patch])
+
+  const handleItemDragEnd = () => {
+    if (draggedItem) {
+      const { sectionIndex } = draggedItem
+      const section = sections[sectionIndex]
+      
+      section.items.forEach((item: any, index: number) => {
+        if (item.position !== index) {
+          saveItemPosition(item.id, index)
+        }
+      })
+    }
+    
+    setDraggedItem(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="page-bg-gradient"></div>
+        <div className="relative z-10 pt-32 pb-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <p style={{ color: "var(--ink-light)" }}>Loading your resume...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="page-container">
+      <div className="page-bg-gradient"></div>
+      <div className="page-accent-light"></div>
+
+      <div className="relative z-10 pt-32 pb-16 px-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="bg-white rounded-2xl border p-8 shadow-sm" style={{ 
+            borderColor: "var(--grid)",
+            backgroundColor: "var(--paper-dark)"
+          }}>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-3xl font-semibold mb-2" style={{ 
+                  color: "var(--ink)",
+                  fontFamily: "var(--font-serif)"
+                }}>Resume Builder</h2>
+                <p className="text-lg" style={{ color: "var(--ink-fade)" }}>
+                  Drag to reorder sections and items
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {(draggedItem !== null || draggedSection !== null) && (
+            <div className="rounded-xl p-4" style={{ 
+              backgroundColor: "var(--accent)",
+              borderColor: "var(--accent-hover)"
+            }}>
+              <p className="text-sm" style={{ color: "var(--paper)" }}>
+                <strong>Drop to reorder.</strong> Item order will be saved automatically.
+              </p>
+            </div>
+          )}
+
+          {sections.length === 0 ? (
+            <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{ 
+              borderColor: "var(--grid)",
+              backgroundColor: "var(--paper-dark)"
+            }}>
+              <p style={{ color: "var(--ink-fade)" }}>
+                No items yet. Add some items from the home page to get started!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {sections.map((section, sectionIndex) => (
+                <DragSection
+                  key={section.typeId}
+                  section={section}
+                  sectionIndex={sectionIndex}
+                  sections={sections}
+                  setSections={setSections}
+                  draggedSection={draggedSection}
+                  setDraggedSection={setDraggedSection}
+                  draggedItem={draggedItem}
+                  setDraggedItem={setDraggedItem}
+                  saveItemPosition={saveItemPosition}
+                  formatDate={formatDate}
+                  handleItemDragEnd={handleItemDragEnd}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
