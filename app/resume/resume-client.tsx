@@ -4,6 +4,7 @@ import { useCanon } from "@/lib/canon/useCanon"
 import { useState, useEffect, useCallback } from "react"
 import { DragSection } from "../_components/resume/DragSection"
 import { DragItem } from "../_components/resume/DragItem"
+import { Spinner } from "@/lib/components/Spinner"
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return ""
@@ -67,7 +68,10 @@ export default function ResumeClient({ userName, userId }: { userName: string; u
         <div className="page-bg-gradient"></div>
         <div className="relative z-10 pt-32 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <p style={{ color: "var(--ink-light)" }}>Loading your resume...</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <Spinner size={40} />
+              <p style={{ color: "var(--ink-light)" }}>Loading your resume...</p>
+            </div>
           </div>
         </div>
       </div>

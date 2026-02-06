@@ -79,7 +79,7 @@ export default function RootLayout({
               },
               success: {
                 iconTheme: {
-                  primary: 'var(--accent)',
+                  primary: '#008000',
                   secondary: 'var(--paper)',
                 },
               },

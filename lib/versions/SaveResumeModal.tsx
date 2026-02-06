@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect } from "react"
 import { ResumeNameSchema } from "@/lib/schemas"
+import { Spinner } from "@/lib/components/Spinner"
 
 type SaveResumeModalProps = {
   onSave: (name: string) => Promise<void>
@@ -109,7 +110,12 @@ export function SaveResumeModal({ onSave, onClose, saving }: SaveResumeModalProp
               className="btn-primary"
               disabled={saving}
             >
-              {saving ? "Saving..." : "Save"}
+              {saving ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Spinner size={16} color="white" inline />
+                  Saving...
+                </span>
+              ) : "Save"}
             </button>
           </div>
         </form>

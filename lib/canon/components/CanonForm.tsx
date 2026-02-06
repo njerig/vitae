@@ -10,6 +10,7 @@ import { ProjectFormFields } from "./forms/ProjectForm"
 import { SkillFormFields } from "./forms/SkillForm"
 import { LinkFormFields } from "./forms/LinkForm"
 import { GenericFormFields } from "./forms/GenericForm"
+import { Spinner } from "@/lib/components/Spinner"
 
 type Props = {
   itemTypes: ItemType[]
@@ -145,7 +146,14 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
         {/* Actions */}
         <div className="flex gap-3 pt-2">
           <button onClick={submit} disabled={saving} className="btn-primary">
-            {editing ? "Update" : "Add Item"}
+            {saving ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Spinner size={16} color="white" inline />
+                {editing ? "Updating..." : "Adding..."}
+              </span>
+            ) : (
+              editing ? "Update" : "Add Item"
+            )}
           </button>
           <button onClick={onCancel} disabled={saving} className="btn-secondary">
             Cancel
