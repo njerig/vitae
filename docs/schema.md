@@ -43,9 +43,9 @@ On user signup, create these default item_types:
 |----------------------|
 | Work Experience      |
 | Education            |
-| Projects             |
-| Skills               |
-| Links                |
+| Project              |
+| Skill                |
+| Link                 |
 
 Users can create custom item_types (e.g., "Research", "Volunteer Work", "Publications") with any `display_name` they choose.
 
@@ -99,7 +99,7 @@ type EducationContent = {
 }
 ```
 
-#### Projects
+#### Project
 
 ```typescript
 type ProjectContent = {
@@ -112,7 +112,7 @@ type ProjectContent = {
 }
 ```
 
-#### Skills
+#### Skill
 
 ```typescript
 type SkillContent = {
@@ -121,7 +121,7 @@ type SkillContent = {
 }
 ```
 
-#### Links
+#### Link
 
 ```typescript
 type LinkContent = {

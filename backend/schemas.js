@@ -77,9 +77,9 @@ const GenericContentSchema = z.record(z.string(), z.unknown())
 const CONTENT_SCHEMAS = {
   "Work Experience": WorkContentSchema,
   "Education": EducationContentSchema,
-  "Projects": ProjectContentSchema,
-  "Skills": SkillContentSchema,
-  "Links": LinkContentSchema,
+  "Project": ProjectContentSchema,
+  "Skill": SkillContentSchema,
+  "Link": LinkContentSchema,
 }
 
 /**

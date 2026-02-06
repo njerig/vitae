@@ -77,9 +77,9 @@ export const GenericContentSchema = z.record(z.string(), z.unknown())
 const CONTENT_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "Work Experience": WorkContentSchema,
   "Education": EducationContentSchema,
-  "Projects": ProjectContentSchema,
-  "Skills": SkillContentSchema,
-  "Links": LinkContentSchema,
+  "Project": ProjectContentSchema,
+  "Skill": SkillContentSchema,
+  "Link": LinkContentSchema,
 }
 
 /**

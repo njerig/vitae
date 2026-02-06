@@ -28,7 +28,7 @@ export function ProjectFormFields({ form, setForm, hasError }: Props) {
       </div>
 
       {/* Details */}
-      <TextareaField label="Details" value={form.bullets ?? ""} onChange={update("bullets")} placeholder="Key features, technologies used" />
+      <TextareaField label="Bullet points" value={form.bullets ?? ""} onChange={update("bullets")} placeholder="Key features, technologies used" />
 
       {/* Skills */}
       <TagsField label="Technologies" value={form.skills ?? ""} onChange={update("skills")} placeholder="React, TypeScript, AWS" />

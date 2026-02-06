@@ -30,7 +30,7 @@ export const ITEM_TYPE_FIELDS: Record<string, FieldConfig[]> = {
     { name: "gpa", label: "GPA", type: "text", placeholder: "3.8" },
     { name: "bullets", label: "Details", type: "textarea", placeholder: "Relevant coursework, honors, etc." },
   ],
-  "Projects": [
+  "Project": [
     { name: "title", label: "Project Name", type: "text", required: true, placeholder: "My Awesome Project" },
     { name: "description", label: "Description", type: "text", placeholder: "A brief description" },
     { name: "url", label: "URL", type: "text", placeholder: "https://github.com/..." },
@@ -39,11 +39,11 @@ export const ITEM_TYPE_FIELDS: Record<string, FieldConfig[]> = {
     { name: "bullets", label: "Details", type: "textarea", placeholder: "Key features, technologies used" },
     { name: "skills", label: "Skills", type: "tags", placeholder: "React, TypeScript, AWS" },
   ],
-  "Skills": [
+  "Skill": [
     { name: "category", label: "Category", type: "text", required: true, placeholder: "Languages, Frameworks, Tools" },
     { name: "skills", label: "Skills", type: "tags", required: true, placeholder: "JavaScript, Python, Go" },
   ],
-  "Links": [
+  "Link": [
     { name: "label", label: "Label", type: "text", required: true, placeholder: "LinkedIn, GitHub, Portfolio" },
     { name: "url", label: "URL", type: "text", required: true, placeholder: "https://linkedin.com/in/..." },
   ],
@@ -71,9 +71,9 @@ export function getTitleField(displayName: string): string {
   const titleMap: Record<string, string> = {
     "Work Experience": "role",
     "Education": "institution",
-    "Projects": "title",
-    "Skills": "category",
-    "Links": "label",
+    "Project": "title",
+    "Skill": "category",
+    "Link": "label",
   }
   return titleMap[displayName] || "title"
 }
@@ -83,7 +83,7 @@ export function getSubtitleField(displayName: string): string | null {
   const subtitleMap: Record<string, string> = {
     "Work Experience": "org",
     "Education": "degree",
-    "Projects": "description",
+    "Project": "description",
   }
   return subtitleMap[displayName] || null
 }

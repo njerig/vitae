@@ -33,15 +33,14 @@ export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, togg
 
     switch (typeName) {
       case "Work Experience":
-
         return <WorkCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
       case "Education":
         return <EducationCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
-      case "Projects":
+      case "Project":
         return <ProjectCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
-      case "Skills":
+      case "Skill":
         return <SkillCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
-      case "Links":
+      case "Link":
         return <LinkCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
       default:
         return <MiscCard item={item} typeName={typeName} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />

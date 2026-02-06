@@ -112,8 +112,8 @@ export function DragItem({
       }
       result.skills = Array.isArray(content.skills) ? content.skills as string[] : []
       result.technologies = result.skills
-    } else if (sectionName === "Skills") {
-      result.title = String(content.category || content.title || item.title || "Skills")
+    } else if (sectionName === "Skill") {
+      result.title = String(content.category || content.title || item.title || "Skill")
       if (Array.isArray(content.skills)) {
         result.skills = content.skills as string[]
       } else if (typeof content.skills === 'string') {
@@ -122,7 +122,7 @@ export function DragItem({
         result.skills = content.items as string[]
       }
       result.subtitle = result.skills.join(", ")
-    } else if (sectionName === "Links") {
+    } else if (sectionName === "Link") {
       result.title = String(content.label || content.title || "")
       result.subtitle = String(content.url || "")
     } else {

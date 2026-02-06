@@ -105,11 +105,11 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
         return <WorkFormFields {...props} />
       case "Education":
         return <EducationFormFields {...props} />
-      case "Projects":
+      case "Project":
         return <ProjectFormFields {...props} />
-      case "Skills":
+      case "Skill":
         return <SkillFormFields {...props} />
-      case "Links":
+      case "Link":
         return <LinkFormFields {...props} />
       default:
         return <GenericFormFields {...props} />
