@@ -4,11 +4,14 @@ import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
 import { Timeline } from "@/lib/homepage/Timeline"
+import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
 import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
+import { useWorkingState } from "@/lib/working-state/useWorkingState"
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
+  const { state: workingState } = useWorkingState()
 
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
@@ -111,6 +114,11 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                   Last edited: {getLastEditedDate()}
                 </p>
               )}
+              
+              {/* Save Resume Button */}
+              <div className="mt-4 flex justify-center">
+                <SaveResumeButton workingState={workingState} />
+              </div>
             </div>
           </div>
 
