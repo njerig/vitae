@@ -148,3 +148,14 @@ export const ItemTypeQuerySchema = z.object({
 
 // for the resume name
 export const ResumeNameSchema = z.object({name: z.string().min(1, "Resume name is required")})
+
+// Version response schema (matches versions table)
+export const VersionSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string(),
+  name: z.string(),
+  snapshot: z.record(z.string(), z.unknown()),
+  created_at: z.string().or(z.date()),
+})
+
+export const VersionsArraySchema = z.array(VersionSchema)
