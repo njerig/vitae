@@ -47,6 +47,12 @@ Tests the `SaveResumeButton` and `SaveResumeModal` components that handle saving
 - Form inputs are disabled while saving
 - Prevents double-submission
 
+#### 8. **Duplicate Name Validation** (Test 13)
+- API returns 409 Conflict for duplicate names
+- Error message appears in modal (not as toast)
+- Modal stays open so user can correct the name
+- User-friendly message: "A resume version with this name already exists..."
+
 ## Running These Tests
 
 ```bash

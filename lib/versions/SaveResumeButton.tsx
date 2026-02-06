@@ -24,7 +24,7 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
     workingState.sections.length > 0 && 
     workingState.sections.some(section => section.item_ids.length > 0)
 
-  const handleSave = async (name: string) => {
+  const handleSave = async (name: string): Promise<{ success: boolean; error?: string }> => {
     setSaving(true)
     try {
       const response = await fetch("/api/versions", {
@@ -36,14 +36,28 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to save resume version")
+        // Extract error message from API response
+        const data = await response.json().catch(() => ({}))
+        const errorMessage = data.error || "Failed to save resume version"
+        
+        // For duplicate name errors (409), return the error to be shown in modal
+        if (response.status === 409) {
+          return { success: false, error: errorMessage }
+        }
+        
+        // For other errors, show toast and return error
+        toast.error(errorMessage)
+        return { success: false, error: errorMessage }
       }
 
       toast.success(`Resume "${name}" saved successfully!`)
       setIsModalOpen(false)
+      return { success: true }
     } catch (error) {
       console.error("Error saving resume:", error)
-      toast.error("Failed to save resume. Please try again.")
+      const errorMessage = "Failed to save resume. Please try again."
+      toast.error(errorMessage)
+      return { success: false, error: errorMessage }
     } finally {
       setSaving(false)
     }

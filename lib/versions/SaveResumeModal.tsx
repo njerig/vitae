@@ -5,7 +5,7 @@ import { ResumeNameSchema } from "@/lib/schemas"
 import { Spinner } from "@/lib/components/Spinner"
 
 type SaveResumeModalProps = {
-  onSave: (name: string) => Promise<void>
+  onSave: (name: string) => Promise<{ success: boolean; error?: string }>
   onClose: () => void
   saving: boolean
 }
@@ -39,13 +39,11 @@ export function SaveResumeModal({ onSave, onClose, saving }: SaveResumeModalProp
       return
     }
 
-    try {
-      await onSave(name)
-      // Modal will be closed by parent component on success
-    } catch (err) {
-      // Error handling is done by parent component via toast
-      console.error("Save failed:", err)
+    const saveResult = await onSave(name)
+    if (!saveResult.success && saveResult.error) {
+      setError(saveResult.error)
     }
+    // Modal will be closed by parent component on success
   }
 
   return (

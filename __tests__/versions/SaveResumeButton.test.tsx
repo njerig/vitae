@@ -219,4 +219,39 @@ describe('SaveResumeButton', () => {
       expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
     })
   })
+
+  it('shows duplicate name error in modal without toast', async () => {
+    // Mock fetch to return 409 Conflict (duplicate name)
+    ;(fetch as jest.Mock).mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: async () => ({ 
+        error: "A resume version with this name already exists. Please choose a different name." 
+      }),
+    })
+
+    render(<SaveResumeButton workingState={mockWorkingState} />)
+    
+    // Open modal
+    const openButton = screen.getByRole('button', { name: /save resume/i })
+    fireEvent.click(openButton)
+    
+    // Enter duplicate name and submit
+    const input = screen.getByLabelText(/resume name/i)
+    fireEvent.change(input, { target: { value: 'Existing Resume' } })
+    
+    const saveButton = screen.getByRole('button', { name: /^save$/i })
+    fireEvent.click(saveButton)
+
+    // Error message should appear in modal (not as toast)
+    await waitFor(() => {
+      expect(screen.getByText(/already exists/i)).toBeInTheDocument()
+    })
+
+    // Modal should still be open so user can correct the name
+    expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
+
+    // For 409 errors, toast should NOT be called
+    expect(toast.error).not.toHaveBeenCalled()
+  })
 })

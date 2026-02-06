@@ -23,6 +23,19 @@ export async function POST(request: NextRequest) {
 
   const { name } = result.data
 
+  // Check if name already exists for this user
+  const { rows: existingRows } = await pool.query(
+    `SELECT id FROM versions WHERE user_id = $1 AND name = $2`,
+    [userId, name]
+  )
+
+  if (existingRows.length > 0) {
+    return NextResponse.json(
+      { error: "A resume version with this name already exists. Please choose a different name." },
+      { status: 409 } // 409 Conflict
+    )
+  }
+
   // get the current working state (so we can save it as a version)
   let { rows } = await pool.query(
     `SELECT state, updated_at FROM working_state WHERE user_id = $1`,

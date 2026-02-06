@@ -191,7 +191,7 @@ describe('Home Page - Career History', () => {
 
     render(<HomeClient userName="Test User" userId="user_123" />)
 
-    expect(screen.getByText("All Items (…)")).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('All Items')
   })
 
   it('displays error message in form', () => {
