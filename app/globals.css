@@ -113,7 +113,7 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 2px solid var(--accent);
-  border-radius: var(--radius-sharp);
+  border-radius: var(--radius-soft) !important;
   transition: all 200ms;
   cursor: pointer;
 }
@@ -172,7 +172,7 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   border: 2px solid var(--ink);
-  border-radius: var(--radius-sharp);
+  border-radius: var(--radius-soft) !important;
   transition: all 200ms;
   cursor: pointer;
 }

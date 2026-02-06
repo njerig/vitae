@@ -55,9 +55,6 @@ export default function RootLayout({
                   </Link>
                 </SignedOut>
                 <SignedIn>
-                  <Link href='/resume'>
-                    <button className='btn-secondary'>Resume Builder</button>
-                  </Link>
                   <UserButton showName />
                 </SignedIn>
               </div>
