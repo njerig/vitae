@@ -146,7 +146,7 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
               return (
                 <div
                   key={idx}
-                  className="relative flex-shrink-0 transition-all cursor-pointer"
+                  className="relative shrink-0 transition-all cursor-pointer"
                   style={{
                     width: `${segment.percentage}%`,
                     background: isHovered ? "repeating-linear-gradient(90deg, transparent, transparent 4px, var(--grid) 4px, var(--grid) 8px)" : "transparent",
@@ -162,7 +162,7 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
             return (
               <div
                 key={idx}
-                className="relative flex-shrink-0 transition-opacity cursor-pointer"
+                className="relative shrink-0 transition-opacity cursor-pointer"
                 style={{
                   width: `${segment.percentage}%`,
                   background: segment.type === "work" ? "var(--accent)" : "var(--ink)",
