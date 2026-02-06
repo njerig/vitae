@@ -39,22 +39,32 @@ export default function RootLayout({
           {/* Header component - Editorial design */}
           <header className='absolute top-0 left-0 right-0 z-50 px-8 py-6 border-b'>
             <div className='max-w-7xl mx-auto flex justify-between items-center'>
-              {/* Logo - always visible */}
-              <Link href='/home' className='logo'>
-                Vitae
-              </Link>
+              {/* Left side - Logo and Home */}
+              <div className='flex items-center gap-6'>
+                <Link href='/' className='logo'>
+                  Vitae
+                </Link>
+                <SignedIn>
+                  <Link href='/home'>
+                    <button className='btn-nav'>Home</button>
+                  </Link>
+                </SignedIn>
+              </div>
 
               {/* Right side buttons */}
               <div className='flex items-center gap-4'>
                 <SignedOut>
                   <Link href='/auth/sign-in'>
-                    <button className='btn-secondary'>Sign In</button>
+                    <button className='btn-secondary rounded-lg'>Sign In</button>
                   </Link>
                   <Link href='/auth/sign-up'>
-                    <button className='btn-primary'>Sign Up</button>
+                    <button className='btn-primary rounded-lg'>Sign Up</button>
                   </Link>
                 </SignedOut>
                 <SignedIn>
+                  <Link href='/resume'>
+                    <button className='btn-nav'>Resume Builder</button>
+                  </Link>
                   <UserButton showName />
                 </SignedIn>
               </div>

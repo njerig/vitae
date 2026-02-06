@@ -182,6 +182,25 @@ header {
   color: var(--paper);
 }
 
+/* Navigation buttons - subtle until hover */
+.btn-nav {
+  font-family: var(--font-sans);
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--ink-fade);
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: var(--radius-soft) !important;
+  transition: all 200ms;
+  cursor: pointer;
+}
+
+.btn-nav:hover {
+  background: var(--paper-dark);
+  color: var(--ink);
+}
+
 /* -- Cards ---------------------------------------------------------------- */
 .card {
   padding: 1.5rem;

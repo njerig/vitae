@@ -84,8 +84,8 @@ export default function ResumeClient({ userName, userId }: { userName: string; u
       <div className="page-bg-gradient"></div>
       <div className="page-accent-light"></div>
 
-      <div className="relative z-10 pt-32 pb-16 px-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="relative z-10 pt-32 pb-16 px-8">
+        <div className="max-w-full mx-auto px-4">
           {/* Back to Home Button */}
           <div className="mb-6">
             <Link href="/home">
