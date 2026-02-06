@@ -141,3 +141,9 @@ export const IdQuerySchema = z.object({
 export const ItemTypeQuerySchema = z.object({
   item_type_id: z.string().uuid().optional(),
 })
+
+// ─────────────────────────────────────────────────────────────
+// Versions Schemas
+// ─────────────────────────────────────────────────────────────
+
+export const ResumeNameSchema = z.object({name: z.string().min(1, "Resume name is required")})

@@ -107,6 +107,8 @@ export async function PATCH(request: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+  await ensureUserWithDefaults(userId)
+
 
   const searchParams = request.nextUrl.searchParams
   const idResult = IdQuerySchema.safeParse({ id: searchParams.get("id") })
@@ -203,6 +205,9 @@ export async function DELETE(request: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  await ensureUserWithDefaults(userId)
+
 
   const searchParams = request.nextUrl.searchParams
   const idResult = IdQuerySchema.safeParse({ id: searchParams.get("id") })
