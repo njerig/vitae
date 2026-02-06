@@ -3,7 +3,7 @@
 import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
-import { Timeline } from "@/app/_components/Timeline"
+import { Timeline } from "@/lib/homepage/Timeline"
 import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 
