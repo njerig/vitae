@@ -43,3 +43,6 @@ next-env.d.ts
 
 # agents
 .agent/
+.agents/
+.cursor/
+.swc/
