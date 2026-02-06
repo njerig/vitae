@@ -5,6 +5,8 @@ export type CardProps = {
   item: CanonItem<unknown>
   onEdit: () => void
   onDelete: () => void
+  selected?: boolean
+  onToggle?: () => void
 }
 
 // Format date from YYYY-MM-DD to MM-DD-YYYY
