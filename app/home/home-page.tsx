@@ -10,6 +10,7 @@ import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { Spinner } from "@/lib/components/Spinner"
+import { PageHeader } from "@/lib/components/PageHeader"
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
@@ -95,42 +96,44 @@ export default function HomeClient({ userName, userId }: { userName: string; use
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-3xl font-semibold text-gray-900 mb-2">My Career History</h2>
-                <p className="text-lg text-gray-600">Add, edit, and manage your career items.</p>
+            <PageHeader
+              title="My Career History"
+              subtitle="Add, edit, and manage your career items."
+              actions={
+                <>
+                  <button onClick={startAdd} className="btn-primary flex items-center gap-2 rounded-lg" disabled={saving || loading || itemTypes.length === 0}>
+                    Add Item
+                    {(saving || loading) ? (
+                      <Spinner size={20} color="white" inline />
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    )}
+                  </button>
+                  <Link href="/resume">
+                    <button className="btn-secondary rounded-lg flex items-center gap-2">
+                      Resume Builder
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </Link>
+                </>
+              }
+            >
+              <div className="pt-4 border-t" style={{ borderColor: "var(--grid)" }}>
+                <Timeline items={items} itemTypes={itemTypes} />
+                {getLastEditedDate() && (
+                  <p className="text-xs text-right" style={{ color: "var(--ink)", opacity: 0.4 }}>
+                    Last edited: {getLastEditedDate()}
+                  </p>
+                )}
+                <div className="mt-4 flex justify-center">
+                  <SaveResumeButton workingState={workingState} />
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <button onClick={startAdd} className="btn-primary flex items-center gap-2 rounded-lg" disabled={saving || loading || itemTypes.length === 0}>
-                  {(saving || loading) ? (
-                    <Spinner size={20} color="white" inline />
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  )}
-                  Add Item
-                </button>
-                <Link href='/resume'>
-                  <button className="btn-secondary rounded-lg">Resume Builder</button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Summary */}
-            <div className="pt-4 border-t" style={{ borderColor: "var(--grid)" }}>
-              <Timeline items={items} itemTypes={itemTypes} />
-              {getLastEditedDate() && (
-                <p className="text-xs text-right" style={{ color: "var(--ink)", opacity: 0.4 }}>
-                  Last edited: {getLastEditedDate()}
-                </p>
-              )}
-              
-              {/* Save Resume Button */}
-              <div className="mt-4 flex justify-center">
-                <SaveResumeButton workingState={workingState} />
-              </div>
-            </div>
+            </PageHeader>
           </div>
 
           {/* Form */}
