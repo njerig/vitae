@@ -27,8 +27,8 @@ export default function Page() {
         <div className='content-section py-8'>
           <h2 className='section-title'>Why Vitae?</h2>
           <p className='section-text'>
-            Tailoring resumes for different positions (robotics vs web dev vs embedded systems) is tedious, messy, and error-prone. People maintain
-            multiple Word docs, lose track of which version they sent where, and spend hours manually rewriting the same experiences for different
+            Tailoring resumes for different positions (robotics vs. web development vs. embedded systems) is tedious, messy, and error-prone. People maintain
+            multiple Word documents, lose track of which version they sent where, and spend hours manually rewriting the same experiences for different
             audiences.
           </p>
         </div>
