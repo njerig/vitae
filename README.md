@@ -1,5 +1,7 @@
 # Vitae | CSE 115A
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c00e75ae-e102-4e5a-9575-cc23c5f48cb1/deploy-status)](https://app.netlify.com/projects/legendary-lolly-9ea701/deploys)
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
