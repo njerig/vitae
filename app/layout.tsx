@@ -41,11 +41,11 @@ export default function RootLayout({
             <div className='max-w-7xl mx-auto flex justify-between items-center'>
               {/* Left side - Logo and Home */}
               <div className='flex items-center gap-6'>
-                <Link href='/' className='logo'>
+                <Link href='/' className='logo flex items-center'>
                   Vitae
                 </Link>
                 <SignedIn>
-                  <Link href='/home'>
+                  <Link href='/home' className='flex items-center'>
                     <button className='btn-nav'>Home</button>
                   </Link>
                 </SignedIn>
@@ -54,15 +54,15 @@ export default function RootLayout({
               {/* Right side buttons */}
               <div className='flex items-center gap-4'>
                 <SignedOut>
-                  <Link href='/auth/sign-in'>
+                  <Link href='/auth/sign-in' className='flex items-center'>
                     <button className='btn-secondary rounded-lg'>Sign In</button>
                   </Link>
-                  <Link href='/auth/sign-up'>
+                  <Link href='/auth/sign-up' className='flex items-center'>
                     <button className='btn-primary rounded-lg'>Sign Up</button>
                   </Link>
                 </SignedOut>
                 <SignedIn>
-                  <Link href='/resume'>
+                  <Link href='/resume' className='flex items-center'>
                     <button className='btn-nav'>Resume Builder</button>
                   </Link>
                   <UserButton showName />
