@@ -5,7 +5,7 @@ import ResumeClient from "./resume-client"
 export default async function ResumePage() {
   const { userId } = await auth()
   const user = await currentUser()
-  const userName = user?.username ?? "User"
+  const userName = user?.fullName ?? user?.username ?? "User"
 
   if (!userId) {
     return (

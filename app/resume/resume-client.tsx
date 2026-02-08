@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { DragSection } from "../_components/resume/DragSection"
-import { DragItem } from "../_components/resume/DragItem"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
+import { ResumePreview } from "./ResumePreview"
+import type { CanonItem, ItemType } from "@/lib/types"
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return ""
@@ -21,25 +22,30 @@ const formatDate = (dateString: string): string => {
   }
 }
 
-export default function ResumeClient({ userName, userId }: { userName: string; userId: string }) {
+export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
-  const [sections, setSections] = useState<any[]>([])
-  const [draggedItem, setDraggedItem] = useState<any>(null)
-  const [draggedSection, setDraggedSection] = useState<number | null>(null)
-
-  useEffect(() => {
-    const grouped = itemTypes
+  const computedSections = useMemo<Array<{ typeName: string; typeId: string; items: CanonItem[] }>>(() => {
+    return (itemTypes as ItemType[])
       .map((type) => ({
         typeName: type.display_name,
         typeId: type.id,
-        items: allItems
+        items: (allItems as CanonItem[])
           .filter((item) => item.item_type_id === type.id)
           .sort((a, b) => a.position - b.position),
       }))
       .filter(section => section.items.length > 0)
-    
-    setSections(grouped)
   }, [allItems, itemTypes])
+  const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
+  const sections = localSections ?? computedSections
+  const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
+  const [draggedSection, setDraggedSection] = useState<number | null>(null)
+
+  const setSectionsLocal = useCallback(
+    (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
+      setLocalSections(next)
+    },
+    []
+  )
 
   const saveItemPosition = useCallback(async (itemId: string, position: number) => {
     try {
@@ -54,7 +60,7 @@ export default function ResumeClient({ userName, userId }: { userName: string; u
       const { sectionIndex } = draggedItem
       const section = sections[sectionIndex]
       
-      section.items.forEach((item: any, index: number) => {
+      section.items.forEach((item, index: number) => {
         if (item.position !== index) {
           saveItemPosition(item.id, index)
         }
@@ -135,7 +141,7 @@ export default function ResumeClient({ userName, userId }: { userName: string; u
                       section={section}
                       sectionIndex={sectionIndex}
                       sections={sections}
-                      setSections={setSections}
+                      setSections={setSectionsLocal}
                       draggedSection={draggedSection}
                       setDraggedSection={setDraggedSection}
                       draggedItem={draggedItem}
@@ -151,17 +157,17 @@ export default function ResumeClient({ userName, userId }: { userName: string; u
 
             {/* Right Column - Resume Preview */}
             <div className="lg:sticky lg:top-32 h-fit">
-              <div className="bg-white rounded-2xl border p-8 shadow-sm min-h-[600px] flex items-center justify-center" style={{ 
+              <div className="bg-white rounded-2xl border shadow-sm min-h-[600px]" style={{ 
                 borderColor: "var(--grid)"
               }}>
-                <div className="text-center">
-                  <h3 className="text-2xl font-semibold mb-4" style={{ 
+                <div className="p-8 border-b" style={{ borderColor: "var(--grid)" }}>
+                  <h3 className="text-2xl font-semibold" style={{ 
                     color: "var(--ink)",
                     fontFamily: "var(--font-serif)"
                   }}>Resume Preview</h3>
-                  <p className="text-lg" style={{ color: "var(--ink-fade)" }}>
-                    Your resume preview will appear here
-                  </p>
+                </div>
+                <div className="p-8">
+                  <ResumePreview sections={sections} profile={{ name: userName }} />
                 </div>
               </div>
             </div>
