@@ -57,6 +57,7 @@ export function useWorkingState() {
         toast.error("Failed to save your working state")
       } else {
         console.log("Saved working state:", newState)
+        setState(newState) 
       }
     } catch (error) {
       console.error("Error saving working state:", error)
@@ -102,6 +103,7 @@ export function useWorkingState() {
     loading,
     saving,
     isSelected,
-    toggleItem
+    toggleItem,
+    saveState 
   }
 }

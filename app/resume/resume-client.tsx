@@ -2,75 +2,53 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useState, useMemo, useCallback } from "react"
+import { useCallback } from "react"
+import { useWorkingState } from "@/lib/working-state/useWorkingState"
+import { useResumeSections } from "../../lib/resume-builder/useResumeSections"
+import { useDragState } from "../../lib/resume-builder/useDragState"
+import { formatDate } from "./utils"
 import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { ResumePreview } from "./ResumePreview"
-import type { CanonItem, ItemType } from "@/lib/types"
-
-const formatDate = (dateString: string): string => {
-  if (!dateString) return ""
-  try {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      month: '2-digit', 
-      day: '2-digit', 
-      year: 'numeric' 
-    })
-  } catch {
-    return dateString
-  }
-}
 
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
-  const computedSections = useMemo<Array<{ typeName: string; typeId: string; items: CanonItem[] }>>(() => {
-    return (itemTypes as ItemType[])
-      .map((type) => ({
-        typeName: type.display_name,
-        typeId: type.id,
-        items: (allItems as CanonItem[])
-          .filter((item) => item.item_type_id === type.id)
-          .sort((a, b) => a.position - b.position),
-      }))
-      .filter(section => section.items.length > 0)
-  }, [allItems, itemTypes])
-  const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
-  const sections = localSections ?? computedSections
-  const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
-  const [draggedSection, setDraggedSection] = useState<number | null>(null)
-
-  const setSectionsLocal = useCallback(
-    (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
-      setLocalSections(next)
-    },
-    []
+  const { state: workingState, loading: workingStateLoading, saving: workingStateSaving, saveState } = useWorkingState()
+  
+  // Manage sections with working state
+  const { sections, setSections } = useResumeSections(
+    allItems,
+    itemTypes,
+    workingState,
+    workingStateLoading,
+    saveState
   )
 
+  // Save item position to database
   const saveItemPosition = useCallback(async (itemId: string, position: number) => {
     try {
+      console.log("Saving item position:", itemId, position)
       await patch(itemId, { position })
     } catch (error) {
       console.error("Failed to save item position:", error)
     }
   }, [patch])
 
-  const handleItemDragEnd = () => {
-    if (draggedItem) {
-      const { sectionIndex } = draggedItem
-      const section = sections[sectionIndex]
-      
-      section.items.forEach((item, index: number) => {
-        if (item.position !== index) {
-          saveItemPosition(item.id, index)
-        }
-      })
-    }
-    
-    setDraggedItem(null)
-  }
+  // Manage drag and drop state
+  const {
+    draggedItem,
+    setDraggedItem,
+    draggedSection,
+    setDraggedSection,
+    handleItemDragEnd,
+    isDragging
+  } = useDragState(sections, saveItemPosition)
 
-  if (loading) {
+  // Loading state
+  const isLoading = loading || workingStateLoading
+
+  if (isLoading) {
     return (
       <div className="page-container">
         <div className="page-bg-gradient"></div>
@@ -93,6 +71,14 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
 
       <div className="relative z-10 pt-32 pb-16 px-8">
         <div className="max-w-full mx-auto px-4">
+          {/* Saving indicator */}
+          {workingStateSaving && (
+            <div className="fixed top-4 right-4 z-50 bg-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 border border-gray-200">
+              <Spinner size={16} />
+              <span className="text-sm text-gray-600">Auto-saving...</span>
+            </div>
+          )}
+
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Resume Builder */}
@@ -100,21 +86,29 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
               <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
                 <PageHeader
                   title="Resume Builder"
-                  subtitle="Drag to reorder sections and items"
+                  subtitle="Drag to reorder sections and items. Changes are auto-saved."
                   actions={
-                    <Link href="/home">
-                      <button className="btn-secondary rounded-lg flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Career History
-                      </button>
-                    </Link>
+                    <>
+                      <Link href="/home">
+                        <button className="btn-secondary rounded-lg flex items-center gap-2 mr-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                          </svg>
+                          Career History
+                        </button>
+                      </Link>
+                      {workingStateSaving && (
+                        <span className="text-sm text-gray-500 flex items-center">
+                          <Spinner size={14} />
+                          <span className="ml-2">Saving...</span>
+                        </span>
+                      )}
+                    </>
                   }
                 />
               </div>
 
-              {(draggedItem !== null || draggedSection !== null) && (
+              {isDragging && (
                 <div className="rounded-xl p-4" style={{ 
                   backgroundColor: "var(--accent)",
                   borderColor: "var(--accent-hover)"
@@ -141,7 +135,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                       section={section}
                       sectionIndex={sectionIndex}
                       sections={sections}
-                      setSections={setSectionsLocal}
+                      setSections={setSections}
                       draggedSection={draggedSection}
                       setDraggedSection={setDraggedSection}
                       draggedItem={draggedItem}
@@ -161,10 +155,20 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                 borderColor: "var(--grid)"
               }}>
                 <div className="p-8 border-b" style={{ borderColor: "var(--grid)" }}>
-                  <h3 className="text-2xl font-semibold" style={{ 
-                    color: "var(--ink)",
-                    fontFamily: "var(--font-serif)"
-                  }}>Resume Preview</h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-2xl font-semibold" style={{ 
+                      color: "var(--ink)",
+                      fontFamily: "var(--font-serif)"
+                    }}>
+                      Resume Preview
+                    </h3>
+                    {workingStateSaving && (
+                      <span className="text-sm text-gray-500 flex items-center">
+                        <Spinner size={14} />
+                        <span className="ml-1">Auto-saving...</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="p-8">
                   <ResumePreview sections={sections} profile={{ name: userName }} />
