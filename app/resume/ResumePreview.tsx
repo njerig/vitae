@@ -30,6 +30,8 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   const [errorForExistingSvg, setErrorForExistingSvg] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const requestSeq = useRef(0)
+  const abortRef = useRef<AbortController | null>(null)
+  const hasSvgRef = useRef(false)
 
   const data = useMemo(() => {
     return {
@@ -43,6 +45,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   }, [profile, sections])
 
   useEffect(() => {
+    hasSvgRef.current = Boolean(svg)
     if (containerRef.current && svg) {
       containerRef.current.innerHTML = svg
     }
@@ -52,7 +55,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
     const timeoutId: NodeJS.Timeout = setTimeout(() => {
       void (async () => {
         const seq = ++requestSeq.current
-        if (svg) {
+        if (hasSvgRef.current) {
           setIsUpdating(true)
         } else {
           setLoading(true)
@@ -60,10 +63,15 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
         setError(null)
 
         try {
+          abortRef.current?.abort()
+          const controller = new AbortController()
+          abortRef.current = controller
+
           const response = await fetch("/api/typst/compile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ data }),
+            signal: controller.signal,
           })
 
           if (!response.ok) {
@@ -84,9 +92,12 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           setError(null)
           setErrorForExistingSvg(null)
         } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") {
+            return
+          }
           console.error("Preview compilation error:", err)
           const msg = err instanceof Error ? err.message : "Failed to generate preview"
-          if (!svg) {
+          if (!hasSvgRef.current) {
             setError(msg)
           } else {
             setErrorForExistingSvg(msg)
@@ -99,8 +110,11 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
       })()
     }, 500)
 
-    return () => clearTimeout(timeoutId)
-  }, [data, svg])
+    return () => {
+      clearTimeout(timeoutId)
+      abortRef.current?.abort()
+    }
+  }, [data])
 
   if (loading && !svg) {
     return (

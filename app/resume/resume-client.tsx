@@ -37,6 +37,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
   }, [allItems, itemTypes])
   const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
   const sections = localSections ?? computedSections
+  const previewProfile = useMemo(() => ({ name: userName }), [userName])
   const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
 
@@ -167,7 +168,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   }}>Resume Preview</h3>
                 </div>
                 <div className="p-8">
-                  <ResumePreview sections={sections} profile={{ name: userName }} />
+                  <ResumePreview sections={sections} profile={previewProfile} />
                 </div>
               </div>
             </div>
