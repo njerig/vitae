@@ -7,6 +7,9 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { act } from "react"
+import toast from "react-hot-toast"
+
+jest.mock("react-hot-toast")
 
 // Mock fetch
 const mockFetch = jest.fn()
@@ -15,9 +18,9 @@ global.fetch = mockFetch as unknown as typeof fetch
 // Simple test component that uses the hook
 function TestComponent() {
   const { isSelected, toggleItem, loading } = useWorkingState()
-  
+
   if (loading) return <div>Loading...</div>
-  
+
   return (
     <div>
       <input
@@ -40,8 +43,8 @@ describe("Select/Deselect Integration Flow", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // Suppress console output for cleaner test logs
-    jest.spyOn(console, 'log').mockImplementation(() => {})
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'log').mockImplementation(() => { })
+    jest.spyOn(console, 'error').mockImplementation(() => { })
   })
 
   it("loads initial state from API on mount", async () => {
@@ -75,7 +78,7 @@ describe("Select/Deselect Integration Flow", () => {
     // Verify checkbox reflects loaded state
     const checkbox1 = screen.getByTestId("checkbox-item-1") as HTMLInputElement
     const checkbox2 = screen.getByTestId("checkbox-item-2") as HTMLInputElement
-    
+
     expect(checkbox1.checked).toBe(true)  // item-1 was in initial state
     expect(checkbox2.checked).toBe(false) // item-2 was not
   })
@@ -99,11 +102,11 @@ describe("Select/Deselect Integration Flow", () => {
     // Mock the PUT response
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ 
-        state: { 
-          sections: [{ item_type_id: "type-1", item_ids: ["item-1"] }] 
+      json: () => Promise.resolve({
+        state: {
+          sections: [{ item_type_id: "type-1", item_ids: ["item-1"] }]
         },
-        updated_at: "2026-02-07T00:00:00.000Z" 
+        updated_at: "2026-02-07T00:00:00.000Z"
       }),
     })
 
@@ -132,11 +135,11 @@ describe("Select/Deselect Integration Flow", () => {
     // Initial state: item-1 selected
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ 
-        state: { 
-          sections: [{ item_type_id: "type-1", item_ids: ["item-1"] }] 
+      json: () => Promise.resolve({
+        state: {
+          sections: [{ item_type_id: "type-1", item_ids: ["item-1"] }]
         },
-        updated_at: "2026-02-07T00:00:00.000Z" 
+        updated_at: "2026-02-07T00:00:00.000Z"
       }),
     })
 
@@ -152,9 +155,9 @@ describe("Select/Deselect Integration Flow", () => {
     // Mock the PUT response (empty after unchecking)
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ 
+      json: () => Promise.resolve({
         state: { sections: [] },
-        updated_at: "2026-02-07T00:00:00.000Z" 
+        updated_at: "2026-02-07T00:00:00.000Z"
       }),
     })
 
@@ -200,9 +203,9 @@ describe("Select/Deselect Integration Flow", () => {
     // Check first checkbox
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ 
+      json: () => Promise.resolve({
         state: { sections: [{ item_type_id: "type-1", item_ids: ["item-1"] }] },
-        updated_at: "2026-02-07T00:00:00.000Z" 
+        updated_at: "2026-02-07T00:00:00.000Z"
       }),
     })
 
@@ -218,9 +221,9 @@ describe("Select/Deselect Integration Flow", () => {
     // Check second checkbox
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ 
+      json: () => Promise.resolve({
         state: { sections: [{ item_type_id: "type-1", item_ids: ["item-1", "item-2"] }] },
-        updated_at: "2026-02-07T00:00:00.000Z" 
+        updated_at: "2026-02-07T00:00:00.000Z"
       }),
     })
 
@@ -233,4 +236,163 @@ describe("Select/Deselect Integration Flow", () => {
       expect(checkbox2.checked).toBe(true)
     })
   })
+
+  describe("multiple item toggling", () => {
+    it("handles toggling multiple items in rapid succession", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: { sections: [] },
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      render(<TestComponent />)
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
+      })
+
+      const checkbox1 = screen.getByTestId("checkbox-item-1") as HTMLInputElement
+      const checkbox2 = screen.getByTestId("checkbox-item-2") as HTMLInputElement
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({
+          state: { sections: [] },
+          updated_at: new Date().toISOString()
+        }),
+      })
+
+      await act(async () => {
+        await userEvent.click(checkbox1)
+        await userEvent.click(checkbox2)
+      })
+
+      await waitFor(() => {
+        expect(checkbox1.checked).toBe(true)
+        expect(checkbox2.checked).toBe(true)
+      })
+    })
+
+    it("handles toggling same item on and off multiple times", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: { sections: [] },
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      render(<TestComponent />)
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
+      })
+
+      const checkbox1 = screen.getByTestId("checkbox-item-1") as HTMLInputElement
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({
+          state: { sections: [] },
+          updated_at: new Date().toISOString()
+        }),
+      })
+
+      await act(async () => {
+        await userEvent.click(checkbox1)
+      })
+
+      await waitFor(() => expect(checkbox1.checked).toBe(true))
+
+      await act(async () => {
+        await userEvent.click(checkbox1)
+      })
+
+      await waitFor(() => expect(checkbox1.checked).toBe(false))
+
+      await act(async () => {
+        await userEvent.click(checkbox1)
+      })
+
+      await waitFor(() => expect(checkbox1.checked).toBe(true))
+    })
+  })
+
+  describe("error handling and recovery", () => {
+    it("shows error and reverts state when API call fails", async () => {
+      const mockToastError = jest.fn()
+        ; (toast as any).error = mockToastError
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: {
+            sections: [{
+              item_type_id: "type-1",
+              item_ids: ["item-1"]
+            }]
+          },
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      render(<TestComponent />)
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
+      })
+
+      const checkbox1 = screen.getByTestId("checkbox-item-1") as HTMLInputElement
+      expect(checkbox1.checked).toBe(true)
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ error: "Server error" }),
+      })
+
+      await act(async () => {
+        await userEvent.click(checkbox1)
+      })
+
+      await waitFor(() => {
+        expect(checkbox1.checked).toBe(true)
+        expect(mockToastError).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe("state persistence", () => {
+    it("persists state across component re-renders", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: {
+            sections: [{
+              item_type_id: "type-1",
+              item_ids: ["item-1"]
+            }]
+          },
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      const { rerender } = render(<TestComponent />)
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
+      })
+
+      const checkbox1 = screen.getByTestId("checkbox-item-1") as HTMLInputElement
+      expect(checkbox1.checked).toBe(true)
+
+      rerender(<TestComponent />)
+
+      const checkbox1After = screen.getByTestId("checkbox-item-1") as HTMLInputElement
+      expect(checkbox1After.checked).toBe(true)
+    })
+  })
+
 })
