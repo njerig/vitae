@@ -49,7 +49,7 @@ describe("buildResumeViewModel", () => {
                 start: "2024-09-26",
                 end: "2026-06-12",
                 gpa: "3.74",
-                bullets: ["Phi Theta Kappa"],
+                bullets: ["Dean's List"],
               },
             },
           ],
@@ -131,6 +131,98 @@ describe("buildResumeViewModel", () => {
     expect(vm.sections.some((s) => s.title === "Link" || s.title === "Links")).toBe(false)
     // Unknown sections are ignored for now.
     expect(vm.sections.some((s) => s.title === "Awards")).toBe(false)
+  })
+
+  it("deduplicates merged profile links by text + href", () => {
+    const raw = {
+      profile: {
+        name: "Test",
+        links: [
+          { text: "LinkedIn", href: "https://linkedin.com/in/test" },
+          { text: "LinkedIn", href: "https://linkedin.com/in/test" },
+        ],
+      },
+      sections: [
+        {
+          typeName: "Links",
+          items: [
+            { title: "LinkedIn", content: { label: "LinkedIn", url: "https://linkedin.com/in/test" } },
+            { title: "GitHub", content: { label: "GitHub", url: "https://github.com/test" } },
+          ],
+        },
+      ],
+    }
+
+    const vm = buildResumeViewModel(raw)
+    expect(vm.profile.links).toEqual([
+      { text: "LinkedIn", href: "https://linkedin.com/in/test" },
+      { text: "GitHub", href: "https://github.com/test" },
+    ])
+  })
+
+  it("handles partial and invalid date strings without crashing", () => {
+    const raw = {
+      profile: { name: "Test" },
+      sections: [
+        {
+          typeName: "Projects",
+          items: [
+            {
+              title: "YearOnly",
+              content: {
+                start: "2025",
+                end: "2026-13-01", // invalid month should degrade to year only
+                bullets: ["A"],
+                skills: ["TypeScript"],
+              },
+            },
+            {
+              title: "InvalidStart",
+              content: {
+                start: "not-a-date",
+                end: "",
+                bullets: ["B"],
+                skills: [],
+              },
+            },
+          ],
+        },
+      ],
+    }
+
+    const vm = buildResumeViewModel(raw)
+    expect(vm.sections).toHaveLength(1)
+    expect(vm.sections[0].entries).toHaveLength(2)
+
+    const first = vm.sections[0].entries[0]
+    expect(first.kind).toBe("project")
+    if (first.kind !== "project") throw new Error("expected project entry")
+    expect(first.dates.start).toEqual({ year: 2025 })
+    expect(first.dates.end).toEqual({ year: 2026 })
+
+    const second = vm.sections[0].entries[1]
+    expect(second.kind).toBe("project")
+    if (second.kind !== "project") throw new Error("expected project entry")
+    expect(second.dates.start).toBeNull()
+    expect(second.dates.end).toBeNull()
+  })
+
+  it("drops empty skills sections instead of emitting empty entries", () => {
+    const raw = {
+      profile: { name: "Test" },
+      sections: [
+        {
+          typeName: "Skills",
+          items: [
+            { title: "Bad1", content: { category: "", skills: ["TypeScript"] } },
+            { title: "Bad2", content: { category: "Languages", skills: [] } },
+          ],
+        },
+      ],
+    }
+
+    const vm = buildResumeViewModel(raw)
+    expect(vm.sections).toEqual([])
   })
 })
 
