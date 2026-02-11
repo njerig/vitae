@@ -5,17 +5,16 @@ import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
 import { Timeline } from "@/lib/homepage/Timeline"
-import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
 import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
+
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
 
-  const { state: workingState } = useWorkingState()
+
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
@@ -129,9 +128,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
                     Last edited: {getLastEditedDate()}
                   </p>
                 )}
-                <div className="mt-4 flex justify-center">
-                  <SaveResumeButton workingState={workingState} />
-                </div>
+
               </div>
             </PageHeader>
           </div>

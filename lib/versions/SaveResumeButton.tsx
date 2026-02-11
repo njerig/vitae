@@ -68,11 +68,11 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="btn-primary flex items-center gap-2"
+        className="btn-primary rounded-md px-2 py-1 text-sm flex items-center gap-1"
         disabled={!hasSelectedItems}
         title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}
       >
-        <Save className="w-5 h-5" />
+        <Save className="w-8 h-8" />
         Save Resume
       </button>
 

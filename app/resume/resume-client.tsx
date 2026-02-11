@@ -7,6 +7,8 @@ import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
+import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
+import { ChevronLeft } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
 import type { CanonItem, ItemType } from "@/lib/types"
 
@@ -43,7 +45,18 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
   const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
 
-  const { isSelected, toggleItem } = useWorkingState()
+  const { state: workingState, isSelected, toggleItem } = useWorkingState()
+
+  const filteredSections = useMemo(() => {
+    const selectedIds = new Set(workingState.sections.flatMap(s => s.item_ids))
+    if (selectedIds.size === 0) return []
+    return sections
+      .map(section => ({
+        ...section,
+        items: section.items.filter(item => selectedIds.has(item.id))
+      }))
+      .filter(section => section.items.length > 0)
+  }, [sections, workingState])
 
   const setSectionsLocal = useCallback(
     (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
@@ -102,21 +115,17 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Resume Builder */}
             <div className="space-y-6">
-              <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between align-center content-center items-center">
+                <Link href="/home">
+                  <ChevronLeft className="h-6 w-6 justify-self-start cursor-pointer"/>
+                </Link>
                 <PageHeader
                   title="Resume Builder"
                   subtitle="Drag to reorder sections and items"
-                  actions={
-                    <Link href="/home">
-                      <button className="btn-secondary rounded-lg flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Career History
-                      </button>
-                    </Link>
-                  }
                 />
+                <div className="flex flex-row align-center self-center justify-center">
+                  <SaveResumeButton workingState={workingState} />
+                </div>
               </div>
 
               {(draggedItem !== null || draggedSection !== null) && (
@@ -174,7 +183,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   }}>Resume Preview</h3>
                 </div>
                 <div className="p-8">
-                  <ResumePreview sections={sections} profile={{ name: userName }} />
+                  <ResumePreview sections={filteredSections} profile={{ name: userName }} />
                 </div>
               </div>
             </div>
