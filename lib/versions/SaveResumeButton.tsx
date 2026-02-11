@@ -72,7 +72,7 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
         disabled={!hasSelectedItems}
         title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}
       >
-        <Save className="w-8 h-8" />
+        <Save className="w-6 h-6" />
         Save Resume
       </button>
 

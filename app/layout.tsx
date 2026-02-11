@@ -42,7 +42,7 @@ export default function RootLayout({
               {/* Left side - Logo and Home */}
               <div className='flex items-center gap-6'>
                 <Link href='/' className='logo flex items-center'>
-                <h1>Vitae</h1>
+                <h2>Vitae</h2>
                 </Link>
               </div>
 
@@ -62,6 +62,9 @@ export default function RootLayout({
                   </Link>
                   <Link href='/resume' className='flex items-center'>
                     <button className='btn-nav'>Resume Builder</button>
+                  </Link>
+                  <Link href='/versions' className='flex items-center'>
+                    <button className='btn-nav'>Version History</button>
                   </Link>
                   <UserButton showName />
                 </SignedIn>

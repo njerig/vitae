@@ -1,0 +1,18 @@
+import { auth, currentUser } from "@clerk/nextjs/server"
+import VersionsClient from "./versions-client"
+
+export default async function VersionsPage() {
+  const { userId } = await auth()
+  const user = await currentUser()
+  const userName = user?.fullName ?? user?.username ?? "User"
+
+  if (!userId) {
+    return (
+      <div className='flex flex-col align-center items-center justify-center min-h-screen'>
+        <p className='text-gray-900 text-4xl'>Please sign in to view your saved resumes</p>
+      </div>
+    )
+  }
+
+  return <VersionsClient userName={userName} userId={userId} />
+}
