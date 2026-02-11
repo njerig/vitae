@@ -39,6 +39,9 @@ function TestComponent() {
 describe("Select/Deselect Integration Flow", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    // Suppress console output for cleaner test logs
+    jest.spyOn(console, 'log').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   it("loads initial state from API on mount", async () => {

@@ -10,9 +10,11 @@ interface VersionCardProps {
   version: Version
   onDelete: (id: string, name: string) => void
   isDeleting: boolean
+  onRestore: (id: string, name: string) => void
+  isRestoring: boolean
 }
 
-export function VersionCard({ version, onDelete, isDeleting }: VersionCardProps) {
+export function VersionCard({ version, onDelete, isDeleting, onRestore, isRestoring }: VersionCardProps) {
   const formatDate = (dateString: string): string => {
     try {
       return new Date(dateString).toLocaleDateString('en-US', {
@@ -37,6 +39,13 @@ export function VersionCard({ version, onDelete, isDeleting }: VersionCardProps)
           </p>
         </div>
         <div className="flex gap-2 pt-2 border-t" style={{ borderColor: "var(--grid)" }}>
+          <button
+            onClick={() => onRestore(version.id, version.name)}
+            disabled={isRestoring}
+            className="card-action-edit flex-1"
+          >
+            {isRestoring ? "Restoring..." : "Restore"}
+          </button>
           <button
             onClick={() => onDelete(version.id, version.name)}
             disabled={isDeleting}

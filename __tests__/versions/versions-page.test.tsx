@@ -32,6 +32,8 @@ describe('Versions Page', () => {
     jest.clearAllMocks()
     // Mock window.confirm
     global.confirm = jest.fn(() => true)
+    // Suppress console.error for expected errors in tests
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('Loading State', () => {

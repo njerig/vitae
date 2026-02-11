@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { Spinner } from "@/lib/components/Spinner"
 import { VersionCard } from "@/lib/versions/VersionCard"
+import { RestoreConfirmModal } from "@/lib/versions/RestoreConfirmModal"
 import toast from "react-hot-toast"
 import { ChevronRight } from "lucide-react"
 
@@ -22,9 +24,12 @@ interface VersionsClientProps {
 }
 
 export default function VersionsClient({ userName }: VersionsClientProps) {
+  const router = useRouter()
   const [versions, setVersions] = useState<Version[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [restoring, setRestoring] = useState<string | null>(null)
+  const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
 
   useEffect(() => {
     fetchVersions()
@@ -69,6 +74,35 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
       toast.error("Failed to delete resume")
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const handleRestoreClick = (id: string, name: string) => {
+    setConfirmRestore({ id, name })
+  }
+
+  const handleRestoreConfirm = async () => {
+    if (!confirmRestore) return
+
+    const { id, name } = confirmRestore
+    setConfirmRestore(null)
+    setRestoring(id)
+
+    try {
+      const response = await fetch(`/api/versions/${id}/restore`, {
+        method: "POST",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to restore version")
+      }
+
+      toast.success(`"${name}" restored successfully`)
+      router.push("/resume")
+    } catch (error) {
+      console.error("Error restoring version:", error)
+      toast.error("Failed to restore version")
+      setRestoring(null)
     }
   }
 
@@ -132,12 +166,21 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                   version={version}
                   onDelete={handleDelete}
                   isDeleting={deleting === version.id}
+                  onRestore={handleRestoreClick}
+                  isRestoring={restoring === version.id}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <RestoreConfirmModal
+        isOpen={confirmRestore !== null}
+        onClose={() => setConfirmRestore(null)}
+        onConfirm={handleRestoreConfirm}
+        versionName={confirmRestore?.name ?? ""}
+      />
     </div>
   )
 }
