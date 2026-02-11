@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
@@ -25,13 +25,7 @@ const formatDate = (dateString: string): string => {
 
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
-  const [sections, setSections] = useState<any[]>([])
-  const [draggedItem, setDraggedItem] = useState<any>(null)
-  const [draggedSection, setDraggedSection] = useState<number | null>(null)
-  const { isSelected, toggleItem } = useWorkingState()
 
-  useEffect(() => {
-    const grouped = itemTypes
   const computedSections = useMemo<Array<{ typeName: string; typeId: string; items: CanonItem[] }>>(() => {
     return (itemTypes as ItemType[])
       .map((type) => ({
@@ -42,13 +36,14 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
           .sort((a, b) => a.position - b.position),
       }))
       .filter(section => section.items.length > 0)
-
-    setSections(grouped)
   }, [allItems, itemTypes])
+
   const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
   const sections = localSections ?? computedSections
   const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
+
+  const { isSelected, toggleItem } = useWorkingState()
 
   const setSectionsLocal = useCallback(
     (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
