@@ -91,6 +91,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
   const mockPatch = jest.fn()
 
   beforeEach(() => {
+    jest.spyOn(console, "log").mockImplementation(() => {})
     jest.clearAllMocks()
     
     ;(useCanon as jest.Mock).mockReturnValue({
@@ -101,14 +102,17 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
     })
     
     ;(useWorkingState as jest.Mock).mockReturnValue({
-      state: null,
+      state: { sections: [] },
       loading: false,
       saving: false,
       saveState: mockSaveState,
+      isSelected: jest.fn().mockReturnValue(false),
+      toggleItem: jest.fn(),
     })
   })
 
   afterEach(() => {
+    ;(console.log as jest.Mock).mockRestore()
     jest.clearAllTimers()
   })
 
@@ -137,6 +141,8 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         loading: false,
         saving: false,
         saveState: mockSaveState,
+        isSelected: jest.fn().mockReturnValue(false),
+        toggleItem: jest.fn(),
       })
 
       render(<ResumeClient userName="Test User" userId="user_123" />)
@@ -162,6 +168,8 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         loading: false,
         saving: false,
         saveState: mockSaveState,
+        isSelected: jest.fn().mockReturnValue(false),
+        toggleItem: jest.fn(),
       })
 
       render(<ResumeClient userName="Test User" userId="user_123" />)
@@ -310,6 +318,8 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         loading: false,
         saving: false,
         saveState: mockSaveState,
+        isSelected: jest.fn().mockReturnValue(false),
+        toggleItem: jest.fn(),
       })
 
       render(<ResumeClient userName="Test User" userId="user_123" />)
@@ -338,10 +348,12 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
     it("shows saving indicator when working state is saving", () => {
       ;(useWorkingState as jest.Mock).mockReturnValue({
-        state: null,
+        state: { sections: [] },
         loading: false,
         saving: true,
         saveState: mockSaveState,
+        isSelected: jest.fn().mockReturnValue(false),
+        toggleItem: jest.fn(),
       })
 
       render(<ResumeClient userName="Test User" userId="user_123" />)
@@ -446,6 +458,8 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         loading: false,
         saving: false,
         saveState: mockSaveState,
+        isSelected: jest.fn().mockReturnValue(false),
+        toggleItem: jest.fn(),
       })
 
       render(<ResumeClient userName="Test User" userId="user_123" />)
