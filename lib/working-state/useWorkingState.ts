@@ -43,7 +43,7 @@ export function useWorkingState() {
     return result
   }, [state, updateCount])
 
-  const saveState = useCallback(async (newState: WorkingState) => {
+  const saveState = useCallback(async (newState: WorkingState): Promise<void> => {
     setSaving(true)
     try {
       const res = await fetch("/api/working-state", {
@@ -53,14 +53,13 @@ export function useWorkingState() {
       })
       if (!res.ok) {
         console.error("Failed to save working state")
-        toast.error("Failed to save your working state")
+        throw new Error("Failed to save")
       } else {
         console.log("Saved working state:", newState)
-        setState(newState) 
       }
     } catch (error) {
       console.error("Error saving working state:", error)
-      toast.error("Failed to save your working state")
+      throw error // Re-throw so toggleItem can catch it
     } finally {
       setSaving(false)
     }
@@ -68,6 +67,9 @@ export function useWorkingState() {
 
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
     setState(prev => {
+      // Save the previous state in case we need to revert
+      const previousState = prev
+
       const newState = { ...prev, sections: [...prev.sections] }
 
       let section = newState.sections.find(s => s.item_type_id === itemTypeId)
@@ -89,7 +91,12 @@ export function useWorkingState() {
         section.item_ids.push(itemId)
       }
 
-      saveState(newState)
+      // Save to API and revert on failure
+      saveState(newState).catch(() => {
+        // Revert to previous state if save fails
+        setState(previousState)
+        toast.error("Failed to toggle checkbox")
+      })
 
       setUpdateCount(c => c + 1)
 
@@ -103,6 +110,6 @@ export function useWorkingState() {
     saving,
     isSelected,
     toggleItem,
-    saveState 
+    saveState
   }
 }
