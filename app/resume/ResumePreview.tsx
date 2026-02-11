@@ -27,7 +27,9 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [errorForExistingSvg, setErrorForExistingSvg] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const requestSeq = useRef(0)
 
   const data = useMemo(() => {
     return {
@@ -49,6 +51,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   useEffect(() => {
     const timeoutId: NodeJS.Timeout = setTimeout(() => {
       void (async () => {
+        const seq = ++requestSeq.current
         if (svg) {
           setIsUpdating(true)
         } else {
@@ -76,12 +79,20 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           }
 
           const text = await response.text()
+          if (seq !== requestSeq.current) return
           setSvg(text)
           setError(null)
+          setErrorForExistingSvg(null)
         } catch (err) {
           console.error("Preview compilation error:", err)
-          setError(err instanceof Error ? err.message : "Failed to generate preview")
+          const msg = err instanceof Error ? err.message : "Failed to generate preview"
+          if (!svg) {
+            setError(msg)
+          } else {
+            setErrorForExistingSvg(msg)
+          }
         } finally {
+          if (seq !== requestSeq.current) return
           setLoading(false)
           setIsUpdating(false)
         }
@@ -134,6 +145,21 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           }}
         >
           Updating...
+        </div>
+      )}
+      {errorForExistingSvg && (
+        <div
+          className="absolute top-4 left-4 right-4 px-3 py-2 rounded-lg text-sm z-10 border"
+          style={{
+            backgroundColor: "var(--paper)",
+            color: "var(--ink)",
+            borderColor: "var(--grid)",
+          }}
+        >
+          <div className="font-medium mb-1">Preview update failed</div>
+          <div style={{ color: "var(--ink-fade)" }} className="whitespace-pre-wrap break-words text-xs">
+            {errorForExistingSvg}
+          </div>
         </div>
       )}
       <div className="h-full overflow-auto" ref={containerRef}>

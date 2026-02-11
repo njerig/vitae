@@ -14,6 +14,16 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null
 }
 
+function errorMessage(error: unknown): string {
+  if (isRecord(error) && typeof error.code === "string" && error.code.trim() !== "") {
+    return error.code
+  }
+  if (error instanceof Error && error.message.trim() !== "") {
+    return error.message
+  }
+  return "Compilation failed"
+}
+
 async function getCompiler() {
   if (!compiler) {
     // Dynamic import to avoid build-time issues with native modules
@@ -64,7 +74,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Typst compilation error:", error)
-    const message = error instanceof Error ? error.message : "Compilation failed"
+    const message = errorMessage(error)
     return NextResponse.json(
       { error: message },
       { status: 500 }
