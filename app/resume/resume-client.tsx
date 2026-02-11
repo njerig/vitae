@@ -157,7 +157,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
 
             {/* Right Column - Resume Preview */}
             <div className="lg:sticky lg:top-32 h-fit">
-              <div className="bg-white rounded-2xl border shadow-sm min-h-[600px]" style={{ 
+              <div className="bg-white rounded-2xl border shadow-sm min-h-150" style={{ 
                 borderColor: "var(--grid)"
               }}>
                 <div className="p-8 border-b" style={{ borderColor: "var(--grid)" }}>
