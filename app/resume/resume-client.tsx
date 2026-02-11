@@ -2,20 +2,23 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
+import { ResumePreview } from "./ResumePreview"
+import type { CanonItem, ItemType } from "@/lib/types"
+import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { ResumePreview } from "./ResumePreview"
 import type { CanonItem, ItemType } from "@/lib/types"
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return ""
   try {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      month: '2-digit', 
-      day: '2-digit', 
-      year: 'numeric' 
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
     })
   } catch {
     return dateString
@@ -24,6 +27,7 @@ const formatDate = (dateString: string): string => {
 
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
+
   const computedSections = useMemo<Array<{ typeName: string; typeId: string; items: CanonItem[] }>>(() => {
     return (itemTypes as ItemType[])
       .map((type) => ({
@@ -35,10 +39,13 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
       }))
       .filter(section => section.items.length > 0)
   }, [allItems, itemTypes])
+
   const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
   const sections = localSections ?? computedSections
   const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
+
+  const { isSelected, toggleItem } = useWorkingState()
 
   const setSectionsLocal = useCallback(
     (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
@@ -59,14 +66,14 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
     if (draggedItem) {
       const { sectionIndex } = draggedItem
       const section = sections[sectionIndex]
-      
-      section.items.forEach((item, index: number) => {
+
+      section.items.forEach((item: any, index: number) => {
         if (item.position !== index) {
           saveItemPosition(item.id, index)
         }
       })
     }
-    
+
     setDraggedItem(null)
   }
 
@@ -115,7 +122,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
               </div>
 
               {(draggedItem !== null || draggedSection !== null) && (
-                <div className="rounded-xl p-4" style={{ 
+                <div className="rounded-xl p-4" style={{
                   backgroundColor: "var(--accent)",
                   borderColor: "var(--accent-hover)"
                 }}>
@@ -126,7 +133,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
               )}
 
               {sections.length === 0 ? (
-                <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{ 
+                <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{
                   borderColor: "var(--grid)"
                 }}>
                   <p style={{ color: "var(--ink-fade)" }}>
@@ -149,6 +156,8 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                       saveItemPosition={saveItemPosition}
                       formatDate={formatDate}
                       handleItemDragEnd={handleItemDragEnd}
+                      isSelected={isSelected}
+                      toggleItem={toggleItem}
                     />
                   ))}
                 </div>

@@ -36,7 +36,6 @@ export function useWorkingState() {
     fetchState()
   }, [])
 
-  // Check if an item is selected
   const isSelected = useCallback((itemId: string): boolean => {
     const result = state.sections.some(section =>
       section.item_ids.includes(itemId)

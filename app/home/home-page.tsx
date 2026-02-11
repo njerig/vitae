@@ -8,14 +8,14 @@ import { Timeline } from "@/lib/homepage/Timeline"
 import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
 import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
+import { useWorkingState } from "@/lib/working-state/useWorkingState"
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
   const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
-  const { state: workingState, isSelected, toggleItem } = useWorkingState()
 
+  const { state: workingState } = useWorkingState()
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
@@ -23,16 +23,16 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   // Get most recent edit timestamp from all items
   const getLastEditedDate = () => {
     if (items.length === 0) return null
-    
+
     const mostRecent = items.reduce((latest, item) => {
       const itemDate = new Date(item.updated_at)
       return itemDate > new Date(latest.updated_at) ? item : latest
     })
 
-    return new Date(mostRecent.updated_at).toLocaleDateString("en-US", { 
-      month: "short", 
-      day: "numeric", 
-      year: "numeric" 
+    return new Date(mostRecent.updated_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
     })
   }
 
@@ -182,7 +182,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
               </h3>
             </div>
 
-            <CanonList items={items} itemTypes={itemTypes} onEdit={startEdit} onDelete={del} isSelected={isSelected} toggleItem={toggleItem} />
+            <CanonList items={items} itemTypes={itemTypes} onEdit={startEdit} onDelete={del} />
           </div>
         </div>
       </div>
