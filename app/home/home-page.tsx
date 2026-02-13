@@ -5,6 +5,7 @@ import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
 import { Timeline } from "@/lib/homepage/Timeline"
+import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
 import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 import { Spinner } from "@/lib/components/Spinner"
@@ -18,6 +19,11 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
+  
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; title: string; typeName: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Get most recent edit timestamp from all items
   const getLastEditedDate = () => {
@@ -74,8 +80,37 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   }
 
   const del = async (id: string) => {
-    if (confirm("Delete this item?")) {
-      await remove(id)
+    const item = items.find(i => i.id === id)
+    if (!item) return
+    
+    const itemType = itemTypes.find(t => t.id === item.item_type_id)
+    setItemToDelete({
+      id: item.id,
+      title: item.title,
+      typeName: itemType?.display_name || "Item"
+    })
+    setDeleteModalOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return
+    
+    setDeleting(true)
+    try {
+      await remove(itemToDelete.id)
+      setDeleteModalOpen(false)
+      setItemToDelete(null)
+    } catch (error) {
+      console.error("Failed to delete item:", error)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const cancelDelete = () => {
+    if (!deleting) {
+      setDeleteModalOpen(false)
+      setItemToDelete(null)
     }
   }
 
@@ -183,6 +218,17 @@ export default function HomeClient({ userName, userId }: { userName: string; use
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && itemToDelete && (
+        <DeleteItemModal
+          itemTitle={itemToDelete.title}
+          itemType={itemToDelete.typeName}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+          deleting={deleting}
+        />
+      )}
     </div>
   )
 }

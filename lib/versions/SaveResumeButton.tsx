@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { SaveResumeModal } from "./SaveResumeModal"
 import toast from "react-hot-toast"
@@ -14,9 +13,15 @@ type WorkingState = {
 
 type SaveResumeButtonProps = {
   workingState: WorkingState
+  onBeforeSave?: () => Promise<void>  
+  hasUnsavedChanges?: boolean         
 }
 
-export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
+export function SaveResumeButton({ 
+  workingState, 
+  onBeforeSave,
+  hasUnsavedChanges = false 
+}: SaveResumeButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -28,6 +33,10 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
   const handleSave = async (name: string): Promise<{ success: boolean; error?: string }> => {
     setSaving(true)
     try {
+      if (onBeforeSave) {
+        await onBeforeSave()
+      }
+
       const response = await fetch("/api/versions", {
         method: "POST",
         headers: {
@@ -68,12 +77,19 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="btn-primary rounded-md px-2 py-1 text-sm flex items-center gap-1"
+        className="btn-primary rounded-md px-2 py-1 text-sm flex items-center gap-1 transition-all"
         disabled={!hasSelectedItems}
         title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}
+        style={{
+          opacity: hasUnsavedChanges ? 1 : 0.9,
+          boxShadow: hasUnsavedChanges ? '0 0 0 2px rgba(139, 69, 19, 0.2)' : 'none'
+        }}
       >
         <Save className="w-6 h-6" />
         Save Resume
+        {hasUnsavedChanges && (
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+        )}
       </button>
 
       {isModalOpen && (

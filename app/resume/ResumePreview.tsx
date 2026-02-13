@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 
 type Section = {
   typeName: string
@@ -119,6 +120,8 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
         const seq = ++requestSeq.current
         if (hasSvgRef.current) {
           setIsUpdating(true)
+          // Show toast instead of overlay
+          toast.loading("Updating preview...", { id: "preview-update" })
         } else {
           setLoading(true)
         }
@@ -153,8 +156,14 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           setSvg(text)
           setError(null)
           setErrorForExistingSvg(null)
+          
+          // Dismiss loading toast and show success
+          if (hasSvgRef.current) {
+            toast.success("Preview updated", { id: "preview-update", duration: 2000 })
+          }
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") {
+            toast.dismiss("preview-update")
             return
           }
           console.error("Preview compilation error:", err)
@@ -163,6 +172,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
             setError(msg)
           } else {
             setErrorForExistingSvg(msg)
+            toast.error("Preview update failed", { id: "preview-update" })
           }
         } finally {
           if (seq !== requestSeq.current) return
@@ -175,6 +185,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
     return () => {
       clearTimeout(timeoutId)
       abortRef.current?.abort()
+      toast.dismiss("preview-update")
     }
   }, [data])
 
@@ -212,17 +223,6 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
   return (
     <div ref={rootRef} className="relative" style={{ height: `${viewerHeight}px` }}>
-      {isUpdating && (
-        <div 
-          className="absolute top-4 right-4 px-3 py-1 rounded-lg text-sm z-10"
-          style={{ 
-            backgroundColor: "var(--accent)",
-            color: "var(--paper)"
-          }}
-        >
-          Updating...
-        </div>
-      )}
       {errorForExistingSvg && (
         <div
           className="absolute top-4 left-4 right-4 px-3 py-2 rounded-lg text-sm z-10 border"

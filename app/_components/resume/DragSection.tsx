@@ -11,7 +11,6 @@ export function DragSection({
   setDraggedSection,
   draggedItem,
   setDraggedItem,
-  saveItemPosition,
   formatDate,
   handleItemDragEnd,
   isSelected,
@@ -143,7 +142,6 @@ export function DragSection({
             setSections={setSections}
             draggedItem={draggedItem}
             setDraggedItem={setDraggedItem}
-            saveItemPosition={saveItemPosition}
             formatDate={formatDate}
             handleItemDragEnd={handleItemDragEnd}
             isSelected={isSelected}

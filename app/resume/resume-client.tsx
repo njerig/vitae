@@ -2,16 +2,17 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useMemo, useCallback } from "react"
+import { useMemo, useCallback, useState } from "react"
 import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
 import { ChevronLeft } from "lucide-react"
+import toast from "react-hot-toast"
 import { ResumePreview } from "./ResumePreview"
 import { useDragState } from "@/lib/resume-builder/useDragState"
-import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
+import { useResumeSections } from "@/lib/resume-builder/useResumeSections"
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return ""
@@ -29,26 +30,28 @@ const formatDate = (dateString: string): string => {
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
 
-  
   // Manage sections with working state
   const { 
     state: workingState, 
     loading: workingStateLoading, 
-    saving: workingStateSaving, 
     saveState,
     isSelected,
     toggleItem 
   } = useWorkingState()
   
-  // Manage sections with working state
-  const { sections, setSections } = useResumeSections(
+  // Manage sections without auto-save
+  const { 
+    sections, 
+    setSections, 
+    hasUnsavedChanges, 
+    getStateToSave, 
+    markAsSaved 
+  } = useResumeSections(
     allItems,
     itemTypes,
     workingState,
-    workingStateLoading,
-    saveState
+    workingStateLoading
   )
-
 
   const filteredSections = useMemo(() => {
     const selectedIds = new Set(workingState.sections.flatMap(s => s.item_ids))
@@ -60,26 +63,56 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
       }))
       .filter(section => section.items.length > 0)
   }, [sections, workingState.sections])
+
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
 
-  const saveItemPosition = useCallback(async (itemId: string, position: number) => {
-    try {
-      await patch(itemId, { position })
-    } catch (error) {
-      console.error("Failed to save item position:", error)
-    }
-  }, [patch])
-
- 
-
-    const {
+  const {
     draggedItem,
     setDraggedItem,
     draggedSection,
     setDraggedSection,
     handleItemDragEnd,
-    isDragging
-  } = useDragState(sections, saveItemPosition)
+    isDragging,
+    hasUnsavedPositions,
+    getPendingUpdates,
+    clearPendingUpdates
+  } = useDragState(sections)
+
+  // Save everything when button is pressed
+  const handleSave = useCallback(async () => {
+    const saveToastId = toast.loading("Saving changes...")
+    
+    try {
+      // Save section order and item selections
+      if (hasUnsavedChanges) {
+        await saveState(getStateToSave())
+        markAsSaved()
+      }
+
+      // Save item positions
+      if (hasUnsavedPositions) {
+        const updates = getPendingUpdates()
+        await Promise.all(
+          updates.map(({ itemId, position }) => patch(itemId, { position }))
+        )
+        clearPendingUpdates()
+      }
+      
+      toast.success("Changes saved successfully!", { id: saveToastId })
+    } catch (error) {
+      console.error("Failed to save changes:", error)
+      toast.error("Failed to save changes. Please try again.", { id: saveToastId })
+    }
+  }, [
+    hasUnsavedChanges, 
+    hasUnsavedPositions, 
+    getStateToSave, 
+    saveState, 
+    markAsSaved, 
+    getPendingUpdates, 
+    clearPendingUpdates,
+    patch
+  ])
 
   // Loading state
   const isLoading = loading || workingStateLoading
@@ -99,6 +132,8 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
     )
   }
 
+  const hasAnyUnsavedChanges = hasUnsavedChanges || hasUnsavedPositions
+
   return (
     <div className="page-container">
       <div className="page-bg-gradient"></div>
@@ -106,13 +141,6 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
 
       <div className="relative z-10 pt-32 pb-16 px-8">
         <div className="max-w-full mx-auto px-4">
-          {/* Saving indicator */}
-          {workingStateSaving && (
-            <div className="fixed top-4 right-4 z-50 bg-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 border border-gray-200">
-              <Spinner size={16} />
-              <span className="text-sm text-gray-600">Auto-saving...</span>
-            </div>
-          )}
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Resume Builder */}
@@ -128,15 +156,25 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   />
                 </div>
                 <div className="flex flex-row items-center gap-4">
-                  <div className="flex flex-row items-center justify-center">
-                    <SaveResumeButton workingState={workingState} />
-                  </div>
-                  {workingStateSaving && (
-                    <span className="text-sm text-gray-500 flex items-center whitespace-nowrap">
-                      <Spinner size={14} />
-                      <span className="ml-2">Saving...</span>
-                    </span>
-                  )}
+                  <SaveResumeButton 
+                    workingState={workingState}
+                    onBeforeSave={async () => {
+                      // Save item positions when SaveResumeButton is clicked
+                      if (hasUnsavedPositions) {
+                        const updates = getPendingUpdates()
+                        await Promise.all(
+                          updates.map(({ itemId, position }) => patch(itemId, { position }))
+                        )
+                        clearPendingUpdates()
+                      }
+                      // Save section order
+                      if (hasUnsavedChanges) {
+                        await saveState(getStateToSave())
+                        markAsSaved()
+                      }
+                    }}
+                    hasUnsavedChanges={hasAnyUnsavedChanges}
+                  />
                 </div>
               </div>
 
@@ -146,7 +184,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   borderColor: "var(--accent-hover)"
                 }}>
                   <p className="text-sm" style={{ color: "var(--paper)" }}>
-                    <strong>Drop to reorder.</strong> Item order will be saved automatically.
+                    <strong>Drop to reorder.</strong> Changes will be saved when you click Save Changes.
                   </p>
                 </div>
               )}
@@ -172,7 +210,6 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                       setDraggedSection={setDraggedSection}
                       draggedItem={draggedItem}
                       setDraggedItem={setDraggedItem}
-                      saveItemPosition={saveItemPosition}
                       formatDate={formatDate}
                       handleItemDragEnd={handleItemDragEnd}
                       isSelected={isSelected}
@@ -189,20 +226,12 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                 borderColor: "var(--grid)"
               }}>
                 <div className="p-8 border-b" style={{ borderColor: "var(--grid)" }}>
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-2xl font-semibold" style={{ 
-                      color: "var(--ink)",
-                      fontFamily: "var(--font-serif)"
-                    }}>
-                      Resume Preview
-                    </h3>
-                    {workingStateSaving && (
-                      <span className="text-sm text-gray-500 flex items-center">
-                        <Spinner size={14} />
-                        <span className="ml-1">Auto-saving...</span>
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="text-2xl font-semibold" style={{ 
+                    color: "var(--ink)",
+                    fontFamily: "var(--font-serif)"
+                  }}>
+                    Resume Preview
+                  </h3>
                 </div>
                 <div className="p-8">
                   <ResumePreview

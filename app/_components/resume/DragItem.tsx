@@ -10,7 +10,6 @@ export function DragItem({
   setSections,
   draggedItem,
   setDraggedItem,
-  saveItemPosition,
   formatDate,
   handleItemDragEnd,
   isSelected,
@@ -38,7 +37,6 @@ export function DragItem({
     const newSections = moveItem(itemIndex, targetIndex)
     setSections(newSections)
     setEditingKey(null)
-    saveItemPosition(item.id, targetIndex)
   }
 
   const handlePositionFocus = (key: string, currentValue: number) => {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import type { CanonItem, ItemType } from "@/lib/types"
 
 type Section = {
@@ -14,45 +14,15 @@ type WorkingState = {
   }>
 }
 
-function useDebounce<T extends (...args: any[]) => void>(
-  callback: T,
-  delay: number
-) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const callbackRef = useRef(callback)
-
-  useEffect(() => {
-    callbackRef.current = callback
-  }, [callback])
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [])
-
-  return useCallback(
-    (...args: Parameters<T>) => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-
-      timeoutRef.current = setTimeout(() => {
-        callbackRef.current(...args)
-      }, delay)
-    },
-    [delay]
-  )
-}
-
 export function useResumeSections(
   allItems: CanonItem[],
   itemTypes: ItemType[],
   workingState: WorkingState | null,
-  workingStateLoading: boolean,
-  saveState: (state: WorkingState) => void
+  workingStateLoading: boolean
 ) {
   const [localSections, setLocalSections] = useState<Section[] | null>(null)
-  const [lastSavedState, setLastSavedState] = useState("")
   const [hasLoadedInitialState, setHasLoadedInitialState] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   const computedSections = useMemo<Section[]>(() => {
     return itemTypes
@@ -68,21 +38,7 @@ export function useResumeSections(
 
   const sections = localSections ?? computedSections
 
-  const debouncedSave = useDebounce((sectionsToSave: Section[]) => {
-    const newWorkingState: WorkingState = {
-      sections: sectionsToSave.map(section => ({
-        item_type_id: section.typeId,
-        item_ids: section.items.map(item => item.id)
-      }))
-    }
-
-    const serialized = JSON.stringify(newWorkingState)
-    if (serialized !== lastSavedState) {
-      saveState(newWorkingState)
-      setLastSavedState(serialized)
-    }
-  }, 1000)
-
+  // Load initial state from workingState when available
   useEffect(() => {
     if (
       workingStateLoading ||
@@ -128,24 +84,36 @@ export function useResumeSections(
 
     setLocalSections(finalSections)
     setHasLoadedInitialState(true)
-
-    setLastSavedState(
-      JSON.stringify({
-        sections: finalSections.map(section => ({
-          item_type_id: section.typeId,
-          item_ids: section.items.map(item => item.id)
-        }))
-      })
-    )
   }, [workingStateLoading, workingState, computedSections, hasLoadedInitialState])
 
   const setSections = useCallback(
     (next: Section[]) => {
       setLocalSections(prev => (prev === next ? prev : next))
-      debouncedSave(next)
+      setHasUnsavedChanges(true)
     },
-    [debouncedSave]
+    []
   )
 
-  return { sections, setSections }
+  // Get the current state to save
+  const getStateToSave = useCallback((): WorkingState => {
+    return {
+      sections: sections.map(section => ({
+        item_type_id: section.typeId,
+        item_ids: section.items.map(item => item.id)
+      }))
+    }
+  }, [sections])
+
+  // Mark as saved (called after successful save)
+  const markAsSaved = useCallback(() => {
+    setHasUnsavedChanges(false)
+  }, [])
+
+  return { 
+    sections, 
+    setSections, 
+    hasUnsavedChanges, 
+    getStateToSave, 
+    markAsSaved 
+  }
 }

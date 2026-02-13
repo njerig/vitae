@@ -7,16 +7,16 @@ type Section = {
   items: CanonItem[]
 }
 
-export function useDragState(
-  sections: Section[],
-  saveItemPosition: (itemId: string, position: number) => Promise<void>
-) {
+export function useDragState(sections: Section[]) {
   const [draggedItem, setDraggedItem] = useState<{
     sectionIndex: number
     itemIndex: number
   } | null>(null)
 
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
+  const [pendingPositionUpdates, setPendingPositionUpdates] = useState<
+    Map<string, number>
+  >(new Map())
 
   const handleItemDragEnd = useCallback(() => {
     if (!draggedItem) return
@@ -29,25 +29,33 @@ export function useDragState(
       return
     }
 
-    const hasOrderChanged = section.items.some(
-      (item, index) => item.position !== index
-    )
-
-    if (!hasOrderChanged) {
-      setDraggedItem(null)
-      return
-    }
-
+    // Track position changes locally 
+    const updates = new Map(pendingPositionUpdates)
     section.items.forEach((item, index) => {
       if (item.position !== index) {
-        saveItemPosition(item.id, index)
+        updates.set(item.id, index)
       }
     })
 
+    setPendingPositionUpdates(updates)
     setDraggedItem(null)
-  }, [draggedItem, sections, saveItemPosition])
+  }, [draggedItem, sections, pendingPositionUpdates])
+
+  // Get all pending position updates to save
+  const getPendingUpdates = useCallback(() => {
+    return Array.from(pendingPositionUpdates.entries()).map(([itemId, position]) => ({
+      itemId,
+      position
+    }))
+  }, [pendingPositionUpdates])
+
+  // Clear pending updates after successful save
+  const clearPendingUpdates = useCallback(() => {
+    setPendingPositionUpdates(new Map())
+  }, [])
 
   const isDragging = draggedItem !== null || draggedSection !== null
+  const hasUnsavedPositions = pendingPositionUpdates.size > 0
 
   return {
     draggedItem,
@@ -55,6 +63,9 @@ export function useDragState(
     draggedSection,
     setDraggedSection,
     handleItemDragEnd,
-    isDragging
+    isDragging,
+    hasUnsavedPositions,
+    getPendingUpdates,
+    clearPendingUpdates
   }
 }
