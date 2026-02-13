@@ -14,8 +14,8 @@ type Props = {
   itemTypes: ItemType[]
   onEdit: (item: CanonItem<unknown>) => void
   onDelete: (id: string) => void | Promise<void>
-  isSelected: (id: string) => boolean
-  toggleItem: (id: string, typeId: string) => void
+  isSelected?: (id: string) => boolean
+  toggleItem?: (id: string, typeId: string) => void
 }
 
 export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, toggleItem }: Props) {
@@ -27,9 +27,8 @@ export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, togg
     const handleEdit = () => onEdit(item)
     const handleDelete = () => onDelete(item.id)
 
-    const selected = isSelected(item.id)
-
-    const handleToggle = () => toggleItem(item.id, item.item_type_id)
+    const selected = isSelected ? isSelected(item.id) : false
+    const handleToggle = toggleItem ? () => toggleItem(item.id, item.item_type_id) : undefined
 
     switch (typeName) {
       case "Work Experience":

@@ -1,18 +1,20 @@
 import { useState } from "react"
 import { GripVertical } from "./GripVertical"
 
-export function DragItem({ 
-  item, 
-  section, 
-  sectionIndex, 
-  itemIndex, 
-  sections, 
+export function DragItem({
+  item,
+  section,
+  sectionIndex,
+  itemIndex,
+  sections,
   setSections,
   draggedItem,
   setDraggedItem,
   saveItemPosition,
   formatDate,
-  handleItemDragEnd
+  handleItemDragEnd,
+  isSelected,
+  toggleItem
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -20,7 +22,7 @@ export function DragItem({
   const content = (item.content ?? {}) as Record<string, unknown>
   const isItemDragging = draggedItem?.sectionIndex === sectionIndex && draggedItem?.itemIndex === itemIndex
 
-  const validatePosition = (position: number, max: number) => 
+  const validatePosition = (position: number, max: number) =>
     position >= 1 && position <= max && !isNaN(position)
 
   const moveItem = (fromIndex: number, toIndex: number) => {
@@ -146,15 +148,30 @@ export function DragItem({
       }}
       onDragOver={handleItemDragOver}
       onDragEnd={handleItemDragEnd}
-      className={`group flex items-start gap-3 p-4 rounded-lg border cursor-move transition-all ${
-        isItemDragging ? "opacity-50" : ""
-      }`}
-      style={{ 
+      className={`group flex items-start gap-3 p-4 rounded-lg border cursor-move transition-all ${isItemDragging ? "opacity-50" : ""
+        }`}
+      style={{
         borderColor: "var(--grid)",
         backgroundColor: "var(--paper)"
       }}
     >
-      <GripVertical className="w-4 h-4 shrink-0 mt-1 transition-colors" style={{ color: "var(--ink-light)" }} />
+      <div className="flex items-start gap-2 shrink-0">
+        <input
+          type="checkbox"
+          checked={!!isSelected(item.id)}
+          onChange={(e) => {
+            e.stopPropagation()
+            toggleItem(item.id, item.item_type_id)
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onDragStart={(e) => e.preventDefault()}
+          draggable={false}
+          className="w-5 h-5 rounded border-gray-300 text-[#8b4513] focus:ring-[#8b4513] cursor-pointer mt-1"
+          aria-label="Select item for resume"
+        />
+        <GripVertical className="w-4 h-4 shrink-0 mt-1 transition-colors" style={{ color: "var(--ink-light)" }} />
+      </div>
       <div className="flex-1 min-w-0 space-y-2">
         <div>
           <div className="font-medium" style={{ color: "var(--ink)" }}>{extracted.title}</div>
@@ -162,7 +179,7 @@ export function DragItem({
             <div className="text-sm" style={{ color: "var(--ink-fade)" }}>{extracted.subtitle}</div>
           )}
         </div>
-        
+
         {(extracted.dateString || extracted.location) && (
           <div className="flex flex-wrap items-center gap-3 text-xs">
             {extracted.dateString && (
@@ -173,7 +190,7 @@ export function DragItem({
             )}
           </div>
         )}
-        
+
         {extracted.bullets.length > 0 && (
           <ul className="text-sm space-y-1 pl-4" style={{ color: "var(--ink)" }}>
             {extracted.bullets.map((bullet: string, idx: number) => (
@@ -184,18 +201,18 @@ export function DragItem({
             ))}
           </ul>
         )}
-        
+
         {extracted.description && extracted.bullets.length === 0 && (
           <div className="text-sm" style={{ color: "var(--ink)" }}>{extracted.description}</div>
         )}
-        
+
         {(extracted.skills.length > 0 || extracted.technologies.length > 0) && (
           <div className="flex flex-wrap gap-1.5 pt-1">
             {(extracted.technologies.length > 0 ? extracted.technologies : extracted.skills).map((tech: string, idx: number) => (
-              <span 
-                key={idx} 
+              <span
+                key={idx}
                 className="px-2.5 py-1 text-xs font-medium rounded-full border"
-                style={{ 
+                style={{
                   backgroundColor: "var(--accent)",
                   color: "var(--paper)",
                   borderColor: "var(--accent-hover)"
@@ -231,7 +248,7 @@ export function DragItem({
           onDragStart={(e) => e.preventDefault()}
           draggable={false}
           className="w-14 px-2 py-1 text-xs border rounded text-center focus:outline-none cursor-text"
-          style={{ 
+          style={{
             borderColor: "var(--grid)",
             color: "var(--ink)",
             backgroundColor: "var(--paper)"

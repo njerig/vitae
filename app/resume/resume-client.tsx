@@ -2,19 +2,43 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useCallback } from "react"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
-import { useResumeSections } from "../../lib/resume-builder/useResumeSections"
-import { useDragState } from "../../lib/resume-builder/useDragState"
-import { formatDate } from "./utils"
+import { useMemo, useCallback } from "react"
 import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
+import { useWorkingState } from "@/lib/working-state/useWorkingState"
+import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
+import { ChevronLeft } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
+import { useDragState } from "@/lib/resume-builder/useDragState"
+import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
+
+const formatDate = (dateString: string): string => {
+  if (!dateString) return ""
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    })
+  } catch {
+    return dateString
+  }
+}
 
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
-  const { state: workingState, loading: workingStateLoading, saving: workingStateSaving, saveState } = useWorkingState()
+
+  
+  // Manage sections with working state
+  const { 
+    state: workingState, 
+    loading: workingStateLoading, 
+    saving: workingStateSaving, 
+    saveState,
+    isSelected,
+    toggleItem 
+  } = useWorkingState()
   
   // Manage sections with working state
   const { sections, setSections } = useResumeSections(
@@ -25,18 +49,30 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
     saveState
   )
 
-  // Save item position to database
+
+  const filteredSections = useMemo(() => {
+    const selectedIds = new Set(workingState.sections.flatMap(s => s.item_ids))
+    if (selectedIds.size === 0) return []
+    return sections
+      .map(section => ({
+        ...section,
+        items: section.items.filter(item => selectedIds.has(item.id))
+      }))
+      .filter(section => section.items.length > 0)
+  }, [sections, workingState.sections])
+  const previewProfile = useMemo(() => ({ name: userName }), [userName])
+
   const saveItemPosition = useCallback(async (itemId: string, position: number) => {
     try {
-      console.log("Saving item position:", itemId, position)
       await patch(itemId, { position })
     } catch (error) {
       console.error("Failed to save item position:", error)
     }
   }, [patch])
 
-  // Manage drag and drop state
-  const {
+ 
+
+    const {
     draggedItem,
     setDraggedItem,
     draggedSection,
@@ -47,7 +83,6 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
 
   // Loading state
   const isLoading = loading || workingStateLoading
-
   if (isLoading) {
     return (
       <div className="page-container">
@@ -78,38 +113,35 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
               <span className="text-sm text-gray-600">Auto-saving...</span>
             </div>
           )}
-
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Resume Builder */}
             <div className="space-y-6">
-              <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-                <PageHeader
-                  title="Resume Builder"
-                  subtitle="Drag to reorder sections and items. Changes are auto-saved."
-                  actions={
-                    <>
-                      <Link href="/home">
-                        <button className="btn-secondary rounded-lg flex items-center gap-2 mr-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                          </svg>
-                          Career History
-                        </button>
-                      </Link>
-                      {workingStateSaving && (
-                        <span className="text-sm text-gray-500 flex items-center">
-                          <Spinner size={14} />
-                          <span className="ml-2">Saving...</span>
-                        </span>
-                      )}
-                    </>
-                  }
-                />
+              <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-4">
+                <div className="flex flex-row items-center gap-6">
+                  <Link href="/home">
+                    <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
+                  </Link>
+                  <PageHeader
+                    title="Resume Builder"
+                    subtitle="Drag to reorder sections and items."
+                  />
+                </div>
+                <div className="flex flex-row items-center gap-4">
+                  <div className="flex flex-row items-center justify-center">
+                    <SaveResumeButton workingState={workingState} />
+                  </div>
+                  {workingStateSaving && (
+                    <span className="text-sm text-gray-500 flex items-center whitespace-nowrap">
+                      <Spinner size={14} />
+                      <span className="ml-2">Saving...</span>
+                    </span>
+                  )}
+                </div>
               </div>
 
               {isDragging && (
-                <div className="rounded-xl p-4" style={{ 
+                <div className="rounded-xl p-4" style={{
                   backgroundColor: "var(--accent)",
                   borderColor: "var(--accent-hover)"
                 }}>
@@ -120,7 +152,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
               )}
 
               {sections.length === 0 ? (
-                <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{ 
+                <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{
                   borderColor: "var(--grid)"
                 }}>
                   <p style={{ color: "var(--ink-fade)" }}>
@@ -143,6 +175,8 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                       saveItemPosition={saveItemPosition}
                       formatDate={formatDate}
                       handleItemDragEnd={handleItemDragEnd}
+                      isSelected={isSelected}
+                      toggleItem={toggleItem}
                     />
                   ))}
                 </div>
@@ -151,7 +185,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
 
             {/* Right Column - Resume Preview */}
             <div className="lg:sticky lg:top-32 h-fit">
-              <div className="bg-white rounded-2xl border shadow-sm min-h-[600px]" style={{ 
+              <div className="bg-white rounded-2xl border shadow-sm min-h-150" style={{ 
                 borderColor: "var(--grid)"
               }}>
                 <div className="p-8 border-b" style={{ borderColor: "var(--grid)" }}>
@@ -171,7 +205,10 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   </div>
                 </div>
                 <div className="p-8">
-                  <ResumePreview sections={sections} profile={{ name: userName }} />
+                  <ResumePreview
+                    sections={filteredSections.length > 0 ? filteredSections : sections}
+                    profile={previewProfile}
+                  />
                 </div>
               </div>
             </div>

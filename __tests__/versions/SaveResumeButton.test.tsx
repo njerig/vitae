@@ -38,6 +38,8 @@ describe('SaveResumeButton', () => {
       ok: true,
       json: async () => ({ id: '123', name: 'Test Resume' }),
     })
+    // Suppress console.error for expected errors in tests
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   it('renders button with correct text', () => {
