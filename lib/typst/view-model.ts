@@ -133,7 +133,8 @@ export function buildResumeViewModel(input: unknown): ResumeViewModel {
     const sec = asRecord(s)
     if (!sec) continue
 
-    const title = asString(sec.typeName).trim()
+    const rawTitle = asString(sec.typeName).trim()
+    const title = rawTitle === "Project" ? "Projects" : rawTitle
     const items = Array.isArray(sec.items) ? (sec.items as unknown[]) : []
     if (!title || items.length === 0) continue
 
