@@ -60,8 +60,19 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
         items: section.items.filter(item => selectedIds.has(item.id))
       }))
       .filter(section => section.items.length > 0)
-  }, [sections, workingState])
+  }, [allItems, itemTypes])
+  const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
+  const sections = localSections ?? computedSections
+  const previewProfile = useMemo(() => ({ name: userName }), [userName])
+  const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
+  const [draggedSection, setDraggedSection] = useState<number | null>(null)
 
+  const setSectionsLocal = useCallback(
+    (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
+      setLocalSections(next)
+    },
+    []
+  )
 
   const saveItemPosition = useCallback(async (itemId: string, position: number) => {
     try {
@@ -207,7 +218,7 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   </div>
                 </div>
                 <div className="p-8">
-                  <ResumePreview sections={filteredSections} profile={{ name: userName }} />
+                  <ResumePreview sections={sections} profile={previewProfile} />
                 </div>
               </div>
             </div>
