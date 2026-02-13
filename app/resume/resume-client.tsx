@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useMemo, useCallback } from "react"
 import { DragSection } from "../_components/resume/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
@@ -12,7 +12,6 @@ import { ChevronLeft } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
-import type { CanonItem, ItemType } from "@/lib/types"
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return ""
@@ -60,23 +59,11 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
         items: section.items.filter(item => selectedIds.has(item.id))
       }))
       .filter(section => section.items.length > 0)
-  }, [allItems, itemTypes])
-  const [localSections, setLocalSections] = useState<Array<{ typeName: string; typeId: string; items: CanonItem[] }> | null>(null)
-  const sections = localSections ?? computedSections
+  }, [sections, workingState.sections])
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
-  const [draggedItem, setDraggedItem] = useState<{ sectionIndex: number; itemIndex: number } | null>(null)
-  const [draggedSection, setDraggedSection] = useState<number | null>(null)
-
-  const setSectionsLocal = useCallback(
-    (next: Array<{ typeName: string; typeId: string; items: CanonItem[] }>) => {
-      setLocalSections(next)
-    },
-    []
-  )
 
   const saveItemPosition = useCallback(async (itemId: string, position: number) => {
     try {
-      console.log("Saving item position:", itemId, position)
       await patch(itemId, { position })
     } catch (error) {
       console.error("Failed to save item position:", error)
@@ -218,7 +205,10 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                   </div>
                 </div>
                 <div className="p-8">
-                  <ResumePreview sections={sections} profile={previewProfile} />
+                  <ResumePreview
+                    sections={filteredSections.length > 0 ? filteredSections : sections}
+                    profile={previewProfile}
+                  />
                 </div>
               </div>
             </div>
