@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
 import { pool, ensureUserWithDefaults } from "@/lib/db"
-import { IdQuerySchema, ResumeNameSchema, VersionsArraySchema } from "@/lib/schemas"
+import { IdQuerySchema, SaveVersionSchema, VersionsArraySchema } from "@/lib/schemas"
+import type { VersionGroup } from "@/lib/types"
 
-// GET /api/versions - Get all saved resume versions for the current user
+// GET /api/versions - Get all saved resume versions for the current user, grouped by resume
 export async function GET() {
   const { userId } = await auth()
   if (!userId) {
@@ -11,7 +12,7 @@ export async function GET() {
   }
 
   const { rows } = await pool.query(
-    `SELECT id, user_id, name, snapshot, created_at 
+    `SELECT id, user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at 
      FROM versions 
      WHERE user_id = $1 
      ORDER BY created_at DESC`,
@@ -26,12 +27,29 @@ export async function GET() {
     )
   }
 
-  console.log(JSON.stringify(result.data))
+  // Group versions by resume_group_id
+  const groupMap = new Map<string, VersionGroup>()
+  for (const version of result.data) {
+    const groupId = version.resume_group_id
+    if (!groupMap.has(groupId)) {
+      groupMap.set(groupId, {
+        resume_group_id: groupId,
+        group_name: version.group_name, // use the stored group_name
+        versions: [],
+      })
+    }
+    groupMap.get(groupId)!.versions.push({
+      ...version,
+      created_at: typeof version.created_at === 'string' ? version.created_at : version.created_at.toISOString(),
+    })
+  }
 
-  return NextResponse.json(result.data, { status: 200 })
+  const groups = Array.from(groupMap.values())
+
+  return NextResponse.json(groups, { status: 200 })
 }
 
-// POST /api/versions - Save a snapshot fo the current resume version
+// POST /api/versions - Save a snapshot of the current resume version
 export async function POST(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -41,7 +59,7 @@ export async function POST(request: NextRequest) {
   await ensureUserWithDefaults(userId)
 
   const body = await request.json()
-  const result = ResumeNameSchema.safeParse(body)
+  const result = SaveVersionSchema.safeParse(body)
   if (!result.success) {
     return NextResponse.json(
       { error: "Validation failed", issues: result.error.issues },
@@ -49,22 +67,49 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { name } = result.data
+  const { group_name, name, parent_version_id } = result.data
 
-  // Check if name already exists for this user
-  const { rows: existingRows } = await pool.query(
-    `SELECT id FROM versions WHERE user_id = $1 AND name = $2`,
-    [userId, name]
-  )
+  // Determine the resume_group_id and group_name
+  let resume_group_id: string | null = null
+  let resolved_group_name: string = group_name || ''
 
-  if (existingRows.length > 0) {
+  if (parent_version_id) {
+    // Look up the parent version to inherit its resume_group_id and group_name
+    const { rows: parentRows } = await pool.query(
+      `SELECT resume_group_id, group_name FROM versions WHERE id = $1 AND user_id = $2`,
+      [parent_version_id, userId]
+    )
+
+    if (parentRows.length > 0) {
+      resume_group_id = parentRows[0].resume_group_id
+      resolved_group_name = parentRows[0].group_name
+    }
+  }
+
+  // For new groups, require a group_name
+  if (!resume_group_id && !group_name) {
     return NextResponse.json(
-      { error: "A resume version with this name already exists. Please choose a different name." },
-      { status: 409 } // 409 Conflict
+      { error: "Resume name is required for new resumes" },
+      { status: 400 }
     )
   }
 
-  // get the current working state (so we can save it as a version)
+  // Check group_name uniqueness for new groups
+  if (!resume_group_id) {
+    const { rows: existingRows } = await pool.query(
+      `SELECT DISTINCT resume_group_id FROM versions WHERE user_id = $1 AND group_name = $2`,
+      [userId, resolved_group_name]
+    )
+
+    if (existingRows.length > 0) {
+      return NextResponse.json(
+        { error: "A resume with this name already exists. Please choose a different name." },
+        { status: 409 }
+      )
+    }
+  }
+
+  // Get the current working state
   let { rows } = await pool.query(
     `SELECT state, updated_at FROM working_state WHERE user_id = $1`,
     [userId]
@@ -76,15 +121,22 @@ export async function POST(request: NextRequest) {
   const state = rows[0].state;
   const updated_at = rows[0].updated_at;
 
-  // insert the working list as a new array
-  ({ rows } = await pool.query(
-    `INSERT INTO versions (user_id, name, snapshot, created_at)
-     VALUES ($1, $2, $3::jsonb, $4)
-     RETURNING id, user_id, snapshot, created_at`,
-    [userId, name, state, updated_at]
-  ))
-  console.log(JSON.stringify(rows))
-
+  // Insert the version
+  if (resume_group_id) {
+    ({ rows } = await pool.query(
+      `INSERT INTO versions (user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)
+       RETURNING id, user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at`,
+      [userId, resume_group_id, parent_version_id, resolved_group_name, name, state, updated_at]
+    ))
+  } else {
+    ({ rows } = await pool.query(
+      `INSERT INTO versions (user_id, parent_version_id, group_name, name, snapshot, created_at)
+       VALUES ($1, $2, $3, $4, $5::jsonb, $6)
+       RETURNING id, user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at`,
+      [userId, parent_version_id || null, resolved_group_name, name, state, updated_at]
+    ))
+  }
 
   return NextResponse.json(rows[0], { status: 201 })
 }
@@ -107,7 +159,6 @@ export async function DELETE(request: NextRequest) {
 
   const { id } = result.data
 
-  // Delete only if it belongs to the current user
   const { rowCount } = await pool.query(
     `DELETE FROM versions WHERE id = $1 AND user_id = $2`,
     [id, userId]

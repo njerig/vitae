@@ -19,11 +19,13 @@ export default function ResumeClient({
   userName,
   versionName,
   versionSavedAt,
+  parentVersionId,
 }: {
   userName: string
   userId: string
   versionName: string | null
   versionSavedAt: string | null
+  parentVersionId: string | null
 }) {
   const { allItems, itemTypes, loading } = useCanon()
 
@@ -53,7 +55,7 @@ export default function ResumeClient({
   }, [sections, workingState.sections])
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
 
-  const saveItemPosition = useCallback(async (_itemId: string, _position: number) => {}, [])
+  const saveItemPosition = useCallback(async (_itemId: string, _position: number) => { }, [])
 
   const { draggedItem, setDraggedItem, draggedSection, setDraggedSection, handleItemDragEnd, isDragging } = useDragState(sections, saveItemPosition)
 
@@ -102,7 +104,7 @@ export default function ResumeClient({
                 </div>
                 <div className="flex flex-row items-center gap-4">
                   <div className="flex flex-row items-center justify-center">
-                    <SaveResumeButton workingState={workingState} />
+                    <SaveResumeButton workingState={workingState} parentVersionId={parentVersionId} />
                   </div>
                   {workingStateSaving && (
                     <span className="text-sm text-gray-500 flex items-center whitespace-nowrap">

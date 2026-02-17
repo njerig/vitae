@@ -65,3 +65,24 @@ export type CanonItem<TContent = unknown> = {
   created_at: string
   updated_at: string
 }
+
+// ─────────────────────────────────────────────────────────────
+// Versions
+// ─────────────────────────────────────────────────────────────
+
+export type Version = {
+  id: string
+  user_id: string
+  resume_group_id: string
+  parent_version_id: string | null
+  group_name: string
+  name: string
+  snapshot: Record<string, unknown>
+  created_at: string
+}
+
+export type VersionGroup = {
+  resume_group_id: string
+  group_name: string
+  versions: Version[]
+}

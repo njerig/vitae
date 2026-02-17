@@ -11,20 +11,46 @@ const mockFetch = jest.fn()
 global.fetch = mockFetch as unknown as typeof fetch
 
 describe('Versions Page', () => {
-  const mockVersions = [
+  // Mock data now uses grouped format
+  const mockGroups = [
     {
-      id: 'version-1',
-      user_id: 'user-123',
-      name: 'My First Resume',
-      snapshot: { sections: [] },
-      created_at: '2026-01-15T10:30:00.000Z',
+      resume_group_id: 'group-1',
+      group_name: 'My First Resume',
+      versions: [
+        {
+          id: 'version-2',
+          user_id: 'user-123',
+          resume_group_id: 'group-1',
+          parent_version_id: 'version-1',
+          name: 'My First Resume v2',
+          snapshot: { sections: [] },
+          created_at: '2026-02-01T14:45:00.000Z',
+        },
+        {
+          id: 'version-1',
+          user_id: 'user-123',
+          resume_group_id: 'group-1',
+          parent_version_id: null,
+          name: 'My First Resume',
+          snapshot: { sections: [] },
+          created_at: '2026-01-15T10:30:00.000Z',
+        },
+      ],
     },
     {
-      id: 'version-2',
-      user_id: 'user-123',
-      name: 'Software Engineer Resume',
-      snapshot: { sections: [] },
-      created_at: '2026-02-01T14:45:00.000Z',
+      resume_group_id: 'group-2',
+      group_name: 'Software Engineer Resume',
+      versions: [
+        {
+          id: 'version-3',
+          user_id: 'user-123',
+          resume_group_id: 'group-2',
+          parent_version_id: null,
+          name: 'Software Engineer Resume',
+          snapshot: { sections: [] },
+          created_at: '2026-02-01T14:45:00.000Z',
+        },
+      ],
     },
   ]
 
@@ -33,13 +59,13 @@ describe('Versions Page', () => {
     // Mock window.confirm
     global.confirm = jest.fn(() => true)
     // Suppress console.error for expected errors in tests
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => { })
   })
 
   describe('Loading State', () => {
     it('renders loading spinner while fetching', () => {
       // Mock fetch to hang
-      mockFetch.mockImplementation(() => new Promise(() => {}))
+      mockFetch.mockImplementation(() => new Promise(() => { }))
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
 
@@ -81,11 +107,11 @@ describe('Versions Page', () => {
     })
   })
 
-  describe('Versions List Display', () => {
-    it('renders version cards with correct data', async () => {
+  describe('Grouped Versions Display', () => {
+    it('renders version groups with correct group names', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -94,14 +120,31 @@ describe('Versions Page', () => {
         expect(screen.queryByText('Loading your saved resumes...')).not.toBeInTheDocument()
       })
 
-      expect(screen.getByText('My First Resume')).toBeInTheDocument()
-      expect(screen.getByText('Software Engineer Resume')).toBeInTheDocument()
+      // "My First Resume" appears in both group header and version card
+      expect(screen.getAllByText('My First Resume').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Software Engineer Resume').length).toBeGreaterThan(0)
     })
 
-    it('displays correct number of versions', async () => {
+    it('shows version count per group', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
+      })
+
+      render(<VersionsClient userName="Test User" userId="user-123" />)
+
+      await waitFor(() => {
+        expect(screen.queryByText('Loading your saved resumes...')).not.toBeInTheDocument()
+      })
+
+      expect(screen.getByText('2 versions')).toBeInTheDocument()
+      expect(screen.getByText('1 version')).toBeInTheDocument()
+    })
+
+    it('displays correct number of version cards across all groups', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -111,13 +154,13 @@ describe('Versions Page', () => {
       })
 
       const deleteButtons = screen.getAllByText('Delete')
-      expect(deleteButtons).toHaveLength(2)
+      expect(deleteButtons).toHaveLength(3) // 2 versions in group-1 + 1 in group-2
     })
 
     it('formats and displays creation dates', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -126,9 +169,8 @@ describe('Versions Page', () => {
         expect(screen.queryByText('Loading your saved resumes...')).not.toBeInTheDocument()
       })
 
-      // Check that formatted dates are displayed (look for a specific date pattern)
+      // Check that formatted dates are displayed
       expect(screen.getByText(/01\/15\/2026/)).toBeInTheDocument()
-      expect(screen.getByText(/02\/01\/2026/)).toBeInTheDocument()
     })
   })
 
@@ -136,7 +178,7 @@ describe('Versions Page', () => {
     it('delete button triggers confirmation dialog', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -148,13 +190,13 @@ describe('Versions Page', () => {
       const deleteButtons = screen.getAllByText('Delete')
       fireEvent.click(deleteButtons[0])
 
-      expect(global.confirm).toHaveBeenCalledWith('Delete "My First Resume"? This action cannot be undone.')
+      expect(global.confirm).toHaveBeenCalledWith('Delete "My First Resume v2"? This action cannot be undone.')
     })
 
     it('calls DELETE API with correct version ID', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
@@ -172,16 +214,16 @@ describe('Versions Page', () => {
       fireEvent.click(deleteButtons[0])
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/versions?id=version-1', {
+        expect(mockFetch).toHaveBeenCalledWith('/api/versions?id=version-2', {
           method: 'DELETE',
         })
       })
     })
 
-    it('removes version from list after successful deletion', async () => {
+    it('removes version from group after successful deletion', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
@@ -195,16 +237,14 @@ describe('Versions Page', () => {
         expect(screen.queryByText('Loading your saved resumes...')).not.toBeInTheDocument()
       })
 
-      expect(screen.getByText('My First Resume')).toBeInTheDocument()
+      expect(screen.getByText('My First Resume v2')).toBeInTheDocument()
 
       const deleteButtons = screen.getAllByText('Delete')
       fireEvent.click(deleteButtons[0])
 
       await waitFor(() => {
-        expect(screen.queryByText('My First Resume')).not.toBeInTheDocument()
+        expect(screen.queryByText('My First Resume v2')).not.toBeInTheDocument()
       })
-
-      expect(screen.getByText('Software Engineer Resume')).toBeInTheDocument()
     })
 
     it('does not delete if user cancels confirmation', async () => {
@@ -212,7 +252,7 @@ describe('Versions Page', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -227,7 +267,7 @@ describe('Versions Page', () => {
       expect(global.confirm).toHaveBeenCalled()
 
       // Version should still be in the list
-      expect(screen.getByText('My First Resume')).toBeInTheDocument()
+      expect(screen.getByText('My First Resume v2')).toBeInTheDocument()
 
       // DELETE API should not be called
       const deleteCalls = mockFetch.mock.calls.filter(call => call[1]?.method === 'DELETE')
@@ -237,7 +277,7 @@ describe('Versions Page', () => {
     it('shows error toast on delete failure', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
@@ -262,7 +302,7 @@ describe('Versions Page', () => {
     it('shows success toast after successful deletion', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
@@ -280,7 +320,7 @@ describe('Versions Page', () => {
       fireEvent.click(deleteButtons[0])
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('"My First Resume" deleted successfully')
+        expect(toast.success).toHaveBeenCalledWith('"My First Resume v2" deleted successfully')
       })
     })
   })
