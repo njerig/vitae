@@ -58,7 +58,9 @@ export function useWorkingState() {
         toast.error("Failed to save your working state")
       } else {
         console.log("Saved working state:", newState)
-        setState(newState) 
+        const data = await res.json()
+        setState(newState)
+        setUpdatedAt(data.updated_at || null)
       }
     } catch (error) {
       console.error("Error saving working state:", error)

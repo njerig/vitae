@@ -16,7 +16,7 @@ import type { CanonItem, ItemType } from "@/lib/types"
 import { formatDateTime, formatDate} from "@/lib/utils"
 
 
-export default function ResumeClient({ userName, versionName }: { userName: string; userId: string; versionName: string | null }) {
+export default function ResumeClient({ userName, versionName, versionSavedAt }: { userName: string; userId: string; versionName: string | null; versionSavedAt: string | null }) {
   const { allItems, itemTypes, loading, patch } = useCanon()
 
   
@@ -194,9 +194,9 @@ export default function ResumeClient({ userName, versionName }: { userName: stri
                           Version: {versionName}
                         </p>
                       )}
-                      {updatedAt && (
+                      {(versionSavedAt || updatedAt) && (
                         <p className="text-sm" style={{ color: "var(--ink-fade)" }}>
-                          Last updated: {formatDateTime(updatedAt)}
+                          Updated at: {formatDateTime((versionSavedAt || updatedAt)!)}
                         </p>
                       )}
                     </div>

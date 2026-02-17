@@ -55,7 +55,7 @@ describe('Version Display', () => {
   })
 
   it('displays version name when provided', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName="Software Engineer Resume" />)
+    render(<ResumeClient userName="Test User" userId="user-123" versionName="Software Engineer Resume" versionSavedAt={null} />)
 
     await waitFor(() => {
       expect(screen.getByText('Version: Software Engineer Resume')).toBeInTheDocument()
@@ -63,36 +63,36 @@ describe('Version Display', () => {
   })
 
   it('does not display version label when versionName is null', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} />)
+    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} />)
 
     await waitFor(() => {
       expect(screen.queryByText(/^Version:/)).not.toBeInTheDocument()
     })
   })
 
-  it('displays last updated timestamp', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} />)
+  it('displays updated timestamp', async () => {
+    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Last updated:/)).toBeInTheDocument()
+      expect(screen.getByText(/Updated at:/)).toBeInTheDocument()
     })
   })
 
   it('formats timestamp correctly', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} />)
+    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} />)
 
     await waitFor(() => {
       // The formatDate function now formats as MM/DD/YYYY, HH:MM AM/PM
-      expect(screen.getByText(/Last updated: 02\/16\/2026, \d{1,2}:\d{2} [AP]M/)).toBeInTheDocument()
+      expect(screen.getByText(/Updated at: 02\/16\/2026, \d{1,2}:\d{2} [AP]M/)).toBeInTheDocument()
     })
   })
 
   it('displays both version name and timestamp when both present', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName="My Resume" />)
+    render(<ResumeClient userName="Test User" userId="user-123" versionName="My Resume" versionSavedAt={null} />)
 
     await waitFor(() => {
       expect(screen.getByText('Version: My Resume')).toBeInTheDocument()
-      expect(screen.getByText(/Last updated:/)).toBeInTheDocument()
+      expect(screen.getByText(/Updated at:/)).toBeInTheDocument()
     })
   })
 })

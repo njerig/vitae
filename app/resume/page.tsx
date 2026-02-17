@@ -5,13 +5,14 @@ import ResumeClient from "./resume-client"
 export default async function ResumePage({
   searchParams,
 }: {
-  searchParams: Promise<{ version?: string }>
+  searchParams: Promise<{ version?: string; savedAt?: string }>
 }) {
   const { userId } = await auth()
   const user = await currentUser()
   const userName = user?.fullName ?? user?.username ?? "User"
   const params = await searchParams
   const versionName = params.version || null
+  const versionSavedAt = params.savedAt || null
 
   if (!userId) {
     return (
@@ -21,5 +22,5 @@ export default async function ResumePage({
     )
   }
 
-  return <ResumeClient userName={userName} userId={userId} versionName={versionName} />
+  return <ResumeClient userName={userName} userId={userId} versionName={versionName} versionSavedAt={versionSavedAt} />
 }

@@ -254,7 +254,9 @@ describe('Version Restore Functionality', () => {
       fireEvent.click(screen.getAllByText('Restore')[1])
 
       await waitFor(() => {
-        expect(mockRouter.push).toHaveBeenCalledWith('/resume?version=My%20Software%20Engineer%20Resume')
+        expect(mockRouter.push).toHaveBeenCalledWith(
+          expect.stringMatching(/^\/resume\?version=My%20Software%20Engineer%20Resume&savedAt=.+$/)
+        )
       })
     })
 
