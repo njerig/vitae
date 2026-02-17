@@ -17,6 +17,7 @@ export function useWorkingState() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [updateCount, setUpdateCount] = useState(0)
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchState() {
@@ -25,6 +26,7 @@ export function useWorkingState() {
         if (res.ok) {
           const data = await res.json()
           setState(data.state || { sections: [] })
+          setUpdatedAt(data.updated_at || null)
         }
       } catch (error) {
         console.error("Failed to fetch working state:", error)
@@ -56,7 +58,9 @@ export function useWorkingState() {
         toast.error("Failed to save your working state")
       } else {
         console.log("Saved working state:", newState)
-        setState(newState) 
+        const data = await res.json()
+        setState(newState)
+        setUpdatedAt(data.updated_at || null)
       }
     } catch (error) {
       console.error("Error saving working state:", error)
@@ -103,6 +107,7 @@ export function useWorkingState() {
     saving,
     isSelected,
     toggleItem,
-    saveState 
+    saveState,
+    updatedAt
   }
 }

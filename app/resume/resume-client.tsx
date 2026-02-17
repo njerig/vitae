@@ -12,20 +12,12 @@ import { ChevronLeft } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
+import type { CanonItem, ItemType } from "@/lib/types"
+import { formatDateTime, formatDate} from "@/lib/utils"
 
-const formatDate = (dateString: string): string => {
-  if (!dateString) return ""
-  try {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric'
-    })
-  } catch {
-    return dateString
-  }
-}
 
+export default function ResumeClient({ userName, versionName, versionSavedAt }: { userName: string; userId: string; versionName: string | null; versionSavedAt: string | null }) {
+  const { allItems, itemTypes, loading, patch } = useCanon()
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
   const { allItems, itemTypes, loading } = useCanon()
 
@@ -37,7 +29,8 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
     saving: workingStateSaving, 
     saveState,
     isSelected,
-    toggleItem 
+    toggleItem,
+    updatedAt
   } = useWorkingState()
   
   // Manage sections with working state
@@ -189,6 +182,18 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
                     }}>
                       Resume Preview
                     </h3>
+                    <div className="flex flex-col items-start gap-1">
+                      {versionName && (
+                        <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                          Version: {versionName}
+                        </p>
+                      )}
+                      {(versionSavedAt || updatedAt) && (
+                        <p className="text-sm" style={{ color: "var(--ink-fade)" }}>
+                          Updated at: {formatDateTime((versionSavedAt || updatedAt)!)}
+                        </p>
+                      )}
+                    </div>
                     {workingStateSaving && (
                       <span className="text-sm text-gray-500 flex items-center">
                         <Spinner size={14} />

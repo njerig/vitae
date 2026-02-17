@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { SaveResumeModal } from "./SaveResumeModal"
 import toast from "react-hot-toast"
 import { Save } from "lucide-react"
@@ -17,6 +18,7 @@ type SaveResumeButtonProps = {
 }
 
 export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
+  const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -53,6 +55,8 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
 
       toast.success(`Resume "${name}" saved successfully!`)
       setIsModalOpen(false)
+      const savedAt = new Date().toISOString()
+      router.push(`/resume?version=${encodeURIComponent(name)}&savedAt=${encodeURIComponent(savedAt)}`)
       return { success: true }
     } catch (error) {
       console.error("Error saving resume:", error)
