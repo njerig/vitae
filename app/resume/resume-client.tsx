@@ -27,7 +27,7 @@ const formatDate = (dateString: string): string => {
 }
 
 export default function ResumeClient({ userName }: { userName: string; userId: string }) {
-  const { allItems, itemTypes, loading, patch } = useCanon()
+  const { allItems, itemTypes, loading } = useCanon()
 
   
   // Manage sections with working state
@@ -62,15 +62,8 @@ export default function ResumeClient({ userName }: { userName: string; userId: s
   }, [sections, workingState.sections])
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
 
-  const saveItemPosition = useCallback(async (itemId: string, position: number) => {
-    try {
-      await patch(itemId, { position })
-    } catch (error) {
-      console.error("Failed to save item position:", error)
-    }
-  }, [patch])
 
- 
+  const saveItemPosition = useCallback(async (_itemId: string, _position: number) => {}, [])
 
     const {
     draggedItem,
