@@ -243,7 +243,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
       })
     })
 
-    it("calls patch to save item position to database", async () => {
+    it("saves item order to working state (not canon) after reorder", async () => {
       render(<ResumeClient userName="Test User" userId="user_123" />)
 
       const hashLabels = screen.getAllByText("#")
@@ -257,12 +257,15 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         input.blur()
       })
 
-      await waitFor(() => {
-        expect(mockPatch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ position: expect.any(Number) })
-        )
+      await act(async () => {
+        jest.advanceTimersByTime(1000)
       })
+
+      await waitFor(() => {
+        expect(mockSaveState).toHaveBeenCalled()
+      })
+
+      expect(mockPatch).not.toHaveBeenCalled()
     })
   })
 
