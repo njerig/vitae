@@ -233,7 +233,7 @@ describe('Version Restore Functionality', () => {
       })
     })
 
-    it('redirects to /resume on successful restore', async () => {
+    it('redirects to /resume with version name in URL on successful restore', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockVersions,
@@ -254,7 +254,7 @@ describe('Version Restore Functionality', () => {
       fireEvent.click(screen.getAllByText('Restore')[1])
 
       await waitFor(() => {
-        expect(mockRouter.push).toHaveBeenCalledWith('/resume')
+        expect(mockRouter.push).toHaveBeenCalledWith('/resume?version=My%20Software%20Engineer%20Resume')
       })
     })
 

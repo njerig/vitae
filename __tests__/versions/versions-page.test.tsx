@@ -127,8 +127,8 @@ describe('Versions Page', () => {
       })
 
       // Check that formatted dates are displayed (look for a specific date pattern)
-      expect(screen.getByText(/January 15, 2026/)).toBeInTheDocument()
-      expect(screen.getByText(/February 1, 2026/)).toBeInTheDocument()
+      expect(screen.getByText(/01\/15\/2026/)).toBeInTheDocument()
+      expect(screen.getByText(/02\/01\/2026/)).toBeInTheDocument()
     })
   })
 

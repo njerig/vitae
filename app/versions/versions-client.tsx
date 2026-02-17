@@ -98,7 +98,7 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
       }
 
       toast.success(`"${name}" restored successfully`)
-      router.push("/resume")
+      router.push(`/resume?version=${encodeURIComponent(name)}`)
     } catch (error) {
       console.error("Error restoring version:", error)
       toast.error("Failed to restore version")
