@@ -75,7 +75,7 @@
   )
   list(
     ..bullets.map(b => [#b]),
-    if skills.len() > 0 { [Skills: #skills.join(", ")] },
+    ..(if skills.len() > 0 { ([Skills: #skills.join(", ")],) } else { () }),
   )
 }
 

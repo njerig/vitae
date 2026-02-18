@@ -18,13 +18,21 @@ const mockFetch = jest.fn()
 global.fetch = mockFetch as unknown as typeof fetch
 
 describe('Version Restore Functionality', () => {
-  const mockVersions = [
+  const mockGroups = [
     {
-      id: 'version-1',
-      user_id: 'user-123',
-      name: 'My Software Engineer Resume',
-      snapshot: { sections: [] },
-      created_at: '2026-01-15T10:30:00.000Z',
+      resume_group_id: 'group-1',
+      group_name: 'My Software Engineer Resume',
+      versions: [
+        {
+          id: 'version-1',
+          user_id: 'user-123',
+          resume_group_id: 'group-1',
+          parent_version_id: null,
+          name: 'My Software Engineer Resume',
+          snapshot: { sections: [] },
+          created_at: '2026-01-15T10:30:00.000Z',
+        },
+      ],
     },
   ]
 
@@ -34,10 +42,10 @@ describe('Version Restore Functionality', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+      ; (useRouter as jest.Mock).mockReturnValue(mockRouter)
     global.confirm = jest.fn(() => true)
     // Suppress console.error for expected errors in tests
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => { })
   })
 
   describe('RestoreConfirmModal', () => {
@@ -128,7 +136,7 @@ describe('Version Restore Functionality', () => {
     it('renders restore button', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -143,11 +151,11 @@ describe('Version Restore Functionality', () => {
     it('shows Restoring... when isRestoring is true', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       // Mock restore API to hang
-      mockFetch.mockImplementationOnce(() => new Promise(() => {}))
+      mockFetch.mockImplementationOnce(() => new Promise(() => { }))
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
 
@@ -168,7 +176,7 @@ describe('Version Restore Functionality', () => {
     it('opens confirmation modal when restore clicked', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -187,7 +195,7 @@ describe('Version Restore Functionality', () => {
     it('closes modal when cancel clicked', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -209,12 +217,12 @@ describe('Version Restore Functionality', () => {
     it('calls restore API with correct ID when confirmed', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true }),
+        json: async () => ({ success: true, version_id: 'version-1', resume_group_id: 'group-1' }),
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -233,15 +241,15 @@ describe('Version Restore Functionality', () => {
       })
     })
 
-    it('redirects to /resume on successful restore', async () => {
+    it('redirects to /resume with version name and parentVersionId in URL on successful restore', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true }),
+        json: async () => ({ success: true, version_id: 'version-1', resume_group_id: 'group-1' }),
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -254,19 +262,21 @@ describe('Version Restore Functionality', () => {
       fireEvent.click(screen.getAllByText('Restore')[1])
 
       await waitFor(() => {
-        expect(mockRouter.push).toHaveBeenCalledWith('/resume')
+        expect(mockRouter.push).toHaveBeenCalledWith(
+          expect.stringMatching(/^\/resume\?version=My%20Software%20Engineer%20Resume&savedAt=.+&parentVersionId=version-1$/)
+        )
       })
     })
 
     it('shows success toast on successful restore', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true }),
+        json: async () => ({ success: true, version_id: 'version-1', resume_group_id: 'group-1' }),
       })
 
       render(<VersionsClient userName="Test User" userId="user-123" />)
@@ -288,7 +298,7 @@ describe('Version Restore Functionality', () => {
     it('shows error toast when restore API fails', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
@@ -313,7 +323,7 @@ describe('Version Restore Functionality', () => {
     it('does not redirect on error', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockResolvedValueOnce({
@@ -340,7 +350,7 @@ describe('Version Restore Functionality', () => {
     it('shows error toast when network fails', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockVersions,
+        json: async () => mockGroups,
       })
 
       mockFetch.mockRejectedValueOnce(new Error('Network error'))

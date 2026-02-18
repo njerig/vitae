@@ -17,6 +17,7 @@ export function useWorkingState() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [updateCount, setUpdateCount] = useState(0)
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchState() {
@@ -25,6 +26,7 @@ export function useWorkingState() {
         if (res.ok) {
           const data = await res.json()
           setState(data.state || { sections: [] })
+          setUpdatedAt(data.updated_at || null)
         }
       } catch (error) {
         console.error("Failed to fetch working state:", error)
@@ -56,10 +58,13 @@ export function useWorkingState() {
         throw new Error("Failed to save")
       } else {
         console.log("Saved working state:", newState)
+        const data = await res.json()
+        setState(newState)
+        setUpdatedAt(data.updated_at || null)
       }
     } catch (error) {
       console.error("Error saving working state:", error)
-      throw error // Re-throw so toggleItem can catch it
+      throw error
     } finally {
       setSaving(false)
     }
@@ -67,7 +72,7 @@ export function useWorkingState() {
 
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
     setState(prev => {
-      // Save the previous state in case we need to revert
+
       const previousState = prev
 
       const newState = { ...prev, sections: [...prev.sections] }
@@ -91,9 +96,9 @@ export function useWorkingState() {
         section.item_ids.push(itemId)
       }
 
-      // Save to API and revert on failure
+
       saveState(newState).catch(() => {
-        // Revert to previous state if save fails
+
         setState(previousState)
         toast.error("Failed to toggle checkbox")
       })
@@ -110,6 +115,8 @@ export function useWorkingState() {
     saving,
     isSelected,
     toggleItem,
-    saveState
+    saveState,
+    updatedAt
+
   }
 }

@@ -24,7 +24,7 @@ export async function POST(
 
   // Get the version snapshot (only if it belongs to the user)
   const { rows: versionRows } = await pool.query(
-    `SELECT snapshot FROM versions WHERE id = $1 AND user_id = $2`,
+    `SELECT id, resume_group_id, snapshot FROM versions WHERE id = $1 AND user_id = $2`,
     [id, userId]
   )
 
@@ -32,7 +32,7 @@ export async function POST(
     return NextResponse.json({ error: "Version not found" }, { status: 404 })
   }
 
-  const snapshot = versionRows[0].snapshot
+  const { snapshot, resume_group_id } = versionRows[0]
 
   // Update the working state with the version's snapshot
   const { rowCount } = await pool.query(
@@ -46,5 +46,11 @@ export async function POST(
     return NextResponse.json({ error: "Working state not found" }, { status: 404 })
   }
 
-  return NextResponse.json({ success: true, restored: snapshot }, { status: 200 })
+  return NextResponse.json({
+    success: true,
+    restored: snapshot,
+    version_id: id,
+    resume_group_id: resume_group_id,
+  }, { status: 200 })
 }
+

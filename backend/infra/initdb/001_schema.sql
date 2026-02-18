@@ -43,12 +43,16 @@ CREATE TABLE IF NOT EXISTS working_state (
 );
 
 CREATE TABLE IF NOT EXISTS versions (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name        TEXT NOT NULL,
-  snapshot    JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  resume_group_id   UUID NOT NULL DEFAULT gen_random_uuid(),
+  parent_version_id UUID REFERENCES versions(id) ON DELETE SET NULL,
+  group_name        TEXT NOT NULL DEFAULT '',
+  name              TEXT NOT NULL DEFAULT '',
+  snapshot          JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS versions_user_idx ON versions(user_id);
 CREATE INDEX IF NOT EXISTS versions_user_created_idx ON versions(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS versions_group_idx ON versions(resume_group_id);

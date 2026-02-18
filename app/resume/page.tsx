@@ -2,10 +2,18 @@
 import { auth, currentUser } from "@clerk/nextjs/server"
 import ResumeClient from "./resume-client"
 
-export default async function ResumePage() {
+export default async function ResumePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ version?: string; savedAt?: string; parentVersionId?: string }>
+}) {
   const { userId } = await auth()
   const user = await currentUser()
   const userName = user?.fullName ?? user?.username ?? "User"
+  const params = await searchParams
+  const versionName = params.version || null
+  const versionSavedAt = params.savedAt || null
+  const parentVersionId = params.parentVersionId || null
 
   if (!userId) {
     return (
@@ -15,5 +23,5 @@ export default async function ResumePage() {
     )
   }
 
-  return <ResumeClient userName={userName} userId={userId} />
+  return <ResumeClient userName={userName} userId={userId} versionName={versionName} versionSavedAt={versionSavedAt} parentVersionId={parentVersionId} />
 }
