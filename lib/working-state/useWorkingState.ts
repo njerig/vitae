@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import toast from "react-hot-toast"
 
 type SectionState = {
@@ -16,8 +16,11 @@ export function useWorkingState() {
   const [state, setState] = useState<WorkingState>({ sections: [] })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [updateCount, setUpdateCount] = useState(0)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
+  // Track whether there are unsaved local changes
+  const [isDirty, setIsDirty] = useState(false)
+  // Keep a ref to the latest state so syncToBackend always sends current data
+  const stateRef = useRef<WorkingState>({ sections: [] })
 
   useEffect(() => {
     async function fetchState() {
@@ -25,7 +28,9 @@ export function useWorkingState() {
         const res = await fetch("/api/working-state")
         if (res.ok) {
           const data = await res.json()
-          setState(data.state || { sections: [] })
+          const loaded = data.state || { sections: [] }
+          setState(loaded)
+          stateRef.current = loaded
           setUpdatedAt(data.updated_at || null)
         }
       } catch (error) {
@@ -39,28 +44,28 @@ export function useWorkingState() {
   }, [])
 
   const isSelected = useCallback((itemId: string): boolean => {
-    const result = state.sections.some(section =>
+    return stateRef.current.sections.some(section =>
       section.item_ids.includes(itemId)
     )
-    return result
-  }, [state, updateCount])
+  }, [])
 
-  const saveState = useCallback(async (newState: WorkingState) => {
+  /** Persist the current (or a given) state to the backend. Call this explicitly. */
+  const syncToBackend = useCallback(async (newState?: WorkingState) => {
+    const toSave = newState ?? stateRef.current
     setSaving(true)
     try {
       const res = await fetch("/api/working-state", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newState)
+        body: JSON.stringify(toSave),
       })
       if (!res.ok) {
         console.error("Failed to save working state")
         toast.error("Failed to save your working state")
       } else {
-        console.log("Saved working state:", newState)
         const data = await res.json()
-        setState(newState)
         setUpdatedAt(data.updated_at || null)
+        setIsDirty(false)
       }
     } catch (error) {
       console.error("Error saving working state:", error)
@@ -70,6 +75,7 @@ export function useWorkingState() {
     }
   }, [])
 
+  /** Update state locally only — no network request. */
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
     setState(prev => {
       const newState = { ...prev, sections: [...prev.sections] }
@@ -93,21 +99,29 @@ export function useWorkingState() {
         section.item_ids.push(itemId)
       }
 
-      saveState(newState)
-
-      setUpdateCount(c => c + 1)
-
+      stateRef.current = newState
+      setIsDirty(true)
       return newState
     })
-  }, [saveState])
+  }, [])
+
+  /** Update state locally (used for drag reorder) — no network request. */
+  const updateStateLocally = useCallback((newState: WorkingState) => {
+    setState(newState)
+    stateRef.current = newState
+    setIsDirty(true)
+  }, [])
 
   return {
     state,
     loading,
     saving,
+    isDirty,
     isSelected,
     toggleItem,
-    saveState,
-    updatedAt
+    updateStateLocally,
+    /** Call this to persist to the backend (e.g. on Save Resume button press) */
+    syncToBackend,
+    updatedAt,
   }
 }
