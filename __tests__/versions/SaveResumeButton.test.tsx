@@ -6,6 +6,11 @@ import toast from 'react-hot-toast'
 // Mock react-hot-toast
 jest.mock('react-hot-toast')
 
+// Mock next/navigation to prevent router.push from throwing
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}))
+
 // Mock fetch
 global.fetch = jest.fn()
 
@@ -168,7 +173,7 @@ describe('SaveResumeButton', () => {
       expect(fetch).toHaveBeenCalledWith('/api/versions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'My New Resume', parent_version_id: null }),
+        body: JSON.stringify({ group_name: 'My New Resume', name: '', parent_version_id: null }),
       })
     })
   })
@@ -195,8 +200,8 @@ describe('SaveResumeButton', () => {
     const select = screen.getByLabelText(/save to/i)
     fireEvent.change(select, { target: { value: 'group-1' } })
 
-    // Enter name and save
-    const input = screen.getByLabelText(/resume name/i)
+    // Enter version note (resume name input is hidden for existing groups)
+    const input = screen.getByLabelText(/version note/i)
     fireEvent.change(input, { target: { value: 'SWE Resume v2' } })
 
     const saveButton = screen.getByRole('button', { name: /^save$/i })
@@ -206,7 +211,7 @@ describe('SaveResumeButton', () => {
       expect(fetch).toHaveBeenCalledWith('/api/versions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'SWE Resume v2', parent_version_id: 'version-1' }),
+        body: JSON.stringify({ group_name: undefined, name: 'SWE Resume v2', parent_version_id: 'version-1' }),
       })
     })
   })
@@ -364,10 +369,13 @@ describe('SaveResumeButton', () => {
     fireEvent.click(saveButton)
 
     await waitFor(() => {
+      // The 409 error is shown inline in the modal, not via toast
       expect(screen.getByText(/already exists/i)).toBeInTheDocument()
     })
 
+    // Modal stays open
     expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
+    // No toast for duplicate name errors
     expect(toast.error).not.toHaveBeenCalled()
   })
 
@@ -378,6 +386,12 @@ describe('SaveResumeButton', () => {
 
     const openButton = screen.getByRole('button', { name: /save resume/i })
     fireEvent.click(openButton)
+
+    // Wait for groups to load and the matching group to be pre-selected
+    await waitFor(() => {
+      const options = screen.getAllByRole('option')
+      expect(options.length).toBeGreaterThan(1)
+    })
 
     await waitFor(() => {
       const select = screen.getByLabelText(/save to/i) as HTMLSelectElement
