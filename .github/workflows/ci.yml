@@ -40,26 +40,8 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
             nextjs-${{ runner.os }}-
-
-      #- name: Run ESLint
-        #run: npm run lint
-
-    #
-     # - name: Build Next.js
-      #  env:
-      #    # Frontend env vars from repository secrets
-      #    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-      #    CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-      #    NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-      #    NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-      #    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL }}
-      #    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL }}
-      #    NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL }}
-      #    NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL }}
-      #    API_URL: ${{ secrets.API_URL }}
-      #    DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      #  run: npm run build
-
+          
+      # Run unit testing suite
       - name: Run Jest Tests
         run: npm run test
         env:
