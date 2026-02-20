@@ -86,29 +86,42 @@ const mockItems: CanonItem[] = [
   } as CanonItem,
 ]
 
+// Default mock for useWorkingState using the new API
+const makeWorkingStateMock = (overrides = {}) => ({
+  state: { sections: [] },
+  loading: false,
+  saving: false,
+  isDirty: false,
+  isSelected: jest.fn().mockReturnValue(false),
+  toggleItem: jest.fn(),
+  updateStateLocally: jest.fn(),   // replaces saveState for local updates
+  syncToBackend: jest.fn().mockResolvedValue(undefined), // explicit backend sync
+  updatedAt: null,
+  ...overrides,
+})
+
 describe("Resume Builder - Reorder Persistence Integration", () => {
-  const mockSaveState = jest.fn()
+  const mockUpdateStateLocally = jest.fn()
+  const mockSyncToBackend = jest.fn().mockResolvedValue(undefined)
   const mockPatch = jest.fn()
 
   beforeEach(() => {
     jest.spyOn(console, "log").mockImplementation(() => {})
     jest.clearAllMocks()
-    
+
     ;(useCanon as jest.Mock).mockReturnValue({
       allItems: mockItems,
       itemTypes: mockItemTypes,
       loading: false,
       patch: mockPatch,
     })
-    
-    ;(useWorkingState as jest.Mock).mockReturnValue({
-      state: { sections: [] },
-      loading: false,
-      saving: false,
-      saveState: mockSaveState,
-      isSelected: jest.fn().mockReturnValue(false),
-      toggleItem: jest.fn(),
-    })
+
+    ;(useWorkingState as jest.Mock).mockReturnValue(
+      makeWorkingStateMock({
+        updateStateLocally: mockUpdateStateLocally,
+        syncToBackend: mockSyncToBackend,
+      })
+    )
   })
 
   afterEach(() => {
@@ -118,10 +131,10 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Initial Load", () => {
     it("loads sections in default order when no working state exists", () => {
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionHeaders = screen.getAllByRole("heading", { level: 3 })
-      
+
       expect(sectionHeaders[0]).toHaveTextContent("Work Experience")
       expect(sectionHeaders[1]).toHaveTextContent("Education")
       expect(sectionHeaders[2]).toHaveTextContent("Project")
@@ -136,19 +149,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         ],
       }
 
-      ;(useWorkingState as jest.Mock).mockReturnValue({
-        state: savedWorkingState,
-        loading: false,
-        saving: false,
-        saveState: mockSaveState,
-        isSelected: jest.fn().mockReturnValue(false),
-        toggleItem: jest.fn(),
-      })
+      ;(useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({ state: savedWorkingState })
+      )
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionHeaders = screen.getAllByRole("heading", { level: 3 })
-      
+
       expect(sectionHeaders[0]).toHaveTextContent("Project")
       expect(sectionHeaders[1]).toHaveTextContent("Work Experience")
       expect(sectionHeaders[2]).toHaveTextContent("Education")
@@ -163,46 +171,44 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         ],
       }
 
-      ;(useWorkingState as jest.Mock).mockReturnValue({
-        state: savedWorkingState,
-        loading: false,
-        saving: false,
-        saveState: mockSaveState,
-        isSelected: jest.fn().mockReturnValue(false),
-        toggleItem: jest.fn(),
-      })
+      ;(useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({ state: savedWorkingState })
+      )
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
-      const workSection = screen.getByText("Work Experience").closest("div[draggable='true']") as HTMLElement
+      const workSection = screen.getByText("Work Experience")
+        .closest("div[draggable='true']")
+        ?.parentElement?.parentElement as HTMLElement
       expect(workSection).toBeInTheDocument()
 
       const items = within(workSection).getAllByText(/Developer/)
-      
+
       expect(items[0]).toHaveTextContent("Junior Developer")
       expect(items[1]).toHaveTextContent("Senior Developer")
     })
 
-    it("does not trigger save on initial load", () => {
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+    it("does not trigger syncToBackend on initial load", () => {
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       act(() => {
         jest.advanceTimersByTime(2000)
       })
 
-      expect(mockSaveState).not.toHaveBeenCalled()
+      // syncToBackend should never be called automatically
+      expect(mockSyncToBackend).not.toHaveBeenCalled()
     })
   })
 
   describe("Section Reordering", () => {
-    it("saves section order when position input is changed", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+    it("updates local state when section position changes (no API call)", async () => {
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionOrderLabels = screen.getAllByText("Section order:")
       const firstLabel = sectionOrderLabels[0]
       const container = firstLabel.parentElement!
       const input = container.querySelector('input[type="text"]') as HTMLInputElement
-      
+
       act(() => {
         input.focus()
         input.value = "2"
@@ -214,20 +220,23 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
       })
 
       await waitFor(() => {
-        expect(mockSaveState).toHaveBeenCalled()
+        expect(mockUpdateStateLocally).toHaveBeenCalled()
       })
+
+      // Should NOT hit the backend automatically
+      expect(mockSyncToBackend).not.toHaveBeenCalled()
     })
   })
 
   describe("Item Reordering", () => {
-    it("persists item reorder within section after debounce", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+    it("updates local state when item position changes (no API call)", async () => {
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const hashLabels = screen.getAllByText("#")
       const firstLabel = hashLabels[0]
       const container = firstLabel.parentElement!
       const input = container.querySelector('input[type="text"]') as HTMLInputElement
-      
+
       act(() => {
         input.focus()
         input.value = "2"
@@ -239,18 +248,18 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
       })
 
       await waitFor(() => {
-        expect(mockSaveState).toHaveBeenCalled()
+        expect(mockUpdateStateLocally).toHaveBeenCalled()
       })
     })
 
-    it("saves item order to working state (not canon) after reorder", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+    it("does not call canon patch on reorder — only local state updated", async () => {
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const hashLabels = screen.getAllByText("#")
       const firstLabel = hashLabels[0]
       const container = firstLabel.parentElement!
       const input = container.querySelector('input[type="text"]') as HTMLInputElement
-      
+
       act(() => {
         input.focus()
         input.value = "2"
@@ -261,17 +270,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         jest.advanceTimersByTime(1000)
       })
 
-      await waitFor(() => {
-        expect(mockSaveState).toHaveBeenCalled()
-      })
-
       expect(mockPatch).not.toHaveBeenCalled()
+      expect(mockSyncToBackend).not.toHaveBeenCalled()
     })
   })
 
   describe("Debouncing", () => {
-    it("debounces multiple rapid changes", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+    it("debounces multiple rapid changes to a single local state update", async () => {
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionOrderLabels = screen.getAllByText("Section order:")
       const firstLabel = sectionOrderLabels[0]
@@ -294,20 +300,20 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         input.blur()
       })
 
-      expect(mockSaveState).not.toHaveBeenCalled()
+      expect(mockUpdateStateLocally).not.toHaveBeenCalled()
 
       act(() => {
         jest.advanceTimersByTime(1000)
       })
 
       await waitFor(() => {
-        expect(mockSaveState).toHaveBeenCalled()
+        expect(mockUpdateStateLocally).toHaveBeenCalled()
       })
-      
-      expect(mockSaveState).toHaveBeenCalledTimes(1)
+
+      expect(mockUpdateStateLocally).toHaveBeenCalledTimes(1)
     })
 
-    it("does not save if order hasn't actually changed", async () => {
+    it("does not update state if order hasn't actually changed", async () => {
       const savedWorkingState = {
         sections: [
           { item_type_id: "work", item_ids: ["item-1", "item-2"] },
@@ -316,22 +322,20 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         ],
       }
 
-      ;(useWorkingState as jest.Mock).mockReturnValue({
-        state: savedWorkingState,
-        loading: false,
-        saving: false,
-        saveState: mockSaveState,
-        isSelected: jest.fn().mockReturnValue(false),
-        toggleItem: jest.fn(),
-      })
+      ;(useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({
+          state: savedWorkingState,
+          updateStateLocally: mockUpdateStateLocally,
+        })
+      )
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       act(() => {
         jest.advanceTimersByTime(2000)
       })
 
-      expect(mockSaveState).not.toHaveBeenCalled()
+      expect(mockUpdateStateLocally).not.toHaveBeenCalled()
     })
   })
 
@@ -344,24 +348,29 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         patch: mockPatch,
       })
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getByText(/Loading your resume/i)).toBeInTheDocument()
     })
 
-    it("shows saving indicator when working state is saving", () => {
-      ;(useWorkingState as jest.Mock).mockReturnValue({
-        state: { sections: [] },
-        loading: false,
-        saving: true,
-        saveState: mockSaveState,
-        isSelected: jest.fn().mockReturnValue(false),
-        toggleItem: jest.fn(),
-      })
+    it("shows 'Unsaved changes' indicator when isDirty is true", () => {
+      ;(useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({ isDirty: true })
+      )
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
-      expect(screen.getAllByText(/Auto-saving/i).length).toBeGreaterThan(0)
+      expect(screen.getByText(/Unsaved changes/i)).toBeInTheDocument()
+    })
+
+    it("does not show 'Unsaved changes' when isDirty is false", () => {
+      ;(useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({ isDirty: false })
+      )
+
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+
+      expect(screen.queryByText(/Unsaved changes/i)).not.toBeInTheDocument()
     })
   })
 
@@ -374,7 +383,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         patch: mockPatch,
       })
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getByText(/No items yet/i)).toBeInTheDocument()
     })
@@ -389,14 +398,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         patch: mockPatch,
       })
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionHeaders = screen.getAllByRole("heading", { level: 3 })
-      const resumeSections = sectionHeaders.filter(h => 
-        !h.textContent?.includes("Resume Preview") && 
+      const resumeSections = sectionHeaders.filter(h =>
+        !h.textContent?.includes("Resume Preview") &&
         !h.textContent?.includes("Resume Builder")
       )
-      
+
       expect(resumeSections).toHaveLength(1)
       expect(resumeSections[0]).toHaveTextContent("Work Experience")
     })
@@ -415,29 +424,29 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         patch: mockPatch,
       })
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getAllByText("1 item").length).toBe(3)
     })
   })
 
   describe("Full Round-Trip Persistence", () => {
-    it("simulates full persistence cycle: reorder → save → reload → verify", async () => {
-      const { unmount } = render(<ResumeClient userName="Test User" userId="user_123" />)
+    it("simulates full persistence cycle: reorder → local update → save button → verify", async () => {
+      const { unmount } = render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       let sectionHeaders = screen.getAllByRole("heading", { level: 3 })
-      const resumeSections = sectionHeaders.filter(h => 
-        !h.textContent?.includes("Resume Preview") && 
+      const resumeSections = sectionHeaders.filter(h =>
+        !h.textContent?.includes("Resume Preview") &&
         !h.textContent?.includes("Resume Builder")
       )
-      
+
       expect(resumeSections[0]).toHaveTextContent("Work Experience")
 
       const sectionOrderLabels = screen.getAllByText("Section order:")
       const firstLabel = sectionOrderLabels[0]
       const container = firstLabel.parentElement!
       const input = container.querySelector('input[type="text"]') as HTMLInputElement
-      
+
       act(() => {
         input.focus()
         input.value = "3"
@@ -449,27 +458,25 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
       })
 
       await waitFor(() => {
-        expect(mockSaveState).toHaveBeenCalled()
+        expect(mockUpdateStateLocally).toHaveBeenCalled()
       })
 
-      const savedState = mockSaveState.mock.calls[0][0]
+      // syncToBackend not called yet — only happens on Save button press
+      expect(mockSyncToBackend).not.toHaveBeenCalled()
+
+      const savedState = mockUpdateStateLocally.mock.calls[0][0]
 
       unmount()
 
-      ;(useWorkingState as jest.Mock).mockReturnValue({
-        state: savedState,
-        loading: false,
-        saving: false,
-        saveState: mockSaveState,
-        isSelected: jest.fn().mockReturnValue(false),
-        toggleItem: jest.fn(),
-      })
+      ;(useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({ state: savedState })
+      )
 
-      render(<ResumeClient userName="Test User" userId="user_123" />)
+      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       sectionHeaders = screen.getAllByRole("heading", { level: 3 })
-      const reloadedSections = sectionHeaders.filter(h => 
-        !h.textContent?.includes("Resume Preview") && 
+      const reloadedSections = sectionHeaders.filter(h =>
+        !h.textContent?.includes("Resume Preview") &&
         !h.textContent?.includes("Resume Builder")
       )
 

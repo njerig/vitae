@@ -9,6 +9,7 @@ import type { CanonItem } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
+import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
 
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
@@ -18,6 +19,8 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   // Form state
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
+  const [deletingItem, setDeletingItem] = useState<CanonItem<unknown> | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Get most recent edit timestamp from all items
   const getLastEditedDate = () => {
@@ -74,8 +77,18 @@ export default function HomeClient({ userName, userId }: { userName: string; use
   }
 
   const del = async (id: string) => {
-    if (confirm("Delete this item?")) {
-      await remove(id)
+    const item = items.find((i) => i.id === id) ?? null
+    setDeletingItem(item)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    try {
+      await remove(deletingItem.id)
+      setDeletingItem(null)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -90,6 +103,15 @@ export default function HomeClient({ userName, userId }: { userName: string; use
     <div className="page-container">
       <div className="page-bg-gradient"></div>
       <div className="page-accent-light"></div>
+
+      {deletingItem && (
+        <DeleteItemModal
+          itemTitle={deletingItem.title}
+          onConfirm={confirmDelete}
+          onClose={() => setDeletingItem(null)}
+          deleting={isDeleting}
+        />
+      )}
 
       <div className="relative z-10 pt-32 pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
