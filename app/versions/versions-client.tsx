@@ -114,12 +114,12 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
       }
 
       const data = await response.json()
-      toast.success(`"${name}" restored successfully`)
       const savedAt = new Date().toISOString()
       // Pass the version_id and resume_group_id so that subsequent saves link to this group
       router.push(
         `/resume?version=${encodeURIComponent(name)}&savedAt=${encodeURIComponent(savedAt)}&parentVersionId=${encodeURIComponent(data.version_id)}`
       )
+      toast.success(`"${name}" restored successfully`)
     } catch (error) {
       console.error("Error restoring version:", error)
       toast.error("Failed to restore version")
