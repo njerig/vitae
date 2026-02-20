@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
 import { useMemo, useCallback } from "react"
-import { DragSection } from "../_components/resume/DragSection"
+import { DragSection } from "../../lib/resume-builder/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
