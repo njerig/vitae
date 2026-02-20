@@ -116,7 +116,7 @@ export default function ResumeClient({
         <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
           <div className="space-y-6 pb-8">
 
-            {/* Header card — back button + title + save button, exactly as original */}
+            {/* Header card — back button + title + save button */}
             <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-4">
               <div className="flex flex-row items-center gap-6">
                 <Link href="/home">
@@ -187,7 +187,7 @@ export default function ResumeClient({
             className="bg-white rounded-2xl border shadow-sm flex flex-col"
             style={{ borderColor: "var(--grid)", minHeight: "100%" }}
           >
-            {/* Preview header card — exactly as original */}
+            {/* Preview header */}
             <div className="p-8 border-b flex-shrink-0" style={{ borderColor: "var(--grid)" }}>
               <div className="flex justify-between items-center">
                 <h3
@@ -212,7 +212,7 @@ export default function ResumeClient({
             </div>
 
             {/* Preview body */}
-            <div className="flex-1 overflow-hidden rounded-b-2xl">
+            <div className="rounded-b-2xl overflow-clip">
               <ResumePreview
                 sections={filteredSections.length > 0 ? filteredSections : sections}
                 profile={previewProfile}

@@ -177,7 +177,9 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
       render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
-      const workSection = screen.getByText("Work Experience").closest("div[draggable='true']") as HTMLElement
+      const workSection = screen.getByText("Work Experience")
+        .closest("div[draggable='true']")
+        ?.parentElement?.parentElement as HTMLElement
       expect(workSection).toBeInTheDocument()
 
       const items = within(workSection).getAllByText(/Developer/)

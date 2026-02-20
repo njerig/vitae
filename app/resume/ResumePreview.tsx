@@ -192,7 +192,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   }
 
   return (
-    <div className="relative h-full">
+    <div className="relative">
       {errorForExistingSvg && (
         <div
           className="absolute top-4 left-4 right-4 px-3 py-2 rounded-lg text-sm z-10 border"
@@ -209,22 +209,16 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
         </div>
       )}
 
-      {/* Grey background fills full height; SVG sits centred inside */}
-      <div
-        className="h-full"
-        style={{ backgroundColor: "#ececec", padding: "1.25rem 0.75rem", minHeight: "100%" }}
-      >
+      {/* Grey background */}
+      <div style={{ backgroundColor: "#ececec", padding: "1.25rem 0.75rem" }}>
         <div className="relative mx-auto w-full max-w-[8.5in]">
-          {/* The SVG renders as one element; page gaps are overlaid on top */}
           <div
             ref={containerRef}
             className="relative bg-white"
             style={{ border: "1px solid #ccc", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
-          >
-            {/* SVG inserted here */}
-          </div>
+          />
 
-          {/* Thick grey bands overlaid at each page boundary to simulate separate sheets */}
+          {/* Thick grey bands overlaid to simulate separate sheets */}
           {pageBreakPercents.map((top) => (
             <div
               key={top}
