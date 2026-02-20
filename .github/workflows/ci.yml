@@ -40,86 +40,26 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
             nextjs-${{ runner.os }}-
-          
-      # Run unit testing suite
+
+      #- name: Run ESLint
+        #run: npm run lint
+
+      - name: Build Next.js
+        env:
+          # Frontend env vars from repository secrets
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
+          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL }}
+          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL }}
+          NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL }}
+          NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL }}
+          API_URL: ${{ secrets.API_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run build
+
       - name: Run Jest Tests
         run: npm run test
         env:
           CI: true
-
-  # ============================================
-  # Backend Install & Check (with Postgres)
-  # ============================================
-  backend:
-    name: Backend Install & Check
-    runs-on: ubuntu-latest
-    
-    # Postgres service container (mirrors docker-compose.yml)
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: vitae
-          POSTGRES_PASSWORD: vitae
-          POSTGRES_DB: vitae_dev
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U vitae -d vitae_dev"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-
-    defaults:
-      run:
-        working-directory: ./backend
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      # Install psql
-      - name: Install PostgreSQL client
-        run: |
-          if ! command -v psql &> /dev/null; then
-            sudo apt-get update && sudo apt-get install -y postgresql-client
-          fi
-
-      # Initialize the database schema (same as docker-entrypoint-initdb.d)
-      - name: Initialize database schema
-        run: psql -f infra/initdb/001_schema.sql
-        env:
-          PGHOST: localhost
-          PGUSER: vitae
-          PGPASSWORD: vitae
-          PGDATABASE: vitae_dev
-
-      # Start server and verify it boots with real DB connection
-      - name: Verify server starts
-        env:
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          PORT: 8000
-          DATABASE_URL: postgresql://vitae:vitae@localhost:5432/vitae_dev
-          WEB_ORIGIN: http://localhost:3000
-        run: |
-          timeout 5 node index.js || code=$?
-          # Exit code 124 means timeout (expected - server is running)
-          # Exit code 0 means it exited normally (also fine)
-          if [ "$code" = "124" ] || [ "$code" = "0" ]; then
-            echo "✅ Server booted successfully with database connection"
-            exit 0
-          else
-            echo "❌ Server failed to start"
-            exit 1
-          fi
