@@ -2,10 +2,10 @@ import { useState } from "react"
 import { GripVertical } from "./GripVertical"
 import { DragItem } from "./DragItem"
 
-export function DragSection({ 
-  section, 
-  sectionIndex, 
-  sections, 
+export function DragSection({
+  section,
+  sectionIndex,
+  sections,
   setSections,
   draggedSection,
   setDraggedSection,
@@ -13,12 +13,14 @@ export function DragSection({
   setDraggedItem,
   saveItemPosition,
   formatDate,
-  handleItemDragEnd
+  handleItemDragEnd,
+  isSelected,
+  toggleItem
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
 
-  const validatePosition = (position: number, max: number) => 
+  const validatePosition = (position: number, max: number) =>
     position >= 1 && position <= max && !isNaN(position)
 
   const moveSection = (fromIndex: number, toIndex: number) => {
@@ -75,21 +77,20 @@ export function DragSection({
       onDragStart={handleSectionDragStart}
       onDragOver={handleSectionDragOver}
       onDragEnd={handleSectionDragEnd}
-      className={`rounded-2xl border shadow-sm transition-all ${
-        isSectionDragging ? "opacity-50" : ""
-      }`}
-      style={{ 
+      className={`rounded-2xl border shadow-sm transition-all ${isSectionDragging ? "opacity-50" : ""
+        }`}
+      style={{
         borderColor: "var(--grid)",
         backgroundColor: "var(--paper-dark)"
       }}
     >
-      <div 
+      <div
         className="p-6 border-b flex items-center gap-3 cursor-move hover:bg-gray-50 rounded-t-2xl"
         style={{ borderColor: "var(--grid)" }}
       >
         <GripVertical className="w-5 h-5" style={{ color: "var(--ink-light)" }} />
         <div className="flex-1">
-          <h3 className="text-xl font-semibold" style={{ 
+          <h3 className="text-xl font-semibold" style={{
             color: "var(--ink)",
             fontFamily: "var(--font-serif)"
           }}>{section.typeName}</h3>
@@ -121,7 +122,7 @@ export function DragSection({
             onDragStart={(e) => e.preventDefault()}
             draggable={false}
             className="w-16 px-2 py-1 text-sm border rounded text-center focus:outline-none cursor-text"
-            style={{ 
+            style={{
               borderColor: "var(--grid)",
               color: "var(--ink)",
               backgroundColor: "var(--paper)"
@@ -145,6 +146,8 @@ export function DragSection({
             saveItemPosition={saveItemPosition}
             formatDate={formatDate}
             handleItemDragEnd={handleItemDragEnd}
+            isSelected={isSelected}
+            toggleItem={toggleItem}
           />
         ))}
       </div>

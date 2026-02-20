@@ -147,15 +147,34 @@ export const ItemTypeQuerySchema = z.object({
 // ─────────────────────────────────────────────────────────────
 
 // for the resume name
-export const ResumeNameSchema = z.object({name: z.string().min(1, "Resume name is required")})
+export const ResumeNameSchema = z.object({ name: z.string().min(1, "Resume name is required") })
+
+// Save version request — group_name for new repos, name as commit message
+export const SaveVersionSchema = z.object({
+  group_name: z.string().min(1).optional(),
+  name: z.string().default(''),
+  parent_version_id: z.string().uuid().nullable().optional(),
+})
 
 // Version response schema (matches versions table)
 export const VersionSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string(),
+  resume_group_id: z.string().uuid(),
+  parent_version_id: z.string().uuid().nullable(),
+  group_name: z.string(),
   name: z.string(),
   snapshot: z.record(z.string(), z.unknown()),
   created_at: z.string().or(z.date()),
 })
 
 export const VersionsArraySchema = z.array(VersionSchema)
+
+// Grouped version response
+export const VersionGroupSchema = z.object({
+  resume_group_id: z.string().uuid(),
+  group_name: z.string(),
+  versions: z.array(VersionSchema),
+})
+
+export const VersionGroupsArraySchema = z.array(VersionGroupSchema)

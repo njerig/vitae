@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { SaveResumeModal } from "./SaveResumeModal"
 import toast from "react-hot-toast"
 import { Save } from "lucide-react"
@@ -14,18 +15,24 @@ type WorkingState = {
 
 type SaveResumeButtonProps = {
   workingState: WorkingState
+  parentVersionId?: string | null
 }
 
-export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
+export function SaveResumeButton({ workingState, parentVersionId }: SaveResumeButtonProps) {
+  const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
   // Check if working state is empty
-  const hasSelectedItems = 
-    workingState.sections.length > 0 && 
+  const hasSelectedItems =
+    workingState.sections.length > 0 &&
     workingState.sections.some(section => section.item_ids.length > 0)
 
-  const handleSave = async (name: string): Promise<{ success: boolean; error?: string }> => {
+  const handleSave = async (
+    groupName: string,
+    versionNote: string,
+    selectedParentVersionId: string | null,
+  ): Promise<{ success: boolean; error?: string }> => {
     setSaving(true)
     try {
       const response = await fetch("/api/versions", {
@@ -33,26 +40,29 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({
+          group_name: selectedParentVersionId ? undefined : groupName,
+          name: versionNote,
+          parent_version_id: selectedParentVersionId,
+        }),
       })
 
       if (!response.ok) {
-        // Extract error message from API response
         const data = await response.json().catch(() => ({}))
         const errorMessage = data.error || "Failed to save resume version"
-        
-        // For duplicate name errors (409), return the error to be shown in modal
+
         if (response.status === 409) {
           return { success: false, error: errorMessage }
         }
-        
-        // For other errors, show toast and return error
+
         toast.error(errorMessage)
         return { success: false, error: errorMessage }
       }
 
-      toast.success(`Resume "${name}" saved successfully!`)
+      toast.success(`Resume "${groupName}" saved successfully!`)
       setIsModalOpen(false)
+      const savedAt = new Date().toISOString()
+      router.push(`/resume?version=${encodeURIComponent(groupName)}&savedAt=${encodeURIComponent(savedAt)}`)
       return { success: true }
     } catch (error) {
       console.error("Error saving resume:", error)
@@ -68,11 +78,11 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="btn-primary flex items-center gap-2"
+        className="btn-primary rounded-md px-2 py-1 text-sm flex items-center gap-1"
         disabled={!hasSelectedItems}
         title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}
       >
-        <Save className="w-5 h-5" />
+        <Save className="w-6 h-6" />
         Save Resume
       </button>
 
@@ -81,6 +91,7 @@ export function SaveResumeButton({ workingState }: SaveResumeButtonProps) {
           onSave={handleSave}
           onClose={() => setIsModalOpen(false)}
           saving={saving}
+          defaultParentVersionId={parentVersionId}
         />
       )}
     </>

@@ -2,12 +2,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import HomeClient from '@/app/home/home-page'
 import { useCanon } from "@/lib/canon/useCanon"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
+
 import { mockWorkItem1, mockWorkItem2, mockStats, mockItemTypes } from '../utils/mockData'
 
 // Mock the useCanon hook
 jest.mock("@/lib/canon/useCanon")
-jest.mock("@/lib/working-state/useWorkingState")
+
 
 // Mock the child components
 jest.mock('@/lib/canon/components/CanonForm', () => ({
@@ -61,8 +61,7 @@ describe('Home Page - Career History', () => {
   const mockRefresh = jest.fn()
   const mockSetSelectedTypeId = jest.fn()
   const mockSetError = jest.fn()
-  const mockIsSelected = jest.fn(() => false)
-  const mockToggleItem = jest.fn()
+
 
   const mockuseCanon = {
     items: [mockWorkItem1, mockWorkItem2],
@@ -82,13 +81,7 @@ describe('Home Page - Career History', () => {
 
   beforeEach(() => {
     ;(useCanon as jest.Mock).mockReturnValue(mockuseCanon)
-    ;(useWorkingState as jest.Mock).mockReturnValue({
-      state: { sections: [] },
-      loading: false,
-      saving: false,
-      isSelected: mockIsSelected,
-      toggleItem: mockToggleItem,
-    })
+
     jest.clearAllMocks()
     // Mock window.confirm
     global.confirm = jest.fn(() => true)

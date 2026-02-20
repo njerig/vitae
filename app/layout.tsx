@@ -42,13 +42,8 @@ export default function RootLayout({
               {/* Left side - Logo and Home */}
               <div className='flex items-center gap-6'>
                 <Link href='/' className='logo flex items-center'>
-                  Vitae
+                <h2>Vitae</h2>
                 </Link>
-                <SignedIn>
-                  <Link href='/home' className='flex items-center'>
-                    <button className='btn-nav'>Home</button>
-                  </Link>
-                </SignedIn>
               </div>
 
               {/* Right side buttons */}
@@ -62,8 +57,14 @@ export default function RootLayout({
                   </Link>
                 </SignedOut>
                 <SignedIn>
+                  <Link href='/home' className='flex items-center'>
+                    <button className='btn-nav'>Career History</button>
+                  </Link>
                   <Link href='/resume' className='flex items-center'>
                     <button className='btn-nav'>Resume Builder</button>
+                  </Link>
+                  <Link href='/versions' className='flex items-center'>
+                    <button className='btn-nav'>Version History</button>
                   </Link>
                   <UserButton showName />
                 </SignedIn>
