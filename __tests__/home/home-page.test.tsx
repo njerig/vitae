@@ -1,5 +1,5 @@
 // __tests__/home/home-page.test.tsx
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import HomeClient from '@/app/home/home-page'
 import { useCanon } from "@/lib/canon/useCanon"
 
@@ -83,8 +83,6 @@ describe('Home Page - Career History', () => {
     ;(useCanon as jest.Mock).mockReturnValue(mockuseCanon)
 
     jest.clearAllMocks()
-    // Mock window.confirm
-    global.confirm = jest.fn(() => true)
     // Mock scrollIntoView (not implemented in jsdom)
     window.HTMLElement.prototype.scrollIntoView = jest.fn()
   })
@@ -255,32 +253,44 @@ describe('Home Page - Career History', () => {
     })
   })
 
-  it('calls removeWork when delete is confirmed', async () => {
+  it('calls removeWork when delete is confirmed via modal', async () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
-    
-    // Click delete
+
+    // Click delete — opens the modal
     const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
     fireEvent.click(deleteButton)
-    
-    // Confirm should have been called
-    expect(global.confirm).toHaveBeenCalledWith('Delete this item?')
-    
-    // remove should be called
+
+    // Modal should be visible with the item title shown inside it
+    const modal = screen.getByText('Delete Item').closest('.modal') as HTMLElement
+    expect(modal).toBeInTheDocument()
+    expect(within(modal).getByText(mockWorkItem1.title!)).toBeInTheDocument()
+
+    // Click the Delete confirm button in the modal (scoped to avoid list Delete buttons)
+    const confirmButton = within(modal).getByRole('button', { name: /^delete$/i })
+    fireEvent.click(confirmButton)
+
+    // remove should be called with the correct id
     await waitFor(() => {
       expect(mockRemove).toHaveBeenCalledWith(mockWorkItem1.id)
     })
   })
 
-  it('does not delete if user cancels confirmation', async () => {
-    global.confirm = jest.fn(() => false)
-    
+  it('does not delete if user cancels the modal', async () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
-    
-    // Click delete
+
+    // Click delete — opens the modal
     const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
     fireEvent.click(deleteButton)
-    
-    // remove should NOT be called
+
+    // Modal should be visible
+    expect(screen.getByText('Delete Item')).toBeInTheDocument()
+
+    // Click Cancel
+    const cancelButton = screen.getByRole('button', { name: /cancel/i })
+    fireEvent.click(cancelButton)
+
+    // Modal should be gone and remove should NOT have been called
+    expect(screen.queryByText('Delete Item')).not.toBeInTheDocument()
     await waitFor(() => {
       expect(mockRemove).not.toHaveBeenCalled()
     })
