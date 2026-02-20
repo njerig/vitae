@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { GripVertical } from "./GripVertical"
+import { Pencil } from "lucide-react"
 
 export function DragItem({
   item,
@@ -14,7 +15,9 @@ export function DragItem({
   formatDate,
   handleItemDragEnd,
   isSelected,
-  toggleItem
+  toggleItem,
+  onEditOverride,
+  hasOverride
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -225,6 +228,31 @@ export function DragItem({
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onEditOverride?.(item)
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onDragStart={(e) => e.preventDefault()}
+          draggable={false}
+          className="relative p-1.5 rounded-md border transition-colors cursor-pointer"
+          style={{
+            borderColor: hasOverride ? "var(--accent)" : "var(--grid)",
+            color: hasOverride ? "var(--accent)" : "var(--ink-light)",
+            backgroundColor: "var(--paper)"
+          }}
+          aria-label="Edit item for this resume"
+          title={hasOverride ? "Edited for this resume (click to modify)" : "Edit for this resume"}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          {hasOverride && (
+            <span
+              className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+              style={{ backgroundColor: "var(--accent)" }}
+            />
+          )}
+        </button>
         <label className="text-xs" style={{ color: "var(--ink-light)" }}>#</label>
         <input
           type="text"

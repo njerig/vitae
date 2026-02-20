@@ -15,7 +15,9 @@ export function DragSection({
   formatDate,
   handleItemDragEnd,
   isSelected,
-  toggleItem
+  toggleItem,
+  onEditOverride,
+  getOverride
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -148,6 +150,8 @@ export function DragSection({
             handleItemDragEnd={handleItemDragEnd}
             isSelected={isSelected}
             toggleItem={toggleItem}
+            onEditOverride={onEditOverride}
+            hasOverride={!!getOverride?.(item.id)}
           />
         ))}
       </div>

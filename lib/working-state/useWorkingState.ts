@@ -8,8 +8,14 @@ type SectionState = {
   item_ids: string[]
 }
 
+export type OverrideData = {
+  title?: string
+  content?: Record<string, unknown>
+}
+
 type WorkingState = {
   sections: SectionState[]
+  overrides?: Record<string, OverrideData>
 }
 
 export function useWorkingState() {
@@ -101,6 +107,36 @@ export function useWorkingState() {
     })
   }, [saveState])
 
+  // Get override for a specific item
+  const getOverride = useCallback((itemId: string): OverrideData | undefined => {
+    return state.overrides?.[itemId]
+  }, [state])
+
+  // Save override for a specific item
+  const saveOverride = useCallback(async (itemId: string, override: OverrideData) => {
+    const newState: WorkingState = {
+      ...state,
+      overrides: {
+        ...(state.overrides || {}),
+        [itemId]: override,
+      },
+    }
+    setState(newState)
+    await saveState(newState)
+  }, [state, saveState])
+
+  // Clear override for a specific item (reset to canon original)
+  const clearOverride = useCallback(async (itemId: string) => {
+    const newOverrides = { ...(state.overrides || {}) }
+    delete newOverrides[itemId]
+    const newState: WorkingState = {
+      ...state,
+      overrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
+    }
+    setState(newState)
+    await saveState(newState)
+  }, [state, saveState])
+
   return {
     state,
     loading,
@@ -108,6 +144,9 @@ export function useWorkingState() {
     isSelected,
     toggleItem,
     saveState,
-    updatedAt
+    updatedAt,
+    getOverride,
+    saveOverride,
+    clearOverride,
   }
 }

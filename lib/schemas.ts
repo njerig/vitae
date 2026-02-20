@@ -126,8 +126,14 @@ export const SectionStateSchema = z.object({
   item_ids: z.array(z.string().uuid("item_ids must contain valid UUIDs")),
 })
 
+export const OverrideSchema = z.object({
+  title: z.string().optional(),
+  content: z.record(z.string(), z.unknown()).optional(),
+})
+
 export const WorkingStateSchema = z.object({
   sections: z.array(SectionStateSchema),
+  overrides: z.record(z.string().uuid(), OverrideSchema).optional(),
 })
 
 // ─────────────────────────────────────────────────────────────

@@ -7,11 +7,17 @@ type Section = {
   items: CanonItem[]
 }
 
+type OverrideData = {
+  title?: string
+  content?: Record<string, unknown>
+}
+
 type WorkingState = {
   sections: Array<{
     item_type_id: string
     item_ids: string[]
   }>
+  overrides?: Record<string, OverrideData>
 }
 
 function useDebounce<T extends (...args: any[]) => void>(
@@ -66,14 +72,36 @@ export function useResumeSections(
       .filter(section => section.items.length > 0)
   }, [allItems, itemTypes])
 
-  const sections = localSections ?? computedSections
+  const baseSections = localSections ?? computedSections
+
+  // Apply overrides as a FINAL step — this runs reactively whenever overrides
+  // change, so edits show immediately without requiring a page refresh.
+  const sections = useMemo<Section[]>(() => {
+    const overrides = workingState?.overrides
+    if (!overrides || Object.keys(overrides).length === 0) return baseSections
+    return baseSections.map(section => ({
+      ...section,
+      items: section.items.map(item => {
+        const override = overrides[item.id]
+        if (!override) return item
+        return {
+          ...item,
+          title: override.title ?? item.title,
+          content: override.content
+            ? { ...(item.content as Record<string, unknown>), ...override.content }
+            : item.content,
+        }
+      }),
+    }))
+  }, [baseSections, workingState?.overrides])
 
   const debouncedSave = useDebounce((sectionsToSave: Section[]) => {
     const newWorkingState: WorkingState = {
       sections: sectionsToSave.map(section => ({
         item_type_id: section.typeId,
         item_ids: section.items.map(item => item.id)
-      }))
+      })),
+      ...(workingState?.overrides ? { overrides: workingState.overrides } : {}),
     }
 
     const serialized = JSON.stringify(newWorkingState)

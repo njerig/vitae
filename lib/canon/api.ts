@@ -133,6 +133,7 @@ export async function deleteCanonItem(id: string): Promise<void> {
 
 export type WorkingState = {
   sections: { item_type_id: string; item_ids: string[] }[]
+  overrides?: Record<string, { title?: string; content?: Record<string, unknown> }>
 }
 
 export type WorkingStateResponse = {

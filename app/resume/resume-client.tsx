@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
-import { useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { DragSection } from "../../lib/resume-builder/DragSection"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
@@ -12,6 +12,7 @@ import { ChevronLeft } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
+import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
 import type { CanonItem, ItemType } from "@/lib/types"
 import { formatDateTime, formatDate } from "@/lib/utils"
 
@@ -28,6 +29,7 @@ export default function ResumeClient({
   parentVersionId: string | null
 }) {
   const { allItems, itemTypes, loading } = useCanon()
+  const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
 
   // Manage sections with working state
   const {
@@ -38,7 +40,16 @@ export default function ResumeClient({
     isSelected,
     toggleItem,
     updatedAt,
+    getOverride,
+    saveOverride,
+    clearOverride,
   } = useWorkingState()
+
+  // Get type name for a given item
+  const getTypeName = useCallback(
+    (typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown",
+    [itemTypes]
+  )
 
   // Manage sections with working state
   const { sections, setSections } = useResumeSections(allItems, itemTypes, workingState, workingStateLoading, saveState)
@@ -156,6 +167,8 @@ export default function ResumeClient({
                       handleItemDragEnd={handleItemDragEnd}
                       isSelected={isSelected}
                       toggleItem={toggleItem}
+                      onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
+                      getOverride={getOverride}
                     />
                   ))}
                 </div>
@@ -209,6 +222,20 @@ export default function ResumeClient({
           </div>
         </div>
       </div>
+
+      {/* Edit Override Modal */}
+      {editingItem && (
+        <EditOverrideModal
+          item={editingItem}
+          typeName={getTypeName(editingItem.item_type_id)}
+          itemTypes={itemTypes}
+          override={getOverride(editingItem.id)}
+          onSave={saveOverride}
+          onReset={clearOverride}
+          onClose={() => setEditingItem(null)}
+          saving={workingStateSaving}
+        />
+      )}
     </div>
   )
 }
