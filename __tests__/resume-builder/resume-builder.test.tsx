@@ -102,7 +102,7 @@ describe("useResumeSections", () => {
     expect(mockSaveState).not.toHaveBeenCalled()
   })
 
-  it("debounces save when sections change", () => {
+  it("calls saveState immediately when sections change (no debounce)", () => {
     const { result } = renderHook(() =>
       useResumeSections(mockItems, mockItemTypes, null, false, mockSaveState)
     )
@@ -111,27 +111,19 @@ describe("useResumeSections", () => {
       result.current.setSections([...result.current.sections])
     })
 
-    expect(mockSaveState).not.toHaveBeenCalled()
-
-    act(() => {
-      jest.advanceTimersByTime(1000)
-    })
-
+    // With manual save model, local state updates are immediate
     expect(mockSaveState).toHaveBeenCalledTimes(1)
   })
 
-  it("does not save if serialized state is unchanged", () => {
+  it("calls saveState on setSections even if sections reference is same", () => {
     const { result } = renderHook(() =>
       useResumeSections(mockItems, mockItemTypes, mockWorkingState, false, mockSaveState)
     )
     act(() => {
-      jest.advanceTimersByTime(1000)
-    })
-    act(() => {
       result.current.setSections(result.current.sections)
-      jest.advanceTimersByTime(1000)
     })
 
-    expect(mockSaveState).not.toHaveBeenCalled()
+    // saveState is called because setSections always pushes local state
+    expect(mockSaveState).toHaveBeenCalledTimes(1)
   })
 })

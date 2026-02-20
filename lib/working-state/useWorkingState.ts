@@ -123,30 +123,32 @@ export function useWorkingState() {
     return state.overrides?.[itemId]
   }, [state])
 
-  // Save override for a specific item
+  // Save override for a specific item — persists immediately
   const saveOverride = useCallback(async (itemId: string, override: OverrideData) => {
     const newState: WorkingState = {
-      ...state,
+      ...stateRef.current,
       overrides: {
-        ...(state.overrides || {}),
+        ...(stateRef.current.overrides || {}),
         [itemId]: override,
       },
     }
     setState(newState)
-    await saveState(newState)
-  }, [state, saveState])
+    stateRef.current = newState
+    await syncToBackend(newState)
+  }, [syncToBackend])
 
-  // Clear override for a specific item (reset to canon original)
+  // Clear override for a specific item (reset to canon original) — persists immediately
   const clearOverride = useCallback(async (itemId: string) => {
-    const newOverrides = { ...(state.overrides || {}) }
+    const newOverrides = { ...(stateRef.current.overrides || {}) }
     delete newOverrides[itemId]
     const newState: WorkingState = {
-      ...state,
+      ...stateRef.current,
       overrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
     }
     setState(newState)
-    await saveState(newState)
-  }, [state, saveState])
+    stateRef.current = newState
+    await syncToBackend(newState)
+  }, [syncToBackend])
 
   return {
     state,
@@ -158,7 +160,7 @@ export function useWorkingState() {
     updateStateLocally,
     /** Call this to persist to the backend (e.g. on Save Resume button press) */
     syncToBackend,
-    updatedAt,,
+    updatedAt,
     getOverride,
     saveOverride,
     clearOverride,

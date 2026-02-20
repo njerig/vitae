@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import type { CanonItem, ItemType } from "@/lib/types"
 
 type Section = {
@@ -20,34 +20,7 @@ type WorkingState = {
   overrides?: Record<string, OverrideData>
 }
 
-function useDebounce<T extends (...args: any[]) => void>(
-  callback: T,
-  delay: number
-) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const callbackRef = useRef(callback)
 
-  useEffect(() => {
-    callbackRef.current = callback
-  }, [callback])
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [])
-
-  return useCallback(
-    (...args: Parameters<T>) => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-
-      timeoutRef.current = setTimeout(() => {
-        callbackRef.current(...args)
-      }, delay)
-    },
-    [delay]
-  )
-}
 
 export function useResumeSections(
   allItems: CanonItem[],
@@ -57,7 +30,6 @@ export function useResumeSections(
   saveState: (state: WorkingState) => void
 ) {
   const [localSections, setLocalSections] = useState<Section[] | null>(null)
-  const [lastSavedState, setLastSavedState] = useState("")
   const [hasLoadedInitialState, setHasLoadedInitialState] = useState(false)
 
   const computedSections = useMemo<Section[]>(() => {
@@ -95,21 +67,7 @@ export function useResumeSections(
     }))
   }, [baseSections, workingState?.overrides])
 
-  const debouncedSave = useDebounce((sectionsToSave: Section[]) => {
-    const newWorkingState: WorkingState = {
-      sections: sectionsToSave.map(section => ({
-        item_type_id: section.typeId,
-        item_ids: section.items.map(item => item.id)
-      })),
-      ...(workingState?.overrides ? { overrides: workingState.overrides } : {}),
-    }
 
-    const serialized = JSON.stringify(newWorkingState)
-    if (serialized !== lastSavedState) {
-      saveState(newWorkingState)
-      setLastSavedState(serialized)
-    }
-  }, 1000)
 
   useEffect(() => {
     if (
@@ -156,23 +114,22 @@ export function useResumeSections(
 
     setLocalSections(finalSections)
     setHasLoadedInitialState(true)
-
-    setLastSavedState(
-      JSON.stringify({
-        sections: finalSections.map(section => ({
-          item_type_id: section.typeId,
-          item_ids: section.items.map(item => item.id)
-        }))
-      })
-    )
   }, [workingStateLoading, workingState, computedSections, hasLoadedInitialState])
 
   const setSections = useCallback(
     (next: Section[]) => {
       setLocalSections(prev => (prev === next ? prev : next))
-      debouncedSave(next)
+      // Update locally — saving is manual now
+      const newWorkingState: WorkingState = {
+        sections: next.map(section => ({
+          item_type_id: section.typeId,
+          item_ids: section.items.map(item => item.id)
+        })),
+        ...(workingState?.overrides ? { overrides: workingState.overrides } : {}),
+      }
+      saveState(newWorkingState)
     },
-    [debouncedSave]
+    [saveState, workingState?.overrides]
   )
 
   return { sections, setSections }

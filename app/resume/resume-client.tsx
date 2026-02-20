@@ -194,6 +194,7 @@ export default function ResumeClient({
                 </div>
               )}
             </div>
+          </div>
 
         {/* Right column — scrolls independently */}
         <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>

@@ -276,7 +276,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
   })
 
   describe("Debouncing", () => {
-    it("debounces multiple rapid changes to a single local state update", async () => {
+    it("immediately updates local state on each reorder (no debounce)", async () => {
       render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionOrderLabels = screen.getAllByText("Section order:")
@@ -294,23 +294,24 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         jest.advanceTimersByTime(500)
       })
 
+      // With manual save, local updates are immediate
+      expect(mockUpdateStateLocally).toHaveBeenCalled()
+
       act(() => {
         input.focus()
         input.value = "3"
         input.blur()
       })
 
-      expect(mockUpdateStateLocally).not.toHaveBeenCalled()
-
       act(() => {
         jest.advanceTimersByTime(1000)
       })
 
-      await waitFor(() => {
-        expect(mockUpdateStateLocally).toHaveBeenCalled()
-      })
+      // Both reorders should have triggered local updates
+      expect(mockUpdateStateLocally).toHaveBeenCalledTimes(2)
 
-      expect(mockUpdateStateLocally).toHaveBeenCalledTimes(1)
+      // But syncToBackend should NOT be called — that's manual
+      expect(mockSyncToBackend).not.toHaveBeenCalled()
     })
 
     it("does not update state if order hasn't actually changed", async () => {
