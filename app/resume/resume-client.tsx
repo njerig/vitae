@@ -9,7 +9,7 @@ import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Download } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
@@ -69,6 +69,37 @@ export default function ResumeClient({
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
 
   const saveItemPosition = useCallback(async (_itemId: string, _position: number) => { }, [])
+
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const handleExportPdf = useCallback(async () => {
+    setExportingPdf(true)
+    try {
+      const data = {
+        profile: previewProfile,
+        sections: filteredSections.length > 0 ? filteredSections : sections,
+      }
+      const res = await fetch("/api/typst/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(typeof err.error === "string" ? err.error : "Export failed")
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "resume.pdf"
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error("PDF export error:", e)
+    } finally {
+      setExportingPdf(false)
+    }
+  }, [previewProfile, filteredSections, sections])
 
   const { draggedItem, setDraggedItem, draggedSection, setDraggedSection, handleItemDragEnd, isDragging } = useDragState(sections, saveItemPosition)
 
@@ -145,6 +176,21 @@ export default function ResumeClient({
                     parentVersionId={parentVersionId}
                     syncToBackend={syncToBackend}
                   />
+                  <button
+                    type="button"
+                    onClick={handleExportPdf}
+                    disabled={exportingPdf}
+                    className="btn-secondary rounded-md px-2 py-1 text-sm flex items-center gap-1"
+                    title="Download resume as PDF"
+                  >
+                    {exportingPdf ? (
+                      <Spinner size={16} />
+                    ) : (
+                      <Download className="w-6 h-6" />
+                    )}
+                    Export PDF
+                  </button>
+                  
                 </div>
               </div>
             </div>
