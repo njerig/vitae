@@ -16,17 +16,23 @@ type WorkingState = {
 type SaveResumeButtonProps = {
   workingState: WorkingState
   parentVersionId?: string | null
+  syncToBackend: () => Promise<void>
 }
 
-export function SaveResumeButton({ workingState, parentVersionId }: SaveResumeButtonProps) {
+export function SaveResumeButton({ workingState, parentVersionId, syncToBackend }: SaveResumeButtonProps) {
   const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // Check if working state is empty
   const hasSelectedItems =
     workingState.sections.length > 0 &&
     workingState.sections.some(section => section.item_ids.length > 0)
+
+  const handleOpenModal = async () => {
+    // Flush any pending local changes to the backend before opening the save dialog
+    await syncToBackend()
+    setIsModalOpen(true)
+  }
 
   const handleSave = async (
     groupName: string,
@@ -77,7 +83,7 @@ export function SaveResumeButton({ workingState, parentVersionId }: SaveResumeBu
   return (
     <>
       <button
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleOpenModal}
         className="btn-primary rounded-md px-2 py-1 text-sm flex items-center gap-1"
         disabled={!hasSelectedItems}
         title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}

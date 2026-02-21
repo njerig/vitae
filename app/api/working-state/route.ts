@@ -63,19 +63,21 @@ export async function PUT(request: NextRequest) {
     }
   }
 
-  // Validate that all item_ids belong to this user
+  // Filter out stale/deleted item_ids instead of rejecting
+  // (items may be deleted from canon while still referenced in working state)
   const allItemIds = state.sections.flatMap((s) => s.item_ids)
   if (allItemIds.length > 0) {
     const { rows: validItems } = await pool.query(
       `SELECT id FROM canon_items WHERE user_id = $1 AND id = ANY($2::uuid[])`,
       [userId, allItemIds]
     )
-    if (validItems.length !== allItemIds.length) {
-      return NextResponse.json(
-        { error: "Invalid item_id(s) - not found or not owned by user" },
-        { status: 400 }
-      )
-    }
+    const validIdSet = new Set(validItems.map((r: any) => r.id))
+    state.sections = state.sections
+      .map((s) => ({
+        ...s,
+        item_ids: s.item_ids.filter((id) => validIdSet.has(id)),
+      }))
+      .filter((s) => s.item_ids.length > 0)
   }
 
   // Upsert the working state

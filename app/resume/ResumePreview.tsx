@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 
 type Section = {
   typeName: string
@@ -26,11 +27,8 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   const [svg, setSvg] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isUpdating, setIsUpdating] = useState(false)
   const [errorForExistingSvg, setErrorForExistingSvg] = useState<string | null>(null)
   const [pageBreakPercents, setPageBreakPercents] = useState<number[]>([])
-  const [viewerHeight, setViewerHeight] = useState(560)
-  const rootRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const requestSeq = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -61,14 +59,10 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
       const viewBoxValue = svgElement.getAttribute("viewBox")
       const viewBoxParts = viewBoxValue
-        ? viewBoxValue
-            .trim()
-            .split(/\s+/)
-            .map((v) => Number.parseFloat(v))
+        ? viewBoxValue.trim().split(/\s+/).map((v) => Number.parseFloat(v))
         : []
       const docHeight = Number.isFinite(viewBoxParts[3]) ? viewBoxParts[3] : 792
 
-      // Typst pages are 11in * 72pt = 792pt tall.
       const pageHeightPt = 792
       const rawPageCount = docHeight / pageHeightPt
       const roundedPageCount = Math.round(rawPageCount)
@@ -98,27 +92,11 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   }, [svg])
 
   useEffect(() => {
-    const updateViewerHeight = () => {
-      if (!rootRef.current) return
-      const rectTop = rootRef.current.getBoundingClientRect().top
-      const bottomGap = 20
-      const nextHeight = Math.floor(window.innerHeight - rectTop - bottomGap)
-      setViewerHeight(Math.max(320, nextHeight))
-    }
-
-    updateViewerHeight()
-    window.addEventListener("resize", updateViewerHeight)
-    return () => {
-      window.removeEventListener("resize", updateViewerHeight)
-    }
-  }, [])
-
-  useEffect(() => {
     const timeoutId: NodeJS.Timeout = setTimeout(() => {
       void (async () => {
         const seq = ++requestSeq.current
         if (hasSvgRef.current) {
-          setIsUpdating(true)
+          toast.loading("Updating preview...", { id: "preview-update" })
         } else {
           setLoading(true)
         }
@@ -153,8 +131,12 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           setSvg(text)
           setError(null)
           setErrorForExistingSvg(null)
+          if (hasSvgRef.current) {
+            toast.success("Preview updated", { id: "preview-update", duration: 1500 })
+          }
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") {
+            toast.dismiss("preview-update")
             return
           }
           console.error("Preview compilation error:", err)
@@ -163,11 +145,11 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
             setError(msg)
           } else {
             setErrorForExistingSvg(msg)
+            toast.error("Preview update failed", { id: "preview-update" })
           }
         } finally {
           if (seq !== requestSeq.current) return
           setLoading(false)
-          setIsUpdating(false)
         }
       })()
     }, 500)
@@ -175,12 +157,13 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
     return () => {
       clearTimeout(timeoutId)
       abortRef.current?.abort()
+      toast.dismiss("preview-update")
     }
   }, [data])
 
   if (loading && !svg) {
     return (
-      <div className="flex items-center justify-center h-full min-h-100">
+      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#ececec" }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-current mb-4"></div>
           <p style={{ color: "var(--ink-fade)" }}>Generating preview...</p>
@@ -191,7 +174,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
   if (error && !svg) {
     return (
-      <div className="flex items-center justify-center h-full min-h-400px">
+      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#ececec" }}>
         <div className="text-center">
           <p style={{ color: "var(--ink)" }} className="mb-2">Preview failed</p>
           <p style={{ color: "var(--ink-fade)" }} className="text-sm">{error}</p>
@@ -202,27 +185,14 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
   if (!svg) {
     return (
-      <div className="flex items-center justify-center h-full min-h-400px">
-        <p style={{ color: "var(--ink-fade)" }}>
-          Your resume preview will appear here
-        </p>
+      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#ececec" }}>
+        <p style={{ color: "var(--ink-fade)" }}>Your resume preview will appear here</p>
       </div>
     )
   }
 
   return (
-    <div ref={rootRef} className="relative" style={{ height: `${viewerHeight}px` }}>
-      {isUpdating && (
-        <div 
-          className="absolute top-4 right-4 px-3 py-1 rounded-lg text-sm z-10"
-          style={{ 
-            backgroundColor: "var(--accent)",
-            color: "var(--paper)"
-          }}
-        >
-          Updating...
-        </div>
-      )}
+    <div className="relative">
       {errorForExistingSvg && (
         <div
           className="absolute top-4 left-4 right-4 px-3 py-2 rounded-lg text-sm z-10 border"
@@ -238,21 +208,17 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           </div>
         </div>
       )}
-      <div
-        className="h-full overflow-y-auto overflow-x-hidden overscroll-contain"
-        style={{ backgroundColor: "#ececec", padding: "1.25rem 0.75rem" }}
-      >
-        <div
-          className="relative mx-auto w-full max-w-[8.5in]"
-          style={{ scrollSnapType: "y proximity" }}
-        >
+
+      {/* Grey background */}
+      <div style={{ backgroundColor: "#ececec", padding: "1.25rem 0.75rem" }}>
+        <div className="relative mx-auto w-full max-w-[8.5in]">
           <div
             ref={containerRef}
-            className="relative bg-white shadow-sm"
-            style={{ border: "1px solid #ddd", scrollSnapAlign: "start" }}
-          >
-            {/* SVG will be inserted here */}
-          </div>
+            className="relative bg-white"
+            style={{ border: "1px solid #ccc", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
+          />
+
+          {/* Thick grey bands overlaid to simulate separate sheets */}
           {pageBreakPercents.map((top) => (
             <div
               key={top}
@@ -260,10 +226,11 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
               style={{
                 top: `${top}%`,
                 transform: "translateY(-50%)",
-                height: "10px",
+                height: "20px",
                 backgroundColor: "#ececec",
-                borderTop: "1px solid #d0d0d0",
-                borderBottom: "1px solid #d0d0d0",
+                borderTop: "2px solid #c8c8c8",
+                borderBottom: "2px solid #c8c8c8",
+                boxShadow: "inset 0 3px 5px rgba(0,0,0,0.08), inset 0 -3px 5px rgba(0,0,0,0.08)",
               }}
             />
           ))}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import toast from "react-hot-toast"
 
 type SectionState = {
@@ -8,16 +8,25 @@ type SectionState = {
   item_ids: string[]
 }
 
+export type OverrideData = {
+  title?: string
+  content?: Record<string, unknown>
+}
+
 type WorkingState = {
   sections: SectionState[]
+  overrides?: Record<string, OverrideData>
 }
 
 export function useWorkingState() {
   const [state, setState] = useState<WorkingState>({ sections: [] })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [updateCount, setUpdateCount] = useState(0)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
+  // Track whether there are unsaved local changes
+  const [isDirty, setIsDirty] = useState(false)
+  // Keep a ref to the latest state so syncToBackend always sends current data
+  const stateRef = useRef<WorkingState>({ sections: [] })
 
   useEffect(() => {
     async function fetchState() {
@@ -25,7 +34,9 @@ export function useWorkingState() {
         const res = await fetch("/api/working-state")
         if (res.ok) {
           const data = await res.json()
-          setState(data.state || { sections: [] })
+          const loaded = data.state || { sections: [] }
+          setState(loaded)
+          stateRef.current = loaded
           setUpdatedAt(data.updated_at || null)
         }
       } catch (error) {
@@ -39,42 +50,40 @@ export function useWorkingState() {
   }, [])
 
   const isSelected = useCallback((itemId: string): boolean => {
-    const result = state.sections.some(section =>
+    return stateRef.current.sections.some(section =>
       section.item_ids.includes(itemId)
     )
-    return result
-  }, [state, updateCount])
+  }, [])
 
-  const saveState = useCallback(async (newState: WorkingState): Promise<void> => {
+  /** Persist the current (or a given) state to the backend. Call this explicitly. */
+  const syncToBackend = useCallback(async (newState?: WorkingState) => {
+    const toSave = newState ?? stateRef.current
     setSaving(true)
     try {
       const res = await fetch("/api/working-state", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newState)
+        body: JSON.stringify(toSave),
       })
       if (!res.ok) {
         console.error("Failed to save working state")
-        throw new Error("Failed to save")
+        toast.error("Failed to save your working state")
       } else {
-        console.log("Saved working state:", newState)
         const data = await res.json()
-        setState(newState)
         setUpdatedAt(data.updated_at || null)
+        setIsDirty(false)
       }
     } catch (error) {
       console.error("Error saving working state:", error)
-      throw error
+      toast.error("Failed to save your working state")
     } finally {
       setSaving(false)
     }
   }, [])
 
+  /** Update state locally only — no network request. */
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
     setState(prev => {
-
-      const previousState = prev
-
       const newState = { ...prev, sections: [...prev.sections] }
 
       let section = newState.sections.find(s => s.item_type_id === itemTypeId)
@@ -96,27 +105,64 @@ export function useWorkingState() {
         section.item_ids.push(itemId)
       }
 
-
-      saveState(newState).catch(() => {
-
-        setState(previousState)
-        toast.error("Failed to toggle checkbox")
-      })
-
-      setUpdateCount(c => c + 1)
-
+      stateRef.current = newState
+      setIsDirty(true)
       return newState
     })
-  }, [saveState])
+  }, [])
+
+  /** Update state locally (used for drag reorder) — no network request. */
+  const updateStateLocally = useCallback((newState: WorkingState) => {
+    setState(newState)
+    stateRef.current = newState
+    setIsDirty(true)
+  }, [])
+
+  // Get override for a specific item
+  const getOverride = useCallback((itemId: string): OverrideData | undefined => {
+    return state.overrides?.[itemId]
+  }, [state])
+
+  // Save override for a specific item — persists immediately
+  const saveOverride = useCallback(async (itemId: string, override: OverrideData) => {
+    const newState: WorkingState = {
+      ...stateRef.current,
+      overrides: {
+        ...(stateRef.current.overrides || {}),
+        [itemId]: override,
+      },
+    }
+    setState(newState)
+    stateRef.current = newState
+    await syncToBackend(newState)
+  }, [syncToBackend])
+
+  // Clear override for a specific item (reset to canon original) — persists immediately
+  const clearOverride = useCallback(async (itemId: string) => {
+    const newOverrides = { ...(stateRef.current.overrides || {}) }
+    delete newOverrides[itemId]
+    const newState: WorkingState = {
+      ...stateRef.current,
+      overrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
+    }
+    setState(newState)
+    stateRef.current = newState
+    await syncToBackend(newState)
+  }, [syncToBackend])
 
   return {
     state,
     loading,
     saving,
+    isDirty,
     isSelected,
     toggleItem,
-    saveState,
-    updatedAt
-
+    updateStateLocally,
+    /** Call this to persist to the backend (e.g. on Save Resume button press) */
+    syncToBackend,
+    updatedAt,
+    getOverride,
+    saveOverride,
+    clearOverride,
   }
 }
