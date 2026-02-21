@@ -33,7 +33,7 @@ describe('PUT /api/working-state', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ 
+        json: () => Promise.resolve({
           state: validState,
           updated_at: "2026-02-07T00:00:00.000Z"
         }),
@@ -55,7 +55,7 @@ describe('PUT /api/working-state', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ 
+        json: () => Promise.resolve({
           state: emptyState,
           updated_at: "2026-02-07T00:00:00.000Z"
         }),
@@ -91,7 +91,7 @@ describe('PUT /api/working-state', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ 
+        json: () => Promise.resolve({
           state: multiState,
           updated_at: "2026-02-07T00:00:00.000Z"
         }),
@@ -257,4 +257,194 @@ describe('PUT /api/working-state', () => {
       expect(response.status).toBe(401)
     })
   })
+
+  describe("edge cases and additional validation", () => {
+    it("accepts section with empty item_ids array", async () => {
+      const emptyItemsState = {
+        sections: [
+          {
+            item_type_id: "11111111-1111-4111-8111-111111111111",
+            item_ids: []
+          }
+        ]
+      }
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: emptyItemsState,
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      const response = await fetch("/api/working-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(emptyItemsState)
+      })
+
+      expect(response.ok).toBe(true)
+      const data = await response.json()
+      expect(data.state.sections[0].item_ids).toEqual([])
+    })
+
+    it("handles duplicate item_ids in same section", async () => {
+      const duplicateState = {
+        sections: [
+          {
+            item_type_id: "11111111-1111-4111-8111-111111111111",
+            item_ids: [
+              "22222222-2222-4222-8222-222222222222",
+              "22222222-2222-4222-8222-222222222222"
+            ]
+          }
+        ]
+      }
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: duplicateState,
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      const response = await fetch("/api/working-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(duplicateState)
+      })
+
+      expect(response.ok).toBe(true)
+    })
+
+    it("accepts same item_id in different sections", async () => {
+      const crossSectionState = {
+        sections: [
+          {
+            item_type_id: "11111111-1111-4111-8111-111111111111",
+            item_ids: ["22222222-2222-4222-8222-222222222222"]
+          },
+          {
+            item_type_id: "33333333-3333-4333-8333-333333333333",
+            item_ids: ["22222222-2222-4222-8222-222222222222"]
+          }
+        ]
+      }
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: crossSectionState,
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      const response = await fetch("/api/working-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(crossSectionState)
+      })
+
+      expect(response.ok).toBe(true)
+    })
+
+    it("handles large number of sections", async () => {
+      const largeState = {
+        sections: Array.from({ length: 50 }, (_, i) => ({
+          item_type_id: `${i.toString().padStart(8, '0')}-1111-4111-8111-111111111111`,
+          item_ids: [`${i.toString().padStart(8, '0')}-2222-4222-8222-222222222222`]
+        }))
+      }
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: largeState,
+          updated_at: "2026-02-11T00:00:00.000Z"
+        }),
+      })
+
+      const response = await fetch("/api/working-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(largeState)
+      })
+
+      expect(response.ok).toBe(true)
+      const data = await response.json()
+      expect(data.state.sections).toHaveLength(50)
+    })
+
+    it("rejects when sections is not an array", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({
+          issues: [
+            { path: ['sections'], message: 'Expected array, received object' }
+          ]
+        }),
+      })
+
+      const invalidState = {
+        sections: { not: "an array" }
+      }
+
+      const response = await fetch("/api/working-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invalidState)
+      })
+
+      expect(response.ok).toBe(false)
+      expect(response.status).toBe(400)
+    })
+  })
+
+  describe("GET /api/working-state", () => {
+    it("returns empty state for new user", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          state: { sections: [] },
+          updated_at: null
+        }),
+      })
+
+      const response = await fetch("/api/working-state")
+
+      expect(response.ok).toBe(true)
+      const data = await response.json()
+      expect(data.state.sections).toEqual([])
+      expect(data.updated_at).toBeNull()
+    })
+
+    it("returns saved state for existing user", async () => {
+      const savedState = {
+        state: {
+          sections: [
+            {
+              item_type_id: "11111111-1111-4111-8111-111111111111",
+              item_ids: ["22222222-2222-4222-8222-222222222222"]
+            }
+          ]
+        },
+        updated_at: "2026-02-11T12:00:00.000Z"
+      }
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(savedState),
+      })
+
+      const response = await fetch("/api/working-state")
+
+      expect(response.ok).toBe(true)
+      const data = await response.json()
+      expect(data.state.sections).toHaveLength(1)
+      expect(data.updated_at).toBe("2026-02-11T12:00:00.000Z")
+    })
+  })
+
 })
