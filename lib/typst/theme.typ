@@ -5,6 +5,8 @@
   bottom: 0.5in,
 ))
 
+#set text(font: "New Computer Modern")
+
 #show heading.where(level: 1): it => {
   align(center)[
     #text(size: 20pt, weight: "bold")[#it]
