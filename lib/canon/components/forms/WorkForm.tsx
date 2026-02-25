@@ -5,7 +5,16 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Row 1: Company + Role */}
+      {/* Row 1: Position */}
+      <TextField
+          label="Position"
+          required
+          value={form.role ?? ""}
+          onChange={update("role")}
+          hasError={hasError("role")}
+          placeholder="Software Engineer..."
+        />
+      {/* Row 2: Company + Location */}
       <div className="grid grid-cols-2 gap-3">
         <TextField
           label="Company"
@@ -16,12 +25,12 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
           placeholder="Google, Microsoft..."
         />
         <TextField
-          label="Position"
+          label="Location"
           required
-          value={form.role ?? ""}
-          onChange={update("role")}
-          hasError={hasError("role")}
-          placeholder="Software Engineer..."
+          value={form.location ?? ""}
+          onChange={update("location")}
+          hasError={hasError("location")}
+          placeholder="San Francisco, CA"
         />
       </div>
 
