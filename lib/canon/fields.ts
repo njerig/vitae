@@ -24,6 +24,7 @@ export const ITEM_TYPE_FIELDS: Record<string, FieldConfig[]> = {
   ],
   "Education": [
     { name: "institution", label: "Institution", type: "text", required: true, placeholder: "UC Santa Cruz" },
+    { name: "location", label: "Location", type: "text", required: true, placeholder: "Santa Cruz, CA" },
     { name: "degree", label: "Degree", type: "text", placeholder: "Bachelor of Science" },
     { name: "field", label: "Field of Study", type: "text", placeholder: "Computer Science" },
     { name: "start", label: "Start Date", type: "date" },

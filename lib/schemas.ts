@@ -36,6 +36,7 @@ export const WorkContentSchema = z
 export const EducationContentSchema = z
   .object({
     institution: z.string().min(1, "Institution is required"),
+    location: z.string().min(1, "Location is required"),
     degree: z.string().optional().or(z.literal("")),
     field: z.string().optional().or(z.literal("")),
     start: optionalDateString,

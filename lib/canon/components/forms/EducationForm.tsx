@@ -6,15 +6,25 @@ export function EducationFormFields({ form, setForm, hasError }: Props) {
   return (
     <div className="space-y-4">
       {/* Institution */}
-      <TextField
-        label="Institution"
-        required
-        value={form.institution ?? ""}
-        onChange={update("institution")}
-        hasError={hasError("institution")}
-        placeholder="UC Santa Cruz"
-      />
-
+      <div className="grid grid-cols-2 gap-3">
+        <TextField
+          label="Institution"
+          required
+          value={form.institution ?? ""}
+          onChange={update("institution")}
+          hasError={hasError("institution")}
+          placeholder="UC Santa Cruz"
+        />
+        <TextField
+          label="Location"
+          required
+          value={form.location ?? ""}
+          onChange={update("location")}
+          hasError={hasError("location")}
+          placeholder="Santa Cruz, CA"
+        />
+      </div>
+      
       {/* Row: Degree + Field */}
       <div className="grid grid-cols-2 gap-3">
         <TextField label="Degree" value={form.degree ?? ""} onChange={update("degree")} placeholder="Bachelor of Science" />
