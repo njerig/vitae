@@ -267,6 +267,7 @@ describe("Canon interaction flow", () => {
       fillValid: () => {
         fireEvent.change(getFieldControl(/institution/i), { target: { value: "UC Santa Cruz" } })
         fireEvent.change(getFieldControl(/details/i), { target: { value: "Dean's List" } })
+        fireEvent.change(getFieldControl(/location/i), { target: { value: "Santa Cruz, CA" } })
       },
       expectedListText: ["UC Santa Cruz", "Dean's List"],
     },

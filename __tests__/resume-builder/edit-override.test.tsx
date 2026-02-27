@@ -47,6 +47,7 @@ const makeWorkItem = (overrides?: Partial<CanonItem<unknown>>): CanonItem<unknow
   content: {
     org: "Google",
     role: "Software Engineer",
+    location: "Mountain View, CA",
     start: "2023-01-01",
     end: "2024-01-01",
     bullets: ["Built features", "Shipped products"],
@@ -79,6 +80,7 @@ const makeEducationItem = (): CanonItem<unknown> => ({
   position: 0,
   content: {
     institution: "UC Santa Cruz",
+    location: "Santa Cruz, CA",
     degree: "Bachelor of Science",
     field: "Computer Science",
     start: "2020-09-01",
