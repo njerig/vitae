@@ -1,4 +1,3 @@
-// app/resume/page.tsx (SERVER COMPONENT)
 import { auth, currentUser } from "@clerk/nextjs/server"
 import ResumeClient from "./resume-client"
 

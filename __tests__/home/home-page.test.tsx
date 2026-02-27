@@ -61,9 +61,15 @@ describe('Home Page - Career History', () => {
   const mockRefresh = jest.fn()
   const mockSetSelectedTypeId = jest.fn()
   const mockSetError = jest.fn()
+  const mockStartAdd = jest.fn()
+  const mockStartEdit = jest.fn()
+  const mockCancel = jest.fn()
+  const mockSubmit = jest.fn()
+  const mockDel = jest.fn()
+  const mockCancelDelete = jest.fn()
+  const mockConfirmDelete = jest.fn()
 
-
-  const mockuseCanon = {
+  const baseMock = {
     items: [mockWorkItem1, mockWorkItem2],
     itemTypes: mockItemTypes,
     selectedTypeId: null,
@@ -77,10 +83,23 @@ describe('Home Page - Career History', () => {
     create: mockCreate,
     patch: mockPatch,
     remove: mockRemove,
+    isAddingItem: false,
+    editingItem: null,
+    deletingItem: null,
+    isDeleting: false,
+    formRef: { current: null },
+    getLastEditedDate: () => null,
+    startAdd: mockStartAdd,
+    startEdit: mockStartEdit,
+    cancel: mockCancel,
+    submit: mockSubmit,
+    del: mockDel,
+    cancelDelete: mockCancelDelete,
+    confirmDelete: mockConfirmDelete,
   }
 
   beforeEach(() => {
-    ;(useCanon as jest.Mock).mockReturnValue(mockuseCanon)
+    ;(useCanon as jest.Mock).mockReturnValue(baseMock)
 
     jest.clearAllMocks()
     // Mock scrollIntoView (not implemented in jsdom)
@@ -113,51 +132,48 @@ describe('Home Page - Career History', () => {
     expect(addButton).toBeInTheDocument()
   })
 
-  it('shows form when "Add Item" is clicked', () => {
+  it('shows form when isAddingItem is true', () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true })
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Form should not be visible initially
-    expect(screen.queryByTestId('canon-form')).not.toBeInTheDocument()
-    
-    // Click add button
-    const addButton = screen.getByRole('button', { name: /add item/i })
-    fireEvent.click(addButton)
-    
-    // Form should now be visible
     expect(screen.getByTestId('canon-form')).toBeInTheDocument()
     expect(screen.getByTestId('editing-mode')).toHaveTextContent('adding')
   })
 
-  it('hides form when cancel is clicked', () => {
+  it('calls startAdd when Add Item is clicked', () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Open form
     const addButton = screen.getByRole('button', { name: /add item/i })
     fireEvent.click(addButton)
-    expect(screen.getByTestId('canon-form')).toBeInTheDocument()
     
-    // Click cancel
-    const cancelButton = screen.getByTestId('cancel-btn')
-    fireEvent.click(cancelButton)
+    expect(mockStartAdd).toHaveBeenCalled()
+  })
+
+  it('hides form when isAddingItem is false', () => {
+    render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Form should be hidden
     expect(screen.queryByTestId('canon-form')).not.toBeInTheDocument()
   })
 
-  it('calls createWork when submitting new item', async () => {
+  it('calls cancel when cancel button is clicked', () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true })
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Open form
-    const addButton = screen.getByRole('button', { name: /add item/i })
-    fireEvent.click(addButton)
+    const cancelButton = screen.getByTestId('cancel-btn')
+    fireEvent.click(cancelButton)
     
-    // Submit form
+    expect(mockCancel).toHaveBeenCalled()
+  })
+
+  it('calls submit when form is submitted (create)', async () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true })
+    render(<HomeClient userName="Test User" userId="user_123" />)
+    
     const submitButton = screen.getByTestId('submit-btn')
     fireEvent.click(submitButton)
     
-    // Check that create was called with correct structure
     await waitFor(() => {
-      expect(mockCreate).toHaveBeenCalledWith({
+      expect(mockSubmit).toHaveBeenCalledWith({
         title: 'Test Work Item',
         position: 0,
         content: {
@@ -187,7 +203,7 @@ describe('Home Page - Career History', () => {
 
   it("shows loading state", () => {
     ;(useCanon as jest.Mock).mockReturnValue({
-      ...mockuseCanon,
+      ...baseMock,
       loading: true,
     })
 
@@ -199,46 +215,43 @@ describe('Home Page - Career History', () => {
   it('displays error message in form', () => {
     const errorMessage = "Failed to save item"
     ;(useCanon as jest.Mock).mockReturnValue({
-      ...mockuseCanon,
+      ...baseMock,
       error: { message: errorMessage, fields: [] },
+      isAddingItem: true,
     })
 
     render(<HomeClient userName="Test User" userId="user_123" />)
-    
-    // Open form to see error (error is displayed within CanonForm)
-    const addButton = screen.getByRole('button', { name: /add item/i })
-    fireEvent.click(addButton)
     
     // Form should be present
     expect(screen.getByTestId('canon-form')).toBeInTheDocument()
   })
 
-  it('can edit an existing item', () => {
+  it('shows form in edit mode when editingItem is set', () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true, editingItem: mockWorkItem1 })
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Click edit on first item
-    const editButton = screen.getByTestId(`edit-${mockWorkItem1.id}`)
-    fireEvent.click(editButton)
-    
-    // Form should be visible in edit mode
     expect(screen.getByTestId('canon-form')).toBeInTheDocument()
     expect(screen.getByTestId('editing-mode')).toHaveTextContent('editing')
   })
 
-  it('calls patchWork when editing an item', async () => {
+  it('calls startEdit when edit button is clicked', () => {
     render(<HomeClient userName="Test User" userId="user_123" />)
     
-    // Open edit mode
     const editButton = screen.getByTestId(`edit-${mockWorkItem1.id}`)
     fireEvent.click(editButton)
     
-    // Submit form
+    expect(mockStartEdit).toHaveBeenCalledWith(mockWorkItem1)
+  })
+
+  it('calls submit when form is submitted (edit)', async () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true, editingItem: mockWorkItem1 })
+    render(<HomeClient userName="Test User" userId="user_123" />)
+    
     const submitButton = screen.getByTestId('submit-btn')
     fireEvent.click(submitButton)
     
-    // Check that patch was called
     await waitFor(() => {
-      expect(mockPatch).toHaveBeenCalledWith(mockWorkItem1.id, {
+      expect(mockSubmit).toHaveBeenCalledWith({
         title: 'Test Work Item',
         position: 0,
         content: {
@@ -253,52 +266,48 @@ describe('Home Page - Career History', () => {
     })
   })
 
-  it('calls removeWork when delete is confirmed via modal', async () => {
+  it('shows delete modal when deletingItem is set', () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, deletingItem: mockWorkItem1 })
     render(<HomeClient userName="Test User" userId="user_123" />)
 
-    // Click delete — opens the modal
-    const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
-    fireEvent.click(deleteButton)
-
-    // Modal should be visible with the item title shown inside it
     const modal = screen.getByText('Delete Item').closest('.modal') as HTMLElement
     expect(modal).toBeInTheDocument()
     expect(within(modal).getByText(mockWorkItem1.title!)).toBeInTheDocument()
+  })
 
-    // Click the Delete confirm button in the modal (scoped to avoid list Delete buttons)
+  it('calls confirmDelete when delete is confirmed via modal', async () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, deletingItem: mockWorkItem1 })
+    render(<HomeClient userName="Test User" userId="user_123" />)
+
+    const modal = screen.getByText('Delete Item').closest('.modal') as HTMLElement
     const confirmButton = within(modal).getByRole('button', { name: /^delete$/i })
     fireEvent.click(confirmButton)
 
-    // remove should be called with the correct id
-    await waitFor(() => {
-      expect(mockRemove).toHaveBeenCalledWith(mockWorkItem1.id)
-    })
+    expect(mockConfirmDelete).toHaveBeenCalled()
   })
 
-  it('does not delete if user cancels the modal', async () => {
+  it('calls cancelDelete when modal is cancelled', () => {
+    ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, deletingItem: mockWorkItem1 })
     render(<HomeClient userName="Test User" userId="user_123" />)
 
-    // Click delete — opens the modal
-    const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
-    fireEvent.click(deleteButton)
-
-    // Modal should be visible
-    expect(screen.getByText('Delete Item')).toBeInTheDocument()
-
-    // Click Cancel
     const cancelButton = screen.getByRole('button', { name: /cancel/i })
     fireEvent.click(cancelButton)
 
-    // Modal should be gone and remove should NOT have been called
-    expect(screen.queryByText('Delete Item')).not.toBeInTheDocument()
-    await waitFor(() => {
-      expect(mockRemove).not.toHaveBeenCalled()
-    })
+    expect(mockCancelDelete).toHaveBeenCalled()
+  })
+
+  it('calls del when delete button is clicked on an item', () => {
+    render(<HomeClient userName="Test User" userId="user_123" />)
+
+    const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
+    fireEvent.click(deleteButton)
+
+    expect(mockDel).toHaveBeenCalledWith(mockWorkItem1.id)
   })
 
   it('disables Add Item button when saving', () => {
     ;(useCanon as jest.Mock).mockReturnValue({
-      ...mockuseCanon,
+      ...baseMock,
       saving: true,
     })
 

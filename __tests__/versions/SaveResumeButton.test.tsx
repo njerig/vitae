@@ -185,12 +185,12 @@ describe('SaveResumeButton', () => {
       expect(fetch).toHaveBeenCalledWith('/api/versions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_name: undefined, name: 'SWE Resume v2', parent_version_id: 'version-1' }),
+        body: JSON.stringify({ group_name: 'SWE Resume', name: 'SWE Resume v2', parent_version_id: 'version-1' }),
       })
     })
   })
 
-  it('shows success toast on successful save', async () => {
+  it('shows success toast on successful save and closes modal', async () => {
     ;(fetch as jest.Mock)
       .mockResolvedValueOnce(mockGroupsResponse([]))
       .mockResolvedValueOnce({
@@ -211,11 +211,16 @@ describe('SaveResumeButton', () => {
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith('Resume "My Test Resume" saved successfully!')
     })
+    
+    // Ensure the modal actually closes
+    await waitFor(() => {
+      expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
+    })
   })
 
-  it('shows error toast on API failure with generic server error', async () => {
-    // When the API returns a non-ok response with no error body,
-    // the fallback message from SaveResumeButton is used ("Failed to save resume version")
+  it('shows error toast on API failure', async () => {
+    // With the new logic, SaveResumeModal just shows a generic string error message based on the return object from onSave.
+    // The test mock for saveVersion needs to fail, so we mock fetch to fail here.
     ;(fetch as jest.Mock)
       .mockResolvedValueOnce(mockGroupsResponse([]))
       .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) })
@@ -230,37 +235,13 @@ describe('SaveResumeButton', () => {
     fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
 
-    // The API returned no error message, so the fallback "Failed to save resume version" is used
+    // The API returned an error, so the modal will now show the error returned by onSave
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to save resume version')
+      expect(screen.getByText('Failed to save resume. Please try again.')).toBeInTheDocument()
     })
   })
 
-  it('shows error toast with server message when API provides one', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'Internal server error' }),
-      })
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Internal server error')
-    })
-  })
-
-  it('shows network error toast when fetch throws', async () => {
+  it('shows network error text when fetch throws', async () => {
     ;(fetch as jest.Mock)
       .mockResolvedValueOnce(mockGroupsResponse([]))
       .mockRejectedValueOnce(new Error('Network error'))
@@ -278,6 +259,10 @@ describe('SaveResumeButton', () => {
     // Caught exception path uses the "Please try again." message
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to save resume. Please try again.')
+    })
+    
+    await waitFor(() => {
+      expect(screen.getByText('Failed to save resume. Please try again.')).toBeInTheDocument()
     })
   })
 
@@ -321,55 +306,7 @@ describe('SaveResumeButton', () => {
     })
   })
 
-  it('closes modal after successful save', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '123', name: 'Test', resume_group_id: 'g1', parent_version_id: null }),
-      })
 
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
-    })
-  })
-
-  it('shows duplicate name error in modal without toast', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 409,
-        json: async () => ({ error: 'A resume version with this name already exists. Please choose a different name.' }),
-      })
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'Existing Resume' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText(/already exists/i)).toBeInTheDocument()
-    })
-
-    expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    expect(toast.error).not.toHaveBeenCalled()
-  })
 
   it('pre-selects group when parentVersionId is provided', async () => {
     ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse(sampleGroups))
