@@ -10,6 +10,7 @@ import { RestoreConfirmModal } from "@/lib/versions/RestoreConfirmModal"
 import toast from "react-hot-toast"
 import { ChevronRight, ChevronDown } from "lucide-react"
 import type { Version, VersionGroup } from "@/lib/types"
+import { fetchVersion } from "@/lib/versions/api"
 
 interface VersionsClientProps {
   userName: string
@@ -32,17 +33,12 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
   const fetchVersions = async () => {
     setLoading(true)
     try {
-      const response = await fetch("/api/versions")
-      if (!response.ok) {
-        throw new Error("Failed to fetch versions")
-      }
-      const data: VersionGroup[] = await response.json()
+      const data = await fetchVersion()
       setGroups(data)
       // Expand all groups by default
       setExpandedGroups(new Set(data.map(g => g.resume_group_id)))
     } catch (error) {
       console.error("Error fetching versions:", error)
-      toast.error("Failed to load saved resumes")
     } finally {
       setLoading(false)
     }
