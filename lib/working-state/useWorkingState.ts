@@ -16,6 +16,7 @@ export type OverrideData = {
 type WorkingState = {
   sections: SectionState[]
   overrides?: Record<string, OverrideData>
+  template_id?: string
 }
 
 export function useWorkingState() {
@@ -150,6 +151,17 @@ export function useWorkingState() {
     await syncToBackend(newState)
   }, [syncToBackend])
 
+  // Set the template and persist immediately
+  const setTemplate = useCallback(async (templateId: string) => {
+    const newState: WorkingState = {
+      ...stateRef.current,
+      template_id: templateId,
+    }
+    setState(newState)
+    stateRef.current = newState
+    await syncToBackend(newState)
+  }, [syncToBackend])
+
   return {
     state,
     loading,
@@ -164,5 +176,6 @@ export function useWorkingState() {
     getOverride,
     saveOverride,
     clearOverride,
+    setTemplate,
   }
 }

@@ -11,6 +11,7 @@ import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { SaveResumeButton } from "@/lib/versions/SaveResumeButton"
 import { ChevronLeft, Download } from "lucide-react"
 import { ResumePreview } from "./ResumePreview"
+import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorButton"
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
@@ -45,6 +46,7 @@ export default function ResumeClient({
     getOverride,
     saveOverride,
     clearOverride,
+    setTemplate,
   } = useWorkingState()
 
   // Get type name for a given item
@@ -190,7 +192,6 @@ export default function ResumeClient({
                     )}
                     Export PDF
                   </button>
-                  
                 </div>
               </div>
             </div>
@@ -250,14 +251,22 @@ export default function ResumeClient({
           >
             {/* Preview header */}
             <div className="p-8 border-b flex-shrink-0" style={{ borderColor: "var(--grid)" }}>
-              <div className="flex justify-between items-center">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: "1rem" }}>
+
+                {/* Left: title */}
                 <h3
                   className="text-2xl font-semibold"
                   style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
                 >
                   Resume Preview
                 </h3>
-                <div className="flex flex-col items-start gap-1">
+
+                <TemplateSelectorButton
+                  selectedTemplateId={workingState.template_id ?? "classic"}
+                  onSelect={(id) => { void setTemplate(id) }}
+                />
+
+                <div className="flex flex-col items-end gap-1">
                   {versionName && (
                     <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
                       Version: {versionName}
@@ -269,6 +278,7 @@ export default function ResumeClient({
                     </p>
                   )}
                 </div>
+
               </div>
             </div>
 
@@ -277,6 +287,7 @@ export default function ResumeClient({
               <ResumePreview
                 sections={filteredSections.length > 0 ? filteredSections : sections}
                 profile={previewProfile}
+                selectedTemplate={workingState.template_id ?? "classic"}
               />
             </div>
           </div>

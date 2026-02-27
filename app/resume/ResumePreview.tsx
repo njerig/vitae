@@ -2,6 +2,9 @@
 
 import { useMemo, useState, useEffect, useRef } from "react"
 import toast from "react-hot-toast"
+import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
+export type { ResumeTemplate } from "@/lib/resume-builder/templates"
+export { RESUME_TEMPLATES }
 
 type Section = {
   typeName: string
@@ -21,9 +24,10 @@ type ResumePreviewProps = {
     contact?: string
     links?: ProfileLink[]
   }
+  selectedTemplate?: string
 }
 
-export function ResumePreview({ sections, profile }: ResumePreviewProps) {
+export function ResumePreview({ sections, profile, selectedTemplate }: ResumePreviewProps) {
   const [svg, setSvg] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -34,6 +38,8 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
   const abortRef = useRef<AbortController | null>(null)
   const hasSvgRef = useRef(false)
 
+  const activeTemplateId = selectedTemplate ?? "classic"
+
   const data = useMemo(() => {
     return {
       profile: {
@@ -42,8 +48,9 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
         links: profile?.links,
       },
       sections,
+      _templateId: activeTemplateId,
     }
-  }, [profile, sections])
+  }, [profile, sections, activeTemplateId])
 
   useEffect(() => {
     hasSvgRef.current = Boolean(svg)
@@ -110,7 +117,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
           const response = await fetch("/api/typst/compile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data }),
+            body: JSON.stringify({ data, template_id: activeTemplateId }),
             signal: controller.signal,
           })
 
@@ -163,7 +170,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
   if (loading && !svg) {
     return (
-      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#ececec" }}>
+      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#e8e8e8" }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-current mb-4"></div>
           <p style={{ color: "var(--ink-fade)" }}>Generating preview...</p>
@@ -174,7 +181,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
   if (error && !svg) {
     return (
-      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#ececec" }}>
+      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#e8e8e8" }}>
         <div className="text-center">
           <p style={{ color: "var(--ink)" }} className="mb-2">Preview failed</p>
           <p style={{ color: "var(--ink-fade)" }} className="text-sm">{error}</p>
@@ -185,7 +192,7 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
 
   if (!svg) {
     return (
-      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#ececec" }}>
+      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#e8e8e8" }}>
         <p style={{ color: "var(--ink-fade)" }}>Your resume preview will appear here</p>
       </div>
     )
@@ -210,12 +217,14 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
       )}
 
       {/* Grey background */}
-      <div style={{ backgroundColor: "#ececec", padding: "1.25rem 0.75rem" }}>
+      <div style={{ backgroundColor: "#e8e8e8", padding: "2rem 1.5rem" }}>
         <div className="relative mx-auto w-full max-w-[8.5in]">
           <div
             ref={containerRef}
             className="relative bg-white"
-            style={{ border: "1px solid #ccc", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
+            style={{
+              boxShadow: "0 4px 16px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.10)",
+            }}
           />
 
           {/* Thick grey bands overlaid to simulate separate sheets */}
@@ -226,11 +235,11 @@ export function ResumePreview({ sections, profile }: ResumePreviewProps) {
               style={{
                 top: `${top}%`,
                 transform: "translateY(-50%)",
-                height: "20px",
-                backgroundColor: "#ececec",
-                borderTop: "2px solid #c8c8c8",
-                borderBottom: "2px solid #c8c8c8",
-                boxShadow: "inset 0 3px 5px rgba(0,0,0,0.08), inset 0 -3px 5px rgba(0,0,0,0.08)",
+                height: "24px",
+                backgroundColor: "#e8e8e8",
+                borderTop: "2px solid #d0d0d0",
+                borderBottom: "2px solid #d0d0d0",
+                boxShadow: "inset 0 3px 6px rgba(0,0,0,0.10), inset 0 -3px 6px rgba(0,0,0,0.10)",
               }}
             />
           ))}
