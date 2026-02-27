@@ -19,7 +19,17 @@ type TypstCompiler = {
 }
 
 let compiler: TypstCompiler | null = null
-let templatePromise: Promise<string> | null = null
+
+const templateCache: Record<string, Promise<string>> = {}
+
+const THEME_FILES: Record<string, string> = {
+  "classic":  "jakes-resume.typ",
+  "modern":   "jakes-resume-2.typ",
+  "accent":   "modern.typ",
+  "two-col":  "two-col.typ",
+}
+
+const DEFAULT_THEME = "jakes-resume.typ"
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null
@@ -48,22 +58,26 @@ async function getCompiler(): Promise<TypstCompiler> {
   return compiler
 }
 
-async function getTemplate(): Promise<string> {
-  if (!templatePromise) {
-    const themePath = join(process.cwd(), "lib", "typst", "themes", "jakes-resume.typ")
+async function getTemplate(templateId: string): Promise<string> {
+  if (!templateCache[templateId]) {
+    const themeFile = THEME_FILES[templateId] ?? DEFAULT_THEME
+    const themePath = join(process.cwd(), "lib", "typst", "themes", themeFile)
     const resumePath = join(process.cwd(), "lib", "typst", "json-adapter.typ")
-    templatePromise = Promise.all([
+    templateCache[templateId] = Promise.all([
       readFile(themePath, "utf8"),
       readFile(resumePath, "utf8"),
     ]).then(([theme, resume]) => `${theme}\n\n${resume}`)
   }
-  return templatePromise
+  return templateCache[templateId]
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: unknown = await request.json()
     const data = isRecord(body) ? body.data : null
+    const templateId = isRecord(body) && typeof body.template_id === "string"
+      ? body.template_id
+      : "classic"
 
     if (!isRecord(data)) {
       return NextResponse.json(
@@ -72,7 +86,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const [comp, template] = await Promise.all([getCompiler(), getTemplate()])
+    const [comp, template] = await Promise.all([getCompiler(), getTemplate(templateId)])
     const vm = buildResumeViewModel(data)
 
     const pdfBuffer = comp.pdf({

@@ -72,6 +72,8 @@ export default function ResumeClient({
 
   const saveItemPosition = useCallback(async (_itemId: string, _position: number) => { }, [])
 
+  const selectedTemplateId = workingState.template_id ?? "classic"
+
   const [exportingPdf, setExportingPdf] = useState(false)
   const handleExportPdf = useCallback(async () => {
     setExportingPdf(true)
@@ -83,7 +85,7 @@ export default function ResumeClient({
       const res = await fetch("/api/typst/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ data, template_id: selectedTemplateId }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -101,7 +103,7 @@ export default function ResumeClient({
     } finally {
       setExportingPdf(false)
     }
-  }, [previewProfile, filteredSections, sections])
+  }, [previewProfile, filteredSections, sections, selectedTemplateId])
 
   const { draggedItem, setDraggedItem, draggedSection, setDraggedSection, handleItemDragEnd, isDragging } = useDragState(sections, saveItemPosition)
 
