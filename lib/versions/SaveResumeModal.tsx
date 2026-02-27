@@ -78,9 +78,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
       const group = groups.find(g => g.resume_group_id === selectedGroupId)
       if (group) {
         groupName = group.group_name
-        if (group.versions.length > 0) {
-          parentVersionId = group.versions[0].id
-        }
+        parentVersionId = defaultParentVersionId ?? group.versions[0].id
       }
     }
 
