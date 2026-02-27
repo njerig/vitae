@@ -1,6 +1,6 @@
 // __tests__/versions/SaveResumeButton.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { SaveResumeButton } from '@/lib/versions/SaveResumeButton'
+import { SaveResumeButton } from '@/lib/versions/components/save/SaveResumeButton'
 import toast from 'react-hot-toast'
 
 jest.mock('react-hot-toast')

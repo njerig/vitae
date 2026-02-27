@@ -168,21 +168,10 @@ export function VersionTree({ versions, onDelete, onRestore, deleting, restoring
                 style={{ cursor: "pointer" }}
                 onMouseEnter={() => setHoveredId(node.version.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                onClick={() => setSelectedId(
-                  selectedId === node.version.id ? null : node.version.id
-                )}
+                onClick={() => setSelectedId(selectedId === node.version.id ? null : node.version.id)}
               >
-                {isActive && (
-                  <circle cx={x} cy={y} r={DOT_R + 5} fill={color} opacity={0.2} />
-                )}
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={DOT_R}
-                  fill={isActive ? color : "white"}
-                  stroke={color}
-                  strokeWidth={2.5}
-                />
+                {isActive && <circle cx={x} cy={y} r={DOT_R + 5} fill={color} opacity={0.2} />}
+                <circle cx={x} cy={y} r={DOT_R} fill={isActive ? color : "white"} stroke={color} strokeWidth={2.5} />
                 <text
                   x={x}
                   y={y + DOT_R + 14}
@@ -192,7 +181,7 @@ export function VersionTree({ versions, onDelete, onRestore, deleting, restoring
                   fontWeight={isActive ? "600" : "400"}
                   style={{ fontFamily: "var(--font-sans, sans-serif)", userSelect: "none" }}
                 >
-                  {displayName}
+                  {displayName.length > 19 ? displayName.slice(0, 19) + "..." : displayName}
                 </text>
               </g>
             )

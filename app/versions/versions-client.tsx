@@ -5,14 +5,14 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { Spinner } from "@/lib/components/Spinner"
-import { VersionCard } from "@/lib/versions/VersionCard"
-import { RestoreConfirmModal } from "@/lib/versions/RestoreConfirmModal"
+import { VersionCard } from "@/lib/versions/components/tree/VersionCard"
+import { RestoreConfirmModal } from "@/lib/versions/components/save/RestoreConfirmModal"
 import toast from "react-hot-toast"
 import { ChevronRight, ChevronDown, GitBranch } from "lucide-react"
 import type { Version, VersionGroup } from "@/lib/types"
 import { fetchVersion } from "@/lib/versions/api"
 import { useVersion } from "@/lib/versions/useVersion"
-import { VersionTree } from "@/lib/versions/VersionTree"
+import { VersionTree } from "@/lib/versions/components/tree/VersionTree"
 
 interface VersionsClientProps {
   userName: string

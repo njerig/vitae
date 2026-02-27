@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { VersionTree } from '@/lib/versions/VersionTree'
+import { VersionTree } from '@/lib/versions/components/tree/VersionTree'
 import type { Version } from '@/lib/types'
 
 function makeVersion(id: string, name: string, parentId: string | null): Version {

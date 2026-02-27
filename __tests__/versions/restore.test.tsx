@@ -1,7 +1,7 @@
 // __tests__/versions/restore.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import VersionsClient from '@/app/versions/versions-client'
-import { RestoreConfirmModal } from '@/lib/versions/RestoreConfirmModal'
+import { RestoreConfirmModal } from '@/lib/versions/components/save/RestoreConfirmModal'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 

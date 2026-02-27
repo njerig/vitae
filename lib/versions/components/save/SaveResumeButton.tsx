@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { SaveResumeModal } from "./SaveResumeModal"
 import toast from "react-hot-toast"
 import { Save } from "lucide-react"
-import { saveVersion } from "./api"
+import { saveVersion } from "../../api"
 
 type WorkingState = {
   sections: {
