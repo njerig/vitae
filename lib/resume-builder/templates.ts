@@ -5,10 +5,9 @@ export type ResumeTemplate = {
 }
 
 export const RESUME_TEMPLATES: ResumeTemplate[] = [
-  { id: "classic", name: "Jake's Resume", description: "The current resume template" },
-  { id: "modern", name: "Jake's Resume 2", description: "Sans-serif variant for testing" },
-  { id: "minimal", name: "WIP", description: "Coming soon" },
-  { id: "compact", name: "WIP", description: "Coming soon" },
+  { id: "classic", name: "Jake's Resume", description: "The classic single-column resume" },
+  { id: "accent", name: "Modern", description: "Bold accent colour with blue name styling" },
+  { id: "two-col", name: "Two Column", description: "Two-column layout with green sidebar" },
+  { id: "modern", name: "Testing", description: "Sans-serif variant" },
   { id: "executive", name: "WIP", description: "Coming soon" },
 ]
-

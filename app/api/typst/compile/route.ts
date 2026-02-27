@@ -21,8 +21,10 @@ let compiler: TypstCompiler | null = null
 const templateCache: Record<string, Promise<string>> = {}
 
 const THEME_FILES: Record<string, string> = {
-  "classic":   "jakes-resume.typ",
-  "modern":    "jakes-resume-2.typ",
+  "classic":  "jakes-resume.typ",
+  "modern":   "jakes-resume-2.typ",
+  "accent":   "modern.typ",
+  "two-col":  "two-col.typ",
   // Add more template_ids here as new themes are built
 }
 
@@ -59,7 +61,7 @@ async function getTemplate(templateId: string): Promise<string> {
   if (!templateCache[templateId]) {
     const themeFile = THEME_FILES[templateId] ?? DEFAULT_THEME
     const themePath = join(process.cwd(), "lib", "typst", "themes", themeFile)
-    const resumePath = join(process.cwd(), "lib", "typst", "resume.typ")
+    const resumePath = join(process.cwd(), "lib", "typst", "json-adapter.typ")
     templateCache[templateId] = Promise.all([
       readFile(themePath, "utf8"),
       readFile(resumePath, "utf8"),

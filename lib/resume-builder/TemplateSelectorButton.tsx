@@ -132,7 +132,46 @@ export function TemplateSelectorButton({ selectedTemplateId, onSelect }: Templat
                   <div style={{ width: "100%", aspectRatio: "0.77", backgroundColor: "white", borderRadius: "0.35rem", border: "1px solid var(--grid, #e5e7eb)", overflow: "hidden", boxShadow: isActive ? "0 2px 6px rgba(79,70,229,0.15)" : "0 1px 3px rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {isWip ? (
                       <span style={{ fontSize: "0.55rem", color: "var(--ink-fade, #9ca3af)", fontWeight: 600, letterSpacing: "0.05em" }}>WIP</span>
+                    ) : template.id === "two-col" ? (
+                      // Two-column thumbnail with green left sidebar
+                      <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
+                        <rect x="0" y="0" width="34" height="100" fill={isActive ? "#d1fae5" : "#eaf6ea"} />
+                        <rect x="8" y="8" width="18" height="3" rx="1" fill={isActive ? "#059669" : "#34d399"} />
+                        <rect x="8" y="13" width="14" height="1.5" rx="0.5" fill={isActive ? "#6ee7b7" : "#d1fae5"} />
+                        <rect x="8" y="16" width="16" height="1.5" rx="0.5" fill={isActive ? "#6ee7b7" : "#d1fae5"} />
+                        <rect x="8" y="22" width="12" height="2" rx="0.5" fill={isActive ? "#059669" : "#6b7280"} />
+                        <rect x="8" y="26" width="18" height="1.5" rx="0.5" fill={isActive ? "#6ee7b7" : "#d1fae5"} />
+                        <rect x="8" y="29" width="14" height="1.5" rx="0.5" fill={isActive ? "#6ee7b7" : "#d1fae5"} />
+                        <rect x="8" y="36" width="12" height="2" rx="0.5" fill={isActive ? "#059669" : "#6b7280"} />
+                        <rect x="8" y="40" width="18" height="1.5" rx="0.5" fill={isActive ? "#6ee7b7" : "#d1fae5"} />
+                        <rect x="8" y="43" width="16" height="1.5" rx="0.5" fill={isActive ? "#6ee7b7" : "#d1fae5"} />
+                        <rect x="40" y="8" width="18" height="2.5" rx="1" fill={isActive ? "var(--accent, #4f46e5)" : "#6b7280"} />
+                        <rect x="40" y="13" width="32" height="1.5" rx="0.5" fill={isActive ? "#c7d2fe" : "#e5e7eb"} />
+                        <rect x="40" y="16" width="28" height="1.5" rx="0.5" fill={isActive ? "#c7d2fe" : "#e5e7eb"} />
+                        <rect x="40" y="22" width="18" height="2" rx="0.5" fill={isActive ? "var(--accent, #4f46e5)" : "#6b7280"} />
+                        <rect x="40" y="26" width="32" height="1.5" rx="0.5" fill={isActive ? "#c7d2fe" : "#e5e7eb"} />
+                        <rect x="40" y="29" width="24" height="1.5" rx="0.5" fill={isActive ? "#c7d2fe" : "#e5e7eb"} />
+                        <rect x="40" y="32" width="28" height="1.5" rx="0.5" fill={isActive ? "#c7d2fe" : "#e5e7eb"} />
+                      </svg>
+                    ) : template.id === "accent" ? (
+                      // Modern thumbnail with blue accent on name
+                      <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
+                        <rect x="15" y="8" width="50" height="5" rx="1" fill={isActive ? "#1d4ed8" : "#3b82f6"} />
+                        <rect x="20" y="15" width="40" height="2" rx="1" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="28" y="19" width="24" height="1.5" rx="1" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="26" width="18" height="2.5" rx="1" fill={isActive ? "#1d4ed8" : "#3b82f6"} />
+                        <rect x="8" y="31" width="64" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="34" width="50" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="37" width="56" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="44" width="18" height="2.5" rx="1" fill={isActive ? "#1d4ed8" : "#3b82f6"} />
+                        <rect x="8" y="49" width="64" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="52" width="40" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="59" width="18" height="2.5" rx="1" fill={isActive ? "#1d4ed8" : "#3b82f6"} />
+                        <rect x="8" y="64" width="64" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                        <rect x="8" y="67" width="52" height="1.5" rx="0.5" fill={isActive ? "#bfdbfe" : "#e5e7eb"} />
+                      </svg>
                     ) : (
+                      // Default thumbnail (classic / modern)
                       <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
                         <rect x="20" y="8" width="40" height="5" rx="1" fill={isActive ? "var(--accent, #4f46e5)" : "#9ca3af"} />
                         <rect x="25" y="15" width="30" height="2.5" rx="1" fill={isActive ? "#c7d2fe" : "#e5e7eb"} />
