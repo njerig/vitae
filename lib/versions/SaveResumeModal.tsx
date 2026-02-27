@@ -3,6 +3,8 @@
 import { useState, FormEvent, useEffect } from "react"
 import { Spinner } from "@/lib/components/Spinner"
 import type { VersionGroup } from "@/lib/types"
+import { fetchVersion } from "./api"
+import toast from "react-hot-toast"
 
 type SaveResumeModalProps = {
   onSave: (
@@ -38,21 +40,19 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch("/api/versions")
-        if (response.ok) {
-          const data: VersionGroup[] = await response.json()
-          setGroups(data)
+        const data = await fetchVersion()
+        setGroups(data)
 
-          // If a default parent version ID was provided, pre-select that group
-          if (defaultParentVersionId) {
-            const matchingGroup = data.find(g =>
-              g.versions.some(v => v.id === defaultParentVersionId)
-            )
-            if (matchingGroup) {
-              setSelectedGroupId(matchingGroup.resume_group_id)
-            }
+        // If a default parent version ID was provided, pre-select that group
+        if (defaultParentVersionId) {
+          const matchingGroup = data.find(g =>
+            g.versions.some(v => v.id === defaultParentVersionId)
+          )
+          if (matchingGroup) {
+            setSelectedGroupId(matchingGroup.resume_group_id)
           }
         }
+
       } catch {
         // Silently fail — user can still save as new
       } finally {
@@ -83,7 +83,10 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
     }
 
     const saveResult = await onSave(groupName, versionNote.trim(), parentVersionId)
-    if (!saveResult.success && saveResult.error) {
+    if (saveResult.success) {
+      toast.success(`Resume "${groupName}" saved successfully!`)
+      onClose()
+    } else if (saveResult.error) {
       setError(saveResult.error)
     }
   }
