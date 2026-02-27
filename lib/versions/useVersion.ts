@@ -12,6 +12,19 @@ export function useVersion() {
     const [restoring, setRestoring] = useState<string | null>(null)
     const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+    const [showTreeGroups, setShowTreeGroups] = useState<Set<string>>(new Set())
+  
+    const toggleTreeGroup = (groupId: string) => {
+      setShowTreeGroups(prev => {
+        const next = new Set(prev)
+        if (next.has(groupId)) {
+          next.delete(groupId)
+        } else {
+          next.add(groupId)
+        }
+        return next
+      })
+    }
   
     const fetchVersions = async () => {
     setLoading(true)
@@ -111,6 +124,8 @@ export function useVersion() {
     toggleGroup,
     handleDelete,
     handleRestoreClick,
-    handleRestoreConfirm
+    handleRestoreConfirm,
+    showTreeGroups,
+    toggleTreeGroup
   }
 }
