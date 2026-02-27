@@ -21,7 +21,11 @@ export function useVersion() {
       // Expand all groups by default
       setExpandedGroups(new Set(data.map(g => g.resume_group_id)))
     } catch (error) {
+<<<<<<< HEAD
       toast.error("Failed to load saved resumes")
+=======
+      toast.error("Error fetching versions")
+>>>>>>> 9d27581 (almost finished refactor)
       console.error("Error fetching versions:", error)
     } finally {
       setLoading(false)
