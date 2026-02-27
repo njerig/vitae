@@ -5,6 +5,8 @@
   bottom: 0.5in,
 ))
 
+#set text(font: "New Computer Modern")
+
 #show heading.where(level: 1): it => {
   align(center)[
     #text(size: 20pt, weight: "bold")[#it]
@@ -34,7 +36,7 @@
 #let date_range(dates) = {
   let s = fmt_date(dates.start)
   let e = fmt_date(dates.end)
-  if s == "" { "" } else { s + " - " + (if e != "" { e } else { "Present" }) }
+  if s == "" { "" } else { s + "--" + (if e != "" { e } else { "Present" }) }
 }
 
 #let school(
@@ -69,7 +71,7 @@
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
     [#strong(position)],
-    [#emph(date_range(dates))],
+    [#date_range(dates)],
     [#emph(organization)],
     [#emph(location)],
   )

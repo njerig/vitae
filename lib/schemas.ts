@@ -23,6 +23,7 @@ export const WorkContentSchema = z
   .object({
     org: z.string().min(1, "Company is required"),
     role: z.string().min(1, "Position is required"),
+    location: z.string().min(1, "Location is required"),
     start: dateString.refine((v) => v && v.length > 0, "Start date is required"),
     end: optionalDateString,
     bullets: z.array(z.string()).min(1, "At least one bullet point is required"),
@@ -35,6 +36,7 @@ export const WorkContentSchema = z
 export const EducationContentSchema = z
   .object({
     institution: z.string().min(1, "Institution is required"),
+    location: z.string().min(1, "Location is required"),
     degree: z.string().optional().or(z.literal("")),
     field: z.string().optional().or(z.literal("")),
     start: optionalDateString,

@@ -16,6 +16,7 @@ export const ITEM_TYPE_FIELDS: Record<string, FieldConfig[]> = {
   "Work Experience": [
     { name: "org", label: "Company", type: "text", required: true, placeholder: "Google, Microsoft, etc." },
     { name: "role", label: "Position", type: "text", required: true, placeholder: "Software Engineer, PM, etc." },
+    { name: "location", label: "Location", type: "text", required: true, placeholder: "San Francisco, CA" },
     { name: "start", label: "Start Date", type: "date", required: true },
     { name: "end", label: "End Date", type: "date" },
     { name: "bullets", label: "Bullets", type: "textarea", required: true, placeholder: "One bullet per line\nBuilt X\nImproved Y" },
@@ -23,6 +24,7 @@ export const ITEM_TYPE_FIELDS: Record<string, FieldConfig[]> = {
   ],
   "Education": [
     { name: "institution", label: "Institution", type: "text", required: true, placeholder: "UC Santa Cruz" },
+    { name: "location", label: "Location", type: "text", required: true, placeholder: "Santa Cruz, CA" },
     { name: "degree", label: "Degree", type: "text", placeholder: "Bachelor of Science" },
     { name: "field", label: "Field of Study", type: "text", placeholder: "Computer Science" },
     { name: "start", label: "Start Date", type: "date" },

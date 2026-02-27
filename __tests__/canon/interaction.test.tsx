@@ -229,6 +229,7 @@ describe("Canon interaction flow", () => {
 
     fireEvent.change(getFieldControl(/company/i), { target: { value: "Acme Corp" } })
     fireEvent.change(getFieldControl(/position/i), { target: { value: "Senior Engineer" } })
+    fireEvent.change(getFieldControl(/location/i), { target: { value: "San Francisco, CA" } })
     fireEvent.change(getFieldControl(/start date/i), { target: { value: "2024-01-01" } })
     submitForm()
 
@@ -252,6 +253,7 @@ describe("Canon interaction flow", () => {
       requiredErrorText: "Company is required",
       fillValid: () => {
         fireEvent.change(getFieldControl(/company/i), { target: { value: "Acme Corp" } })
+        fireEvent.change(getFieldControl(/location/i), { target: { value: "San Francisco, CA" } })
         fireEvent.change(getFieldControl(/position/i), { target: { value: "Senior Engineer" } })
         fireEvent.change(getFieldControl(/start date/i), { target: { value: "2024-01-01" } })
         fireEvent.change(getFieldControl(/bullet points/i), { target: { value: "Built API platform" } })
@@ -265,6 +267,7 @@ describe("Canon interaction flow", () => {
       fillValid: () => {
         fireEvent.change(getFieldControl(/institution/i), { target: { value: "UC Santa Cruz" } })
         fireEvent.change(getFieldControl(/details/i), { target: { value: "Dean's List" } })
+        fireEvent.change(getFieldControl(/location/i), { target: { value: "Santa Cruz, CA" } })
       },
       expectedListText: ["UC Santa Cruz", "Dean's List"],
     },
