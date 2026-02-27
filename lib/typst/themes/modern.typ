@@ -75,6 +75,10 @@
 
 #show list: set block(above: margins.list.top)
 
+#let profile_links(content) = {
+  align(center)[#content]
+}
+
 // -- Component functions ------------------------------------------------------
 #let date_pattern = "[month repr:short]. [year]"
 
