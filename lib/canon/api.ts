@@ -19,6 +19,7 @@ export class ValidationError extends Error {
 const FIELD_LABELS: Record<string, string> = {
   org: "Company",
   role: "Position",
+  location: "Location",
   start: "Start Date",
   end: "End Date",
   bullets: "Bullets",

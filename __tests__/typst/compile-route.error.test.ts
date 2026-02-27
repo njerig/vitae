@@ -101,7 +101,7 @@ describe("/api/typst/compile (route handler)", () => {
     expect(res1.status).toBe(200)
     expect(res2.status).toBe(200)
     expect(mockCreate).toHaveBeenCalledTimes(1)
-    // theme.typ + resume.typ read once each
+    // jakes-resume.typ + resume.typ read once each
     expect(mockReadFile).toHaveBeenCalledTimes(2)
   })
 })

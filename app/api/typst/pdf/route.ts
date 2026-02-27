@@ -37,7 +37,7 @@ async function getCompiler(): Promise<TypstCompiler> {
 
 async function getTemplate(): Promise<string> {
   if (!templatePromise) {
-    const themePath = join(process.cwd(), "lib", "typst", "theme.typ")
+    const themePath = join(process.cwd(), "lib", "typst", "themes", "jakes-resume.typ")
     const resumePath = join(process.cwd(), "lib", "typst", "resume.typ")
     templatePromise = Promise.all([
       readFile(themePath, "utf8"),
