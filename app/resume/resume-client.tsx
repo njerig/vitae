@@ -141,15 +141,8 @@ export default function ResumeClient({
 
   return (
     // Full viewport height — no page-level scroll
-    <div
-      className="page-container"
-      style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}
-    >
-      <Toaster
-        position="top-center"
-        containerStyle={{ zIndex: 99999 }}
-        toastOptions={{ style: { zIndex: 99999 } }}
-      />
+    <div className="page-container" style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} toastOptions={{ style: { zIndex: 99999 } }} />
       <div className="page-bg-gradient" style={{ position: "fixed", inset: 0, pointerEvents: "none" }} />
 
       {/* Two-column body — each column scrolls independently, navbar offset at top */}
@@ -157,11 +150,9 @@ export default function ResumeClient({
         className="relative z-10 flex flex-1 min-h-0 gap-6 px-8"
         style={{ paddingTop: "calc(var(--navbar-height, 4rem) + 4rem)", paddingBottom: "1.5rem" }}
       >
-
         {/* Left column — scrolls independently */}
         <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
           <div className="space-y-6 pb-8">
-
             {/* Header card — back button + title + save button */}
             <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-4">
               <div className="flex flex-row items-center gap-6">
@@ -172,14 +163,12 @@ export default function ResumeClient({
               </div>
               <div className="flex flex-row items-center gap-4">
                 {isDirty && (
-                  <span className="text-xs" style={{ color: "var(--ink-fade)" }}>Unsaved changes</span>
+                  <span className="text-xs" style={{ color: "var(--ink-fade)" }}>
+                    Unsaved changes
+                  </span>
                 )}
-                <div className="flex flex-row items-center justify-center">
-                  <SaveResumeButton
-                    workingState={workingState}
-                    parentVersionId={parentVersionId}
-                    syncToBackend={syncToBackend}
-                  />
+                <div className="flex flex-row items-center justify-center gap-2">
+                  <SaveResumeButton workingState={workingState} parentVersionId={parentVersionId} syncToBackend={syncToBackend} />
                   <button
                     type="button"
                     onClick={handleExportPdf}
@@ -187,11 +176,7 @@ export default function ResumeClient({
                     className="btn-secondary rounded-md px-2 py-1 text-sm flex items-center gap-1"
                     title="Download resume as PDF"
                   >
-                    {exportingPdf ? (
-                      <Spinner size={16} />
-                    ) : (
-                      <Download className="w-6 h-6" />
-                    )}
+                    {exportingPdf ? <Spinner size={16} color="var(--ink)" /> : <Download className="w-6 h-6" />}
                     Export PDF
                   </button>
                 </div>
@@ -199,73 +184,65 @@ export default function ResumeClient({
             </div>
 
             {isDragging && (
-              <div
-                className="rounded-xl p-4"
-                style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}
-              >
+              <div className="rounded-xl p-4" style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}>
                 <p className="text-sm" style={{ color: "var(--paper)" }}>
                   <strong>Drop to reorder.</strong> Item order will be saved automatically.
                 </p>
               </div>
             )}
 
-              {sections.length === 0 ? (
-                <div
-                  className="bg-white rounded-2xl border p-12 text-center shadow-sm"
-                  style={{
-                    borderColor: "var(--grid)",
-                  }}
-                >
-                  <p style={{ color: "var(--ink-fade)" }}>No items yet. Add some items to your Career History to get started!</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {sections.map((section, sectionIndex) => (
-                    <DragSection
-                      key={section.typeId}
-                      section={section}
-                      sectionIndex={sectionIndex}
-                      sections={sections}
-                      setSections={setSections}
-                      draggedSection={draggedSection}
-                      setDraggedSection={setDraggedSection}
-                      draggedItem={draggedItem}
-                      setDraggedItem={setDraggedItem}
-                      saveItemPosition={saveItemPosition}
-                      formatDate={formatDate}
-                      handleItemDragEnd={handleItemDragEnd}
-                      isSelected={isSelected}
-                      toggleItem={toggleItem}
-                      onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
-                      getOverride={getOverride}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            {sections.length === 0 ? (
+              <div
+                className="bg-white rounded-2xl border p-12 text-center shadow-sm"
+                style={{
+                  borderColor: "var(--grid)",
+                }}
+              >
+                <p style={{ color: "var(--ink-fade)" }}>No items yet. Add some items to your Career History to get started!</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {sections.map((section, sectionIndex) => (
+                  <DragSection
+                    key={section.typeId}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                    sections={sections}
+                    setSections={setSections}
+                    draggedSection={draggedSection}
+                    setDraggedSection={setDraggedSection}
+                    draggedItem={draggedItem}
+                    setDraggedItem={setDraggedItem}
+                    saveItemPosition={saveItemPosition}
+                    formatDate={formatDate}
+                    handleItemDragEnd={handleItemDragEnd}
+                    isSelected={isSelected}
+                    toggleItem={toggleItem}
+                    onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
+                    getOverride={getOverride}
+                  />
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
         {/* Right column — scrolls independently */}
         <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
-          <div
-            className="bg-white rounded-2xl border shadow-sm flex flex-col"
-            style={{ borderColor: "var(--grid)", minHeight: "100%" }}
-          >
+          <div className="bg-white rounded-2xl border shadow-sm flex flex-col" style={{ borderColor: "var(--grid)", minHeight: "100%" }}>
             {/* Preview header */}
             <div className="p-8 border-b flex-shrink-0" style={{ borderColor: "var(--grid)" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: "1rem" }}>
-
                 {/* Left: title */}
-                <h3
-                  className="text-2xl font-semibold"
-                  style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
-                >
+                <h3 className="text-2xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
                   Resume Preview
                 </h3>
 
                 <TemplateSelectorButton
                   selectedTemplateId={workingState.template_id ?? "classic"}
-                  onSelect={(id) => { void setTemplate(id) }}
+                  onSelect={(id) => {
+                    void setTemplate(id)
+                  }}
                 />
 
                 <div className="flex flex-col items-end gap-1">
@@ -280,7 +257,6 @@ export default function ResumeClient({
                     </p>
                   )}
                 </div>
-
               </div>
             </div>
 
@@ -294,7 +270,6 @@ export default function ResumeClient({
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Edit Override Modal */}
