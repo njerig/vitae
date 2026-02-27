@@ -181,8 +181,8 @@ header {
 .btn-secondary {
   font-family: var(--font-sans);
   padding: 0.75rem 2rem;
-  background: transparent;
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -194,8 +194,8 @@ header {
 }
 
 .btn-secondary:hover {
-  background: var(--ink);
-  color: var(--paper);
+  background: transparent;
+  color: var(--ink);
 }
 
 /* Navigation buttons - subtle until hover */
@@ -313,6 +313,25 @@ header {
   background: var(--ink-light);
   color: var(--paper);
 }
+
+.card-action-delete-negative {
+  padding: 0.5rem 1rem;
+  background: var(--ink-light);
+  border: 1px solid var(--ink-light);
+  border-radius: var(--radius-soft);
+  color: var(--paper);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: all 200ms;
+  cursor: pointer;
+}
+
+.card-action-delete-negative:hover {
+  background: var(--paper-light);
+  color: var(--ink-light);
+}
+
 
 /* Tab buttons */
 .tab-button {
