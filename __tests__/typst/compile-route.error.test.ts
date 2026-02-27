@@ -9,8 +9,10 @@
  */
 
 const mockReadFile = jest.fn()
+const mockReaddir = jest.fn()
 jest.mock("node:fs/promises", () => ({
   readFile: (...args: unknown[]) => mockReadFile(...args),
+  readdir: (...args: unknown[]) => mockReaddir(...args),
 }))
 
 const mockSvg = jest.fn()
@@ -23,6 +25,12 @@ describe("/api/typst/compile (route handler)", () => {
   beforeEach(() => {
     jest.resetModules()
     mockReadFile.mockReset().mockResolvedValue("/* typst */")
+    mockReaddir.mockReset().mockResolvedValue([
+      { name: "Figtree-Regular.ttf", isFile: () => true },
+      { name: "Figtree-Bold.ttf", isFile: () => true },
+      { name: "Figtree-Italic.ttf", isFile: () => true },
+      { name: "Figtree-BoldItalic.ttf", isFile: () => true },
+    ])
     mockSvg.mockReset()
     mockCreate.mockClear()
     jest.spyOn(console, "error").mockImplementation(() => {})
@@ -101,8 +109,8 @@ describe("/api/typst/compile (route handler)", () => {
     expect(res1.status).toBe(200)
     expect(res2.status).toBe(200)
     expect(mockCreate).toHaveBeenCalledTimes(1)
-    // jakes-resume.typ + resume.typ read once each
-    expect(mockReadFile).toHaveBeenCalledTimes(2)
+    // 4 font files + theme + json adapter
+    expect(mockReadFile).toHaveBeenCalledTimes(6)
   })
 })
 

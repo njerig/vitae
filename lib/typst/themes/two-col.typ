@@ -1,49 +1,86 @@
 // -- Page setup ---------------------------------------------------------------
-#set page(margin: (
-  left: 0.5in,
-  right: 0.5in,
-  top: 0.5in,
-  bottom: 0.5in,
-))
-#set text(font: "New Computer Modern")
+#set page(
+  columns: 2,
+  margin: (
+    left: 0.35in,
+    right: 0.35in,
+    top: 0.35in,
+    bottom: 0.35in,
+  ),
+  background: {
+    place(top + left, dx: 0pt, dy: 0pt)[
+      #rect(
+        width: 50%,
+        height: 100%,
+        fill: rgb("#eaf6ea"),
+        stroke: none
+      )
+    ]
+  }
+)
+#set columns(gutter: 10%)
+#set text(font: "Fira Sans")
 #set list(tight: true)
 
 // -- Theme parameters ---------------------------------------------------------
 #let sizes = (
   body: 11pt,
   section: 13pt,
-  name: 20pt,
+  name: 24pt,
 )
 #let margins = (
-  section-line: (top: 0.5em, bottom: 0.75em),
+  section-line: (top: 1.5em, bottom: 0.85em),
   section: (top: 2em, bottom: 0.5em),
   list: (top: 0.8em)
 )
 
+#let colors = (
+  accent-bg: rgb("#eaf6ea"),
+  accent-fg: rgb("#06402b")
+)
+
+// -- Helpers ----------------------------------------------------------------
+#let plain-text(c) = {
+  if type(c) == str { c }
+  else if c == [] { " " }
+  else if c.has("children") { c.children.map(plain-text).join("") }
+  else if c.has("body") { plain-text(c.body) }
+  else if c.has("text") {
+    if type(c.text) == str { c.text } else { plain-text(c.text) }
+  }
+  else { "" }
+}
+
 // -- Show rules ---------------------------------------------------------------
 #show heading.where(level: 1): it => {
-  align(center)[
-    #text(size: sizes.name, weight: "bold")[#it]
-  ]
+  text(size: sizes.name, weight: "bold")[#it]
 }
 
 #show heading.where(level: 2): set block(above: margins.section.top, below: margins.section.bottom)
 
 #show heading.where(level: 2): it => {
-  smallcaps[#text(size: sizes.section, weight: "bold")[#it]]
-  block(above: margins.section-line.top, below: margins.section-line.bottom)[
-    #line(length: 100%, stroke: 0.5pt + black)
+  block(
+    above: margins.section-line.top,
+    below: margins.section-line.bottom,
+  )[
+    #grid(
+      columns: (auto, 1fr),
+      gutter: 0.5em,
+      align: (left + horizon, center + horizon),
+      [#text(size: sizes.section, weight: "bold", fill: colors.accent-fg)[#it]],
+      [#line(length: 100%, stroke: 0.5pt + colors.accent-fg)]
+    )
   ]
 }
+
+#show list: set block(above: margins.list.top)
 
 #show link: it => {
   underline(offset: 3pt)[#it]
 }
 
-#show list: set block(above: margins.list.top)
-
 #let profile_links(content) = {
-  align(center)[#content]
+  align(left)[#content]
 }
 
 // -- Component functions ------------------------------------------------------
@@ -56,7 +93,7 @@
 #let date_range(dates) = {
   let s = fmt_date(dates.start)
   let e = fmt_date(dates.end)
-  if s == "" { "" } else { s + " -- " + (if e != "" { e } else { "Present" }) }
+  if s == "" { "" } else { s + " " + sym.dash.en + " " + (if e != "" { e } else { "Present" }) }
 }
 
 #let school(
@@ -70,9 +107,9 @@
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
     [#strong(institution)],
-    [#location],
-    [#emph(degree)],
-    [#emph(date_range(dates))],
+    [#strong(location)],
+    [#degree],
+    [#date_range(dates)],
   )
   list(
     ..(if GPA != "" { ([GPA: #GPA],) } else { () }),
@@ -91,9 +128,9 @@
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
     [#strong(position)],
+    [#strong(location)],
+    [#organization],
     [#date_range(dates)],
-    [#emph(organization)],
-    [#emph(location)],
   )
   list(
     ..bullets.map(b => [#b]),
@@ -109,19 +146,25 @@
 ) = {
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
-    [#strong(name) | #if skills.len() > 0 { emph(skills.join(", ")) }],
-    [#emph(date_range(dates))],
+    [#strong(name) | #if skills.len() > 0 { skills.join(", ") }],
+    [#date_range(dates)],
   )
   list(..bullets.map(b => [#b]))
 }
 
 #let skills(items: ()) = {
-  for it in items {
+  let rows = items.filter(it => it.at(0, default: "") != "" and it.at(1, default: ()).len() > 0)
+  for it in rows {
     let label = it.at(0, default: "")
     let values = it.at(1, default: ())
-    if label != "" and values.len() > 0 {
-      list([#strong(label): #values.join(", ")])
-    }
+    [#strong(label):]
+    [
+      #values.map(v => box(
+        inset: (x: 0.35em, y: 0.15em),
+        radius: 0.25em,
+        fill: luma(96%),
+        stroke: 0.4pt + luma(80%),
+      )[#v]).join([ ]) \ 
+    ]
   }
 }
-

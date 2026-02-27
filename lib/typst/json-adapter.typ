@@ -29,9 +29,9 @@
     }
   }).join([ | ])
 
-  #align(center)[#joined]
+  #profile_links(joined)
 ] else if contact != "" [
-  #align(center)[#contact]
+  #profile_links(contact)
 ]
 
 #for sec in sections [
