@@ -144,15 +144,8 @@ export function EditOverrideModal({ item, typeName, itemTypes, override, onSave,
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal"
-        style={{ maxWidth: "600px" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3
-          className="text-xl font-semibold mb-1"
-          style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
-        >
+      <div className="modal" style={{ maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-xl font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
           Edit for This Resume
         </h3>
         <p className="text-sm mb-4" style={{ color: "var(--ink-fade)" }}>
@@ -160,7 +153,8 @@ export function EditOverrideModal({ item, typeName, itemTypes, override, onSave,
         </p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg text-sm whitespace-pre-wrap"
+          <div
+            className="mb-4 p-3 rounded-lg text-sm whitespace-pre-wrap"
             style={{
               backgroundColor: "#fef2f2",
               border: "1px solid #fecaca",
@@ -194,11 +188,7 @@ export function EditOverrideModal({ item, typeName, itemTypes, override, onSave,
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleSubmit}
-              disabled={saving}
-              className="btn-primary"
-            >
+            <button onClick={handleSubmit} disabled={saving} className="btn-primary">
               {saving ? (
                 <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <Spinner size={16} color="white" inline />
@@ -209,19 +199,11 @@ export function EditOverrideModal({ item, typeName, itemTypes, override, onSave,
               )}
             </button>
             {override && (
-              <button
-                onClick={handleReset}
-                disabled={saving}
-                className="card-action-delete"
-              >
+              <button onClick={handleReset} disabled={saving} className="card-action-delete-negative">
                 Reset to Original
               </button>
             )}
-            <button
-              onClick={onClose}
-              disabled={saving}
-              className="btn-secondary"
-            >
+            <button onClick={onClose} disabled={saving} className="btn-secondary">
               Cancel
             </button>
           </div>
