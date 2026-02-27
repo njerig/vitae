@@ -10,6 +10,7 @@ import { RestoreConfirmModal } from "@/lib/versions/RestoreConfirmModal"
 import toast from "react-hot-toast"
 import { ChevronRight, ChevronDown } from "lucide-react"
 import type { Version, VersionGroup } from "@/lib/types"
+import { fetchVersion } from "@/lib/versions/api"
 import { useVersion } from "@/lib/versions/useVersion"
 
 interface VersionsClientProps {
