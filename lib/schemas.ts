@@ -136,6 +136,7 @@ export const OverrideSchema = z.object({
 export const WorkingStateSchema = z.object({
   sections: z.array(SectionStateSchema),
   overrides: z.record(z.string().uuid(), OverrideSchema).optional(),
+  template_id: z.string().optional(),
 })
 
 // ─────────────────────────────────────────────────────────────
