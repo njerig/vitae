@@ -27,6 +27,10 @@
   underline(offset: 3pt)[#it]
 }
 
+#let profile_links(content) = {
+  align(center)[#content]
+}
+
 #let date_pattern = "[month repr:short]. [year]"
 
 #let fmt_date(d) = {
