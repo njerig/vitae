@@ -148,7 +148,19 @@ export function TemplateSelectorButton({ selectedTemplateId, onSelect }: Templat
                       </svg>
                     )}
                   </div>
-                  <span style={{ fontSize: "0.65rem", fontWeight: isActive ? 700 : 500, color: isActive ? "var(--accent, #4f46e5)" : "var(--ink, #111)", whiteSpace: "nowrap" }}>
+                  <span style={{
+                    fontSize: "0.65rem",
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? "var(--accent, #4f46e5)" : "var(--ink, #111)",
+                    whiteSpace: "normal",
+                    textAlign: "center",
+                    lineHeight: 1.3,
+                    minHeight: "2.6em",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
+                    wordBreak: "break-word",
+                  }}>
                     {template.name}
                   </span>
                 </button>
