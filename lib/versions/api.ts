@@ -1,6 +1,3 @@
-// API client for canon items and item types
-// Auth is handled automatically via Clerk cookies - no token needed
-
 import type { Version, VersionGroup } from "@/lib/types"
 import toast from "react-hot-toast"
 
@@ -8,10 +5,8 @@ import toast from "react-hot-toast"
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const data = await res.json().catch(() => null) // read error from backend without crashing
-
     // catch any other errors that didn't come from zod; show toast
     const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
-    toast.error(errorMessage)
     throw new Error(errorMessage)
   }
   return res.json()
@@ -27,4 +22,18 @@ export async function fetchVersion(): Promise<VersionGroup[]> {
     cache: "no-store",
   })
   return handleResponse(res)
+}
+
+export async function deleteVersion(id: string): Promise<Response> {
+  const res = await fetch(`/api/versions?id=${id}`, {
+    method: "DELETE",
+  })
+  return handleResponse(res)
+}
+
+export async function restoreVersion(id: string): Promise<Response> {
+  const res = await fetch(`/api/versions/${id}/restore`, {
+    method: "POST",
+  })
+  return handleResponse(res);
 }
