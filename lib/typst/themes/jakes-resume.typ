@@ -36,7 +36,7 @@
 #let date_range(dates) = {
   let s = fmt_date(dates.start)
   let e = fmt_date(dates.end)
-  if s == "" { "" } else { s + " - " + (if e != "" { e } else { "Present" }) }
+  if s == "" { "" } else { s + "--" + (if e != "" { e } else { "Present" }) }
 }
 
 #let school(
@@ -71,7 +71,7 @@
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
     [#strong(position)],
-    [#emph(date_range(dates))],
+    [#date_range(dates)],
     [#emph(organization)],
     [#emph(location)],
   )
