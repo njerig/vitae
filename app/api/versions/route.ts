@@ -159,6 +159,22 @@ export async function DELETE(request: NextRequest) {
 
   const { id } = result.data
 
+  const { rows: targetRows } = await pool.query(
+    `SELECT parent_version_id FROM versions WHERE id = $1 AND user_id = $2`,
+    [id, userId]
+  )
+
+  if (targetRows.length === 0) {
+    return NextResponse.json({ error: "Version not found" }, { status: 404 })
+  }
+
+  const parentOfDeleted = targetRows[0].parent_version_id
+
+  await pool.query(
+    `UPDATE versions SET parent_version_id = $1 WHERE parent_version_id = $2 AND user_id = $3`,
+    [parentOfDeleted, id, userId]
+  )
+
   const { rowCount } = await pool.query(
     `DELETE FROM versions WHERE id = $1 AND user_id = $2`,
     [id, userId]
