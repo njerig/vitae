@@ -310,6 +310,11 @@ describe('Versions Page', () => {
         json: async () => ({ success: true }),
       })
 
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockGroups,
+      })
+
       render(<VersionsClient userName="Test User" userId="user-123" />)
 
       await waitFor(() => {
