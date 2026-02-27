@@ -31,7 +31,7 @@ export async function deleteVersion(id: string): Promise<Response> {
   return handleResponse(res)
 }
 
-export async function restoreVersion(id: string): Promise<Response> {
+export async function restoreVersion(id: string): Promise<{ version_id: string }> {
   const res = await fetch(`/api/versions/${id}/restore`, {
     method: "POST",
   })
