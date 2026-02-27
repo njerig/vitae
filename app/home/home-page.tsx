@@ -5,99 +5,17 @@ import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
 import { Timeline } from "@/lib/homepage/Timeline"
-import type { CanonItem } from "@/lib/types"
-import { useEffect, useRef, useState } from "react"
 import { Spinner } from "@/lib/components/Spinner"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
 
 
 export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
-  const { items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error, setError, create, patch, remove } = useCanon()
-
-
-  // Form state
-  const [isAddingItem, setIsAddingItem] = useState(false)
-  const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
-  const [deletingItem, setDeletingItem] = useState<CanonItem<unknown> | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-
-  // Get most recent edit timestamp from all items
-  const getLastEditedDate = () => {
-    if (items.length === 0) return null
-
-    const mostRecent = items.reduce((latest, item) => {
-      const itemDate = new Date(item.updated_at)
-      return itemDate > new Date(latest.updated_at) ? item : latest
-    })
-
-    return new Date(mostRecent.updated_at).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    })
-  }
-
-  // Ref for scrolling to form
-  const formRef = useRef<HTMLDivElement>(null)
-
-  const startAdd = () => {
-    setEditingItem(null)
-    setError(null)
-    setIsAddingItem(true)
-  }
-
-  const startEdit = (item: CanonItem<unknown>) => {
-    setEditingItem(item)
-    setError(null)
-    setIsAddingItem(true)
-  }
-
-  const cancel = () => {
-    setIsAddingItem(false)
-    setEditingItem(null)
-    setError(null)
-  }
-
-  const submit = async (payload: { item_type_id: string; title: string; position: number; content: Record<string, unknown> }) => {
-    try {
-      if (editingItem) {
-        await patch(editingItem.id, {
-          title: payload.title,
-          position: payload.position,
-          content: payload.content,
-        })
-      } else {
-        await create(payload)
-      }
-      cancel()
-    } catch {
-      // Error is already set in the hook, keep form open
-    }
-  }
-
-  const del = async (id: string) => {
-    const item = items.find((i) => i.id === id) ?? null
-    setDeletingItem(item)
-  }
-
-  const confirmDelete = async () => {
-    if (!deletingItem) return
-    setIsDeleting(true)
-    try {
-      await remove(deletingItem.id)
-      setDeletingItem(null)
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  // Auto-scroll to form when it opens
-  useEffect(() => {
-    if (isAddingItem && formRef.current) {
-      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
-  }, [isAddingItem])
+  const {
+    items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error,
+    isAddingItem, editingItem, deletingItem, isDeleting, formRef,
+    getLastEditedDate, startAdd, startEdit, cancel, submit, del, cancelDelete, confirmDelete,
+  } = useCanon()
 
   return (
     <div className="page-container">
@@ -108,7 +26,7 @@ export default function HomeClient({ userName, userId }: { userName: string; use
         <DeleteItemModal
           itemTitle={deletingItem.title}
           onConfirm={confirmDelete}
-          onClose={() => setDeletingItem(null)}
+          onClose={cancelDelete}
           deleting={isDeleting}
         />
       )}
