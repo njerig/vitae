@@ -12,6 +12,19 @@ export function useVersion() {
     const [restoring, setRestoring] = useState<string | null>(null)
     const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+    const [showTreeGroups, setShowTreeGroups] = useState<Set<string>>(new Set())
+  
+    const toggleTreeGroup = (groupId: string) => {
+      setShowTreeGroups(prev => {
+        const next = new Set(prev)
+        if (next.has(groupId)) {
+          next.delete(groupId)
+        } else {
+          next.add(groupId)
+        }
+        return next
+      })
+    }
   
     const fetchVersions = async () => {
     setLoading(true)
@@ -21,11 +34,7 @@ export function useVersion() {
       // Expand all groups by default
       setExpandedGroups(new Set(data.map(g => g.resume_group_id)))
     } catch (error) {
-<<<<<<< HEAD
       toast.error("Failed to load saved resumes")
-=======
-      toast.error("Error fetching versions")
->>>>>>> 9d27581 (almost finished refactor)
       console.error("Error fetching versions:", error)
     } finally {
       setLoading(false)
@@ -115,6 +124,8 @@ export function useVersion() {
     toggleGroup,
     handleDelete,
     handleRestoreClick,
-    handleRestoreConfirm
+    handleRestoreConfirm,
+    showTreeGroups,
+    toggleTreeGroup
   }
 }

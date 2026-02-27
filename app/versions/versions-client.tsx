@@ -8,10 +8,11 @@ import { Spinner } from "@/lib/components/Spinner"
 import { VersionCard } from "@/lib/versions/VersionCard"
 import { RestoreConfirmModal } from "@/lib/versions/RestoreConfirmModal"
 import toast from "react-hot-toast"
-import { ChevronRight, ChevronDown } from "lucide-react"
+import { ChevronRight, ChevronDown, GitBranch } from "lucide-react"
 import type { Version, VersionGroup } from "@/lib/types"
 import { fetchVersion } from "@/lib/versions/api"
 import { useVersion } from "@/lib/versions/useVersion"
+import { VersionTree } from "@/lib/versions/VersionTree"
 
 interface VersionsClientProps {
   userName: string
@@ -35,7 +36,10 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
     toggleGroup,
     handleDelete,
     handleRestoreClick,
-    handleRestoreConfirm } = useVersion();
+    handleRestoreConfirm,
+    showTreeGroups,
+    toggleTreeGroup
+   } = useVersion();
   
   useEffect(() => {
     fetchVersions()
@@ -71,7 +75,7 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
               subtitle="Manage your saved resume versions"
               actions={
                 <Link href="/resume">
-                  <button className="btn-secondary rounded-lg flex items-center gap-2">
+                  <button className="btn-primary rounded-lg flex items-center gap-2">
                     Resume Builder
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -102,11 +106,11 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                   style={{ borderColor: "var(--grid)" }}
                 >
                   {/* Group Header */}
-                  <button
-                    onClick={() => toggleGroup(group.resume_group_id)}
-                    className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
+                  <div className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors">
+                    <button
+                      onClick={() => toggleGroup(group.resume_group_id)}
+                      className="flex-1 flex items-center gap-3 text-left p-2"
+                    >
                       <ChevronDown
                         className={`h-4 w-4 transition-transform ${expandedGroups.has(group.resume_group_id) ? "" : "-rotate-90"
                           }`}
@@ -123,42 +127,71 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                           {group.versions.length} version{group.versions.length !== 1 ? "s" : ""}
                         </p>
                       </div>
+                    </button>
+                    
+                    <div className="px-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleTreeGroup(group.resume_group_id);
+                          // Auto expand group when showing tree
+                          if (!showTreeGroups.has(group.resume_group_id) && !expandedGroups.has(group.resume_group_id)) {
+                            toggleGroup(group.resume_group_id);
+                          }
+                        }}
+                        className={`p-2 rounded-md transition-colors ${showTreeGroups.has(group.resume_group_id) ? 'bg-indigo-50 hover:bg-indigo-100' : 'hover:bg-gray-100'}`}
+                        title={showTreeGroups.has(group.resume_group_id) ? "Hide Tree View" : "Show Tree View"}
+                      >
+                        <GitBranch className="h-5 w-5" style={{ color: showTreeGroups.has(group.resume_group_id) ? "var(--accent)" : "var(--ink-fade)" }} />
+                      </button>
                     </div>
-                  </button>
+                  </div>
 
-                  {/* Version Cards within group */}
-                  {expandedGroups.has(group.resume_group_id) && (
-                    <div
-                      className="flex flex-col gap-2 px-5 pb-5"
-                      style={{ borderTop: "1px solid var(--grid)" }}
-                    >
-                      {group.versions.map((version, index) => (
-                        <div key={version.id} className="flex items-stretch gap-3">
-                          {/* Timeline connector */}
-                          <div className="flex flex-col items-center pt-4" style={{ width: "20px" }}>
-                            <div
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                              style={{
-                                backgroundColor: index === 0 ? "var(--accent)" : "var(--grid)",
-                              }}
-                            />
-                            {index < group.versions.length - 1 && (
-                              <div className="flex-1 w-px mt-1" style={{ backgroundColor: "var(--grid)" }} />
-                            )}
-                          </div>
-                          {/* Card */}
-                          <div className="flex-1 pt-2">
-                            <VersionCard
-                              version={version}
-                              onDelete={handleDelete}
-                              isDeleting={deleting === version.id}
-                              onRestore={handleRestoreClick}
-                              isRestoring={restoring === version.id}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                  {showTreeGroups.has(group.resume_group_id) ? (
+                    <div className="p-5 border-t" style={{ borderColor: 'var(--grid)' }}>
+                      <VersionTree 
+                        versions={group.versions} 
+                        onDelete={handleDelete} 
+                        onRestore={handleRestoreClick} 
+                        deleting={deleting} 
+                        restoring={restoring} 
+                      />
                     </div>
+                  ) : (
+                    /* Version Cards within group */
+                    (expandedGroups.has(group.resume_group_id) && (
+                      <div
+                        className="flex flex-col gap-2 px-5 pb-5"
+                        style={{ borderTop: "1px solid var(--grid)" }}
+                      >
+                        {group.versions.map((version, index) => (
+                          <div key={version.id} className="flex items-stretch gap-3">
+                            {/* Timeline connector */}
+                            <div className="flex flex-col items-center pt-4" style={{ width: "20px" }}>
+                              <div
+                                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                style={{
+                                  backgroundColor: index === 0 ? "var(--accent)" : "var(--grid)",
+                                }}
+                              />
+                              {index < group.versions.length - 1 && (
+                                <div className="flex-1 w-px mt-1" style={{ backgroundColor: "var(--grid)" }} />
+                              )}
+                            </div>
+                            {/* Card */}
+                            <div className="flex-1 pt-2">
+                              <VersionCard
+                                version={version}
+                                onDelete={handleDelete}
+                                isDeleting={deleting === version.id}
+                                onRestore={handleRestoreClick}
+                                isRestoring={restoring === version.id}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))
                   )}
                 </div>
               ))}

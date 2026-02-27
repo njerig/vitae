@@ -192,7 +192,7 @@ export function VersionTree({ versions, onDelete, onRestore, deleting, restoring
                   fontWeight={isActive ? "600" : "400"}
                   style={{ fontFamily: "var(--font-sans, sans-serif)", userSelect: "none" }}
                 >
-                  {displayName.length > 10 ? displayName.slice(0, 10) + "..." : displayName}
+                  {displayName}
                 </text>
               </g>
             )
