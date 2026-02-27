@@ -3,6 +3,14 @@ import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { buildResumeViewModel } from "@/lib/typst/view-model"
 
+const FONTS_DIR = join(process.cwd(), "lib", "typst", "themes", "fonts")
+const FONT_FILES = [
+  "Figtree-Regular.ttf",
+  "Figtree-Bold.ttf",
+  "Figtree-Italic.ttf",
+  "Figtree-BoldItalic.ttf",
+]
+
 type TypstCompiler = {
   svg: (args: { mainFileContent: string; inputs?: Record<string, string> }) => string
 }
@@ -26,9 +34,13 @@ function errorMessage(error: unknown): string {
 
 async function getCompiler() {
   if (!compiler) {
-    // Dynamic import to avoid build-time issues with native modules
     const { NodeCompiler } = await import("@myriaddreamin/typst-ts-node-compiler")
-    compiler = NodeCompiler.create() as TypstCompiler
+    const fontBlobs = await Promise.all(
+      FONT_FILES.map((f) => readFile(join(FONTS_DIR, f)))
+    )
+    compiler = NodeCompiler.create({
+      fontArgs: [{ fontBlobs }],
+    }) as TypstCompiler
   }
   return compiler
 }
@@ -36,7 +48,7 @@ async function getCompiler() {
 async function getTemplate(): Promise<string> {
   if (!templatePromise) {
     const themePath = join(process.cwd(), "lib", "typst", "themes", "jakes-resume.typ")
-    const resumePath = join(process.cwd(), "lib", "typst", "resume.typ")
+    const resumePath = join(process.cwd(), "lib", "typst", "json-adapter.typ")
     templatePromise = Promise.all([
       readFile(themePath, "utf8"),
       readFile(resumePath, "utf8"),
