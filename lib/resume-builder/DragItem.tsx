@@ -2,6 +2,24 @@ import { useState, useEffect, useRef } from "react"
 import { GripVertical } from "./GripVertical"
 import { Pencil } from "lucide-react"
 
+interface DragItemProps {
+  item: any
+  section: any
+  sectionIndex: number
+  itemIndex: number
+  sections: any[]
+  setSections: (sections: any[]) => void
+  draggedItem: { sectionIndex: number; itemIndex: number } | null
+  setDraggedItem: (item: { sectionIndex: number; itemIndex: number } | null) => void
+  saveItemPosition: (itemId: string, index: number) => void
+  formatDate: (date: string) => string
+  handleItemDragEnd: (e: React.DragEvent) => void
+  isSelected: (id: string) => boolean | undefined
+  toggleItem: (id: string, typeId: string) => void
+  onEditOverride?: (item: any) => void
+  hasOverride?: boolean
+}
+
 export function DragItem({
   item,
   section,
@@ -18,7 +36,7 @@ export function DragItem({
   toggleItem,
   onEditOverride,
   hasOverride
-}: any) {
+}: DragItemProps) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
@@ -26,7 +44,9 @@ export function DragItem({
   // Ref-based drag state so dragover handler always sees current values without
   // causing re-renders on every mousemove
   const draggedItemRef = useRef(draggedItem)
-  draggedItemRef.current = draggedItem
+  useEffect(() => {
+    draggedItemRef.current = draggedItem
+  }, [draggedItem])
 
   // Throttle: only reorder once we've moved to a clearly different half
   const lastMoveRef = useRef<{ fromIndex: number; toIndex: number } | null>(null)

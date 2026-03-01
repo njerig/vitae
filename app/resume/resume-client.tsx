@@ -277,7 +277,6 @@ export default function ResumeClient({
         <EditOverrideModal
           item={editingItem}
           typeName={getTypeName(editingItem.item_type_id)}
-          itemTypes={itemTypes}
           override={getOverride(editingItem.id)}
           onSave={saveOverride}
           onReset={clearOverride}

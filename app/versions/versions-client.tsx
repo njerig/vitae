@@ -1,18 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { PageHeader } from "@/lib/components/PageHeader"
 import { Spinner } from "@/lib/components/Spinner"
-import { VersionCard } from "@/lib/versions/components/tree/VersionCard"
 import { RestoreConfirmModal } from "@/lib/versions/components/save/RestoreConfirmModal"
-import toast from "react-hot-toast"
 import { ChevronRight, ChevronDown, GitBranch } from "lucide-react"
-import type { Version, VersionGroup } from "@/lib/types"
-import { fetchVersion } from "@/lib/versions/api"
 import { useVersion } from "@/lib/versions/useVersion"
 import { VersionTree } from "@/lib/versions/components/tree/VersionTree"
+import { VersionCard } from "@/lib/versions/components/tree/VersionCard"
 
 interface VersionsClientProps {
   userName: string
@@ -21,17 +17,12 @@ interface VersionsClientProps {
 
 export default function VersionsClient({ userName }: VersionsClientProps) {
   const {groups,
-    setGroups,
     loading,
-    setLoading,
     deleting,
-    setDeleting,
     restoring,
-    setRestoring,
     confirmRestore,
     setConfirmRestore,
     expandedGroups,
-    setExpandedGroups,
     fetchVersions,
     toggleGroup,
     handleDelete,

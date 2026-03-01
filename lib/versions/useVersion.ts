@@ -60,7 +60,7 @@ export function useVersion() {
 
     setDeleting(id)
     try {
-      const response = await deleteVersion(id)
+      await deleteVersion(id)
       // Remove version from its group, and remove empty groups
       setGroups(prevGroups =>
         prevGroups

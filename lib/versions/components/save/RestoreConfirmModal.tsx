@@ -22,7 +22,7 @@ export function RestoreConfirmModal({
           Restore Version?
         </h3>
         <p className="text-(--ink-fade) mb-6 leading-relaxed">
-          This will replace your current draft with <strong>"{versionName}"</strong>. This action cannot be undone.
+          This will replace your current draft with <strong>&quot;{versionName}&quot;</strong>. This action cannot be undone.
         </p>
         <div className="flex gap-3 justify-end">
           <button onClick={onClose} className="btn-secondary">

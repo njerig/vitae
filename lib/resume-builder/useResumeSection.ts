@@ -69,14 +69,14 @@ export function useResumeSections(
 
 
 
-  useEffect(() => {
+  // Compute the full state tree from workingState and canon exactly once when it first loads
+  const lazyInitialSections = useMemo(() => {
     if (
       workingStateLoading ||
-      hasLoadedInitialState ||
       !workingState?.sections ||
       computedSections.length === 0
     ) {
-      return
+      return null
     }
 
     const reorderedSections = computedSections.map(section => {
@@ -110,11 +110,14 @@ export function useResumeSections(
         )
     )
 
-    const finalSections = [...orderedSections, ...missingSections]
+    return [...orderedSections, ...missingSections]
+  }, [workingState, workingStateLoading, computedSections])
 
-    setLocalSections(finalSections)
+  // Synchronously initialize state if it hasn't been set yet and we have data ready
+  if (!hasLoadedInitialState && lazyInitialSections !== null) {
+    setLocalSections(lazyInitialSections)
     setHasLoadedInitialState(true)
-  }, [workingStateLoading, workingState, computedSections, hasLoadedInitialState])
+  }
 
   const setSections = useCallback(
     (next: Section[]) => {
@@ -129,7 +132,7 @@ export function useResumeSections(
       }
       saveState(newWorkingState)
     },
-    [saveState, workingState?.overrides]
+    [saveState, workingState]
   )
 
   return { sections, setSections }

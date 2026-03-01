@@ -10,7 +10,7 @@ import { PageHeader } from "@/lib/components/PageHeader"
 import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
 
 
-export default function HomeClient({ userName, userId }: { userName: string; userId: string }) {
+export default function HomeClient() {
   const {
     items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error,
     isAddingItem, editingItem, deletingItem, isDeleting, formRef,

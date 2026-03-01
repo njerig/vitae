@@ -11,7 +11,7 @@ jest.mock('next/navigation', () => ({
 
 global.fetch = jest.fn()
 
-const mockGroupsResponse = (groups = []) => ({
+const mockGroupsResponse = (groups: any[] = []) => ({
   ok: true,
   json: async () => groups,
 })

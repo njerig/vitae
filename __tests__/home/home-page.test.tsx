@@ -107,14 +107,14 @@ describe('Home Page - Career History', () => {
   })
 
   it('renders the home page with career history title', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     expect(screen.getByText('My Career History')).toBeInTheDocument()
     expect(screen.getByText('Add, edit, and manage your career items.')).toBeInTheDocument()
   })
 
   it('displays stats correctly', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     // Check Timeline is rendered
     expect(screen.getByText('TIMELINE')).toBeInTheDocument()
@@ -126,7 +126,7 @@ describe('Home Page - Career History', () => {
   })
 
   it('shows "Add Item" button', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     const addButton = screen.getByRole('button', { name: /add item/i })
     expect(addButton).toBeInTheDocument()
@@ -134,14 +134,14 @@ describe('Home Page - Career History', () => {
 
   it('shows form when isAddingItem is true', () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     expect(screen.getByTestId('canon-form')).toBeInTheDocument()
     expect(screen.getByTestId('editing-mode')).toHaveTextContent('adding')
   })
 
   it('calls startAdd when Add Item is clicked', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     const addButton = screen.getByRole('button', { name: /add item/i })
     fireEvent.click(addButton)
@@ -150,14 +150,14 @@ describe('Home Page - Career History', () => {
   })
 
   it('hides form when isAddingItem is false', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     expect(screen.queryByTestId('canon-form')).not.toBeInTheDocument()
   })
 
   it('calls cancel when cancel button is clicked', () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     const cancelButton = screen.getByTestId('cancel-btn')
     fireEvent.click(cancelButton)
@@ -167,7 +167,7 @@ describe('Home Page - Career History', () => {
 
   it('calls submit when form is submitted (create)', async () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     const submitButton = screen.getByTestId('submit-btn')
     fireEvent.click(submitButton)
@@ -189,14 +189,14 @@ describe('Home Page - Career History', () => {
   })
 
   it('displays the career items list', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     expect(screen.getByTestId('canon-list')).toBeInTheDocument()
     expect(screen.getByTestId('item-count')).toHaveTextContent('2 items')
   })
 
   it('shows correct item count in header', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     expect(screen.getByText('All Items (2)')).toBeInTheDocument()
   })
@@ -207,7 +207,7 @@ describe('Home Page - Career History', () => {
       loading: true,
     })
 
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
 
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('All Items')
   })
@@ -220,7 +220,7 @@ describe('Home Page - Career History', () => {
       isAddingItem: true,
     })
 
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     // Form should be present
     expect(screen.getByTestId('canon-form')).toBeInTheDocument()
@@ -228,14 +228,14 @@ describe('Home Page - Career History', () => {
 
   it('shows form in edit mode when editingItem is set', () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true, editingItem: mockWorkItem1 })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     expect(screen.getByTestId('canon-form')).toBeInTheDocument()
     expect(screen.getByTestId('editing-mode')).toHaveTextContent('editing')
   })
 
   it('calls startEdit when edit button is clicked', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     const editButton = screen.getByTestId(`edit-${mockWorkItem1.id}`)
     fireEvent.click(editButton)
@@ -245,7 +245,7 @@ describe('Home Page - Career History', () => {
 
   it('calls submit when form is submitted (edit)', async () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, isAddingItem: true, editingItem: mockWorkItem1 })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     const submitButton = screen.getByTestId('submit-btn')
     fireEvent.click(submitButton)
@@ -268,7 +268,7 @@ describe('Home Page - Career History', () => {
 
   it('shows delete modal when deletingItem is set', () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, deletingItem: mockWorkItem1 })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
 
     const modal = screen.getByText('Delete Item').closest('.modal') as HTMLElement
     expect(modal).toBeInTheDocument()
@@ -277,7 +277,7 @@ describe('Home Page - Career History', () => {
 
   it('calls confirmDelete when delete is confirmed via modal', async () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, deletingItem: mockWorkItem1 })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
 
     const modal = screen.getByText('Delete Item').closest('.modal') as HTMLElement
     const confirmButton = within(modal).getByRole('button', { name: /^delete$/i })
@@ -288,7 +288,7 @@ describe('Home Page - Career History', () => {
 
   it('calls cancelDelete when modal is cancelled', () => {
     ;(useCanon as jest.Mock).mockReturnValue({ ...baseMock, deletingItem: mockWorkItem1 })
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
 
     const cancelButton = screen.getByRole('button', { name: /cancel/i })
     fireEvent.click(cancelButton)
@@ -297,7 +297,7 @@ describe('Home Page - Career History', () => {
   })
 
   it('calls del when delete button is clicked on an item', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
 
     const deleteButton = screen.getByTestId(`delete-${mockWorkItem1.id}`)
     fireEvent.click(deleteButton)
@@ -311,14 +311,14 @@ describe('Home Page - Career History', () => {
       saving: true,
     })
 
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
 
     const addButton = screen.getByRole("button", { name: /add item/i })
     expect(addButton).toBeDisabled()
   })
 
   it('renders work items with correct data structure', () => {
-    render(<HomeClient userName="Test User" userId="user_123" />)
+    render(<HomeClient />)
     
     // Check that items are displayed with their titles
     expect(screen.getByTestId(`item-title-${mockWorkItem1.id}`)).toHaveTextContent(mockWorkItem1.title!)

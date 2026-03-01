@@ -71,7 +71,7 @@ export async function PUT(request: NextRequest) {
       `SELECT id FROM canon_items WHERE user_id = $1 AND id = ANY($2::uuid[])`,
       [userId, allItemIds]
     )
-    const validIdSet = new Set(validItems.map((r: any) => r.id))
+    const validIdSet = new Set(validItems.map((r: { id: string }) => r.id))
     state.sections = state.sections
       .map((s) => ({
         ...s,

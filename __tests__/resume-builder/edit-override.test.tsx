@@ -140,7 +140,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -158,7 +157,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -180,7 +178,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         override={override}
         onSave={mockSave}
         onReset={mockReset}
@@ -201,7 +198,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -215,7 +211,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         override={{ content: { org: "Meta" } }}
         onSave={mockSave}
         onReset={mockReset}
@@ -231,7 +226,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -248,7 +242,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -267,7 +260,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -290,7 +282,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -316,7 +307,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         override={{ content: { org: "Meta" } }}
         onSave={mockSave}
         onReset={mockReset}
@@ -337,7 +327,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Skill"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -355,7 +344,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Education"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -374,7 +362,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Project"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -392,7 +379,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Link"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -409,7 +395,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Education"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -434,7 +419,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Project"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -460,7 +444,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Link"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -485,7 +468,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Skill"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -512,7 +494,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Education"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -536,7 +517,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Link"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -560,7 +540,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Skill"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -583,7 +562,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Project"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
@@ -605,7 +583,6 @@ describe("EditOverrideModal", () => {
       <EditOverrideModal
         item={item}
         typeName="Work Experience"
-        itemTypes={mockItemTypes}
         onSave={mockSave}
         onReset={mockReset}
         onClose={mockClose}
