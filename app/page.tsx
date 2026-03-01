@@ -1,5 +1,4 @@
 "use client"
-import { SignUpButton } from "@clerk/nextjs"
 import Link from "next/link"
 
 export default function Page() {

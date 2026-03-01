@@ -1,5 +1,5 @@
 import { type Metadata } from "next"
-import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import { ClerkProvider, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import { Inter, Geist_Mono, Crimson_Pro } from "next/font/google"
 import Link from "next/link"
 import { Toaster } from "react-hot-toast"

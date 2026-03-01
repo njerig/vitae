@@ -1,5 +1,4 @@
-import type { Version, VersionGroup } from "@/lib/types"
-import toast from "react-hot-toast"
+import type { VersionGroup } from "@/lib/types"
 
 // Custom error class that carries both a readable message and the list of invalid field names
 export class ValidationError extends Error {

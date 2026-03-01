@@ -25,7 +25,9 @@ export function DragSection({
 
   // Ref so dragover always reads current draggedSection without re-registering listener
   const draggedSectionRef = useRef(draggedSection)
+  useEffect(() => {
   draggedSectionRef.current = draggedSection
+  }, [draggedSection])
 
   // Throttle: skip setSections calls when target slot hasn't changed
   const lastMoveRef = useRef<{ from: number; to: number } | null>(null)

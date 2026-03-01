@@ -1,10 +1,8 @@
-import { auth, currentUser } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
 import Home from "./home-page"
 
 export default async function Page() {
   const { userId } = await auth()
-  const user = await currentUser()
-  const userName = user?.username ?? "fakeuser123"
 
    if (!userId) {
     return (
@@ -14,5 +12,5 @@ export default async function Page() {
     )
   }
 
-  return <Home userName={userName} userId={userId} />
+  return <Home />
 }

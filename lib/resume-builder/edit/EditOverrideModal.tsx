@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem } from "@/lib/types"
 import type { OverrideData } from "@/lib/working-state/useWorkingState"
 import type { FormError } from "@/lib/canon/useCanon"
 import { getFieldsForType, type FieldConfig } from "@/lib/canon/fields"
@@ -18,7 +18,6 @@ import toast from "react-hot-toast"
 type Props = {
   item: CanonItem<unknown>
   typeName: string
-  itemTypes: ItemType[]
   override?: OverrideData
   onSave: (itemId: string, override: OverrideData) => Promise<void>
   onReset: (itemId: string) => Promise<void>
@@ -26,7 +25,7 @@ type Props = {
   saving?: boolean
 }
 
-export function EditOverrideModal({ item, typeName, itemTypes, override, onSave, onReset, onClose, saving }: Props) {
+export function EditOverrideModal({ item, typeName, override, onSave, onReset, onClose, saving }: Props) {
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
   const [error, setError] = useState<FormError>(null)
 
@@ -90,7 +89,7 @@ export function EditOverrideModal({ item, typeName, itemTypes, override, onSave,
     const result = schema.safeParse(content)
     if (!result.success) {
       const fieldNames: string[] = []
-      const messages = result.error.issues.map((issue: any) => {
+      const messages = result.error.issues.map((issue) => {
         const field = String(issue.path?.[0] ?? "")
         if (field) fieldNames.push(field)
         return `• ${field || "Field"}: ${issue.message}`
