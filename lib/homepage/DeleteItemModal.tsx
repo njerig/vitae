@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { Spinner } from "@/lib/components/Spinner"
+import { Spinner } from "@/lib/shared/components/Spinner"
 
 type DeleteItemModalProps = {
   itemTitle: string

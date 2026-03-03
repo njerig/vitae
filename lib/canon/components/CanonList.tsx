@@ -7,7 +7,6 @@ import { ProjectCard } from "./cards/ProjectCard"
 import { SkillCard } from "./cards/SkillCard"
 import { LinkCard } from "./cards/LinkCard"
 import { MiscCard } from "./cards/MiscCard"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
 
 type CanonListProps = {
   items: CanonItem<unknown>[]
