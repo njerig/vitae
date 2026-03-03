@@ -17,7 +17,13 @@ interface VersionCardProps {
   isRestoring: boolean
 }
 
-export function VersionCard({ version, onDelete, isDeleting, onRestore, isRestoring }: VersionCardProps) {
+export function VersionCard({
+  version,
+  onDelete,
+  isDeleting,
+  onRestore,
+  isRestoring,
+}: VersionCardProps) {
   const displayName = version.group_name || version.name || "Untitled"
   return (
     <div className="card">

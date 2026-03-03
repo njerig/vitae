@@ -17,9 +17,16 @@ type CanonListProps = {
   toggleItem?: (id: string, typeId: string) => void
 }
 
-export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, toggleItem }: CanonListProps) {
-
-  const getTypeName = (typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown"
+export function CanonList({
+  items,
+  itemTypes,
+  onEdit,
+  onDelete,
+  isSelected,
+  toggleItem,
+}: CanonListProps) {
+  const getTypeName = (typeId: string) =>
+    itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown"
 
   const renderItem = (item: CanonItem<unknown>) => {
     const typeName = getTypeName(item.item_type_id)
@@ -32,17 +39,66 @@ export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, togg
     // Depending on the type of the item we are listing, conditionally render the appropriate card
     switch (typeName) {
       case "Work Experience":
-        return <WorkCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
+        return (
+          <WorkCard
+            item={item}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            selected={selected}
+            onToggle={handleToggle}
+          />
+        )
       case "Education":
-        return <EducationCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
+        return (
+          <EducationCard
+            item={item}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            selected={selected}
+            onToggle={handleToggle}
+          />
+        )
       case "Project":
-        return <ProjectCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
+        return (
+          <ProjectCard
+            item={item}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            selected={selected}
+            onToggle={handleToggle}
+          />
+        )
       case "Skill":
-        return <SkillCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
+        return (
+          <SkillCard
+            item={item}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            selected={selected}
+            onToggle={handleToggle}
+          />
+        )
       case "Link":
-        return <LinkCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
+        return (
+          <LinkCard
+            item={item}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            selected={selected}
+            onToggle={handleToggle}
+          />
+        )
       default:
-        return <MiscCard item={item} typeName={typeName} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />
+        return (
+          <MiscCard
+            item={item}
+            typeName={typeName}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            selected={selected}
+            onToggle={handleToggle}
+          />
+        )
     }
   }
 

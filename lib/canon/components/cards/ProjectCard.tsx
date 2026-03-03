@@ -3,7 +3,6 @@ import { Card } from "./Card"
 import { getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function ProjectCard({ item, onEdit, onDelete }: CardProps) {
-  
   // Compute content from item and display in the <Card /> component
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = getBullets(c)
@@ -22,7 +21,9 @@ export function ProjectCard({ item, onEdit, onDelete }: CardProps) {
 
   const body = (
     <>
-      {typeof c.description === "string" && c.description && <p className="card-text mt-0.5 line-clamp-2">{c.description}</p>}
+      {typeof c.description === "string" && c.description && (
+        <p className="card-text mt-0.5 line-clamp-2">{c.description}</p>
+      )}
       {renderBulletList(bullets)}
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2">

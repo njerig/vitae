@@ -19,13 +19,17 @@ type SaveResumeButtonProps = {
   syncToBackend: () => Promise<void>
 }
 
-export function SaveResumeButton({ workingState, parentVersionId, syncToBackend }: SaveResumeButtonProps) {
+export function SaveResumeButton({
+  workingState,
+  parentVersionId,
+  syncToBackend,
+}: SaveResumeButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const hasSelectedItems =
     workingState.sections.length > 0 &&
-    workingState.sections.some(section => section.item_ids.length > 0)
+    workingState.sections.some((section) => section.item_ids.length > 0)
 
   const handleOpenModal = async () => {
     // Flush any pending local changes to the backend before opening the save dialog
@@ -37,16 +41,16 @@ export function SaveResumeButton({ workingState, parentVersionId, syncToBackend 
   const handleSave = async (
     groupName: string,
     versionNote: string,
-    selectedParentVersionId: string | null,
+    selectedParentVersionId: string | null
   ): Promise<{ success: boolean; error?: string }> => {
     setSaving(true)
     try {
       await saveVersion(groupName, versionNote, selectedParentVersionId)
-      return {success: true}
+      return { success: true }
     } catch (error) {
-        toast.error("Failed to save resume. Please try again.")
-        console.error("Error saving resume:", error)
-        return {success: false, error: "Failed to save resume. Please try again."}
+      toast.error("Failed to save resume. Please try again.")
+      console.error("Error saving resume:", error)
+      return { success: false, error: "Failed to save resume. Please try again." }
     } finally {
       setSaving(false)
     }
@@ -59,7 +63,11 @@ export function SaveResumeButton({ workingState, parentVersionId, syncToBackend 
         className="btn-primary rounded-lg flex items-center gap-1.5"
         style={{ padding: "0.8rem", fontSize: "0.8rem" }}
         disabled={!hasSelectedItems}
-        title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}
+        title={
+          !hasSelectedItems
+            ? "Select items to save a resume version"
+            : "Save current selection as a resume version"
+        }
       >
         <Save className="w-3.5 h-3.5" />
         Save Resume

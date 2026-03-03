@@ -7,7 +7,6 @@ type MiscCardProps = CardProps & {
 }
 
 export function MiscCard({ item, typeName, onEdit, onDelete }: MiscCardProps) {
-  
   // Compute content from item and display in the <Card /> component
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = getBullets(c)
@@ -19,9 +18,10 @@ export function MiscCard({ item, typeName, onEdit, onDelete }: MiscCardProps) {
     </div>
   )
 
-  const meta = (typeof c.start === "string" || typeof c.end === "string")
-    ? `${formatDate(c.start as string)} → ${c.end ? formatDate(c.end as string) : "Present"}`
-    : undefined
+  const meta =
+    typeof c.start === "string" || typeof c.end === "string"
+      ? `${formatDate(c.start as string)} → ${c.end ? formatDate(c.end as string) : "Present"}`
+      : undefined
 
   const body = renderBulletList(bullets)
 

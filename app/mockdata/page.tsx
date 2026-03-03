@@ -2,9 +2,8 @@ import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { currentUser } from "@clerk/nextjs/server"
 
 export default async function Home() {
-
-    const user = await currentUser() // makes an API request to clerk to get the name
-    const userName = user?.id
+  const user = await currentUser() // makes an API request to clerk to get the name
+  const userName = user?.id
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">

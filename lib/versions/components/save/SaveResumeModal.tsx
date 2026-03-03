@@ -10,14 +10,19 @@ type SaveResumeModalProps = {
   onSave: (
     groupName: string,
     versionNote: string,
-    parentVersionId: string | null,
+    parentVersionId: string | null
   ) => Promise<{ success: boolean; error?: string }>
   onClose: () => void
   saving: boolean
   defaultParentVersionId?: string | null
 }
 
-export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionId }: SaveResumeModalProps) {
+export function SaveResumeModal({
+  onSave,
+  onClose,
+  saving,
+  defaultParentVersionId,
+}: SaveResumeModalProps) {
   const [error, setError] = useState<string | null>(null)
   const [groups, setGroups] = useState<VersionGroup[]>([])
   const [loadingGroups, setLoadingGroups] = useState(true)
@@ -30,7 +35,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
   // Disable body scroll when modal is open
   useEffect(() => {
     const originalOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    document.body.style.overflow = "hidden"
     return () => {
       document.body.style.overflow = originalOverflow
     }
@@ -45,14 +50,13 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
 
         // If a default parent version ID was provided, pre-select that group
         if (defaultParentVersionId) {
-          const matchingGroup = data.find(g =>
-            g.versions.some(v => v.id === defaultParentVersionId)
+          const matchingGroup = data.find((g) =>
+            g.versions.some((v) => v.id === defaultParentVersionId)
           )
           if (matchingGroup) {
             setSelectedGroupId(matchingGroup.resume_group_id)
           }
         }
-
       } catch {
         // Silently fail — user can still save as new
       } finally {
@@ -76,7 +80,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
     let groupName = resumeName.trim()
 
     if (!isNewResume) {
-      const group = groups.find(g => g.resume_group_id === selectedGroupId)
+      const group = groups.find((g) => g.resume_group_id === selectedGroupId)
       if (group) {
         groupName = group.group_name
         parentVersionId = defaultParentVersionId ?? group.versions[0].id
@@ -97,22 +101,20 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
       className="modal-overlay"
       onClick={onClose}
       style={{
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
       }}
     >
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        
         <h3 className="text-2xl font-semibold mb-4" style={{ color: "var(--ink)" }}>
           Save Resume Version
         </h3>
         <p className="text-sm mb-6" style={{ color: "var(--ink-fade)" }}>
           {isNewResume
             ? "Create a new resume and save the current state as its first version."
-            : "Save the current state as a new version of an existing resume."
-          }
+            : "Save the current state as a new version of an existing resume."}
         </p>
-        
+
         {/* Form to handle saving the resume */}
         <form onSubmit={handleSubmit}>
           {/* Version Group Selector */}
@@ -127,7 +129,9 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
             {loadingGroups ? (
               <div className="flex items-center gap-2 py-2">
                 <Spinner size={14} inline />
-                <span className="text-sm" style={{ color: "var(--ink-fade)" }}>Loading groups...</span>
+                <span className="text-sm" style={{ color: "var(--ink-fade)" }}>
+                  Loading groups...
+                </span>
               </div>
             ) : (
               <select
@@ -146,7 +150,8 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
                 <option value="new">New Resume</option>
                 {groups.map((group) => (
                   <option key={group.resume_group_id} value={group.resume_group_id}>
-                    {group.group_name} ({group.versions.length} version{group.versions.length !== 1 ? "s" : ""})
+                    {group.group_name} ({group.versions.length} version
+                    {group.versions.length !== 1 ? "s" : ""})
                   </option>
                 ))}
               </select>
@@ -188,7 +193,10 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
               className="block text-sm font-medium mb-2"
               style={{ color: "var(--ink)" }}
             >
-              Version Note <span className="font-normal" style={{ color: "var(--ink-fade)" }}>(optional)</span>
+              Version Note{" "}
+              <span className="font-normal" style={{ color: "var(--ink-fade)" }}>
+                (optional)
+              </span>
             </label>
             <input
               id="version-note"
@@ -206,7 +214,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
               autoFocus={!isNewResume}
             />
           </div>
-            
+
           {/* Displays any errors regarding the save operation */}
           {error && (
             <p className="text-sm mb-4" style={{ color: "#dc2626" }}>
@@ -216,25 +224,18 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
 
           {/* Save and Cancel buttons */}
           <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary"
-              disabled={saving}
-            >
+            <button type="button" onClick={onClose} className="btn-secondary" disabled={saving}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={saving}
-            >
+            <button type="submit" className="btn-primary" disabled={saving}>
               {saving ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <Spinner size={16} color="white" inline />
                   Saving...
                 </span>
-              ) : "Save"}
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </form>

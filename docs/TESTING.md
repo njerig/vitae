@@ -4,7 +4,6 @@
 
 npm test
 
-
 ## What It Tests
 
 29 tests:
@@ -22,4 +21,3 @@ Tests use fake data.
 npm install
 
 npm test
-

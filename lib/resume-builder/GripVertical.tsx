@@ -1,4 +1,10 @@
-export function GripVertical({ className, style }: { className?: string; style?: React.CSSProperties }) {
+export function GripVertical({
+  className,
+  style,
+}: {
+  className?: string
+  style?: React.CSSProperties
+}) {
   return (
     <svg className={className} style={style} fill="currentColor" viewBox="0 0 24 24">
       <circle cx="9" cy="5" r="1.5" />

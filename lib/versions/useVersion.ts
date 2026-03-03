@@ -5,36 +5,36 @@ import { VersionGroup } from "../types"
 import { deleteVersion, fetchVersion, restoreVersion } from "./api"
 
 export function useVersion() {
-    const router = useRouter()
-    const [groups, setGroups] = useState<VersionGroup[]>([])
-    const [loading, setLoading] = useState(true)
-    const [deleting, setDeleting] = useState<string | null>(null)
-    const [restoring, setRestoring] = useState<string | null>(null)
-    const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
-    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-    const [showTreeGroups, setShowTreeGroups] = useState<Set<string>>(new Set())
+  const router = useRouter()
+  const [groups, setGroups] = useState<VersionGroup[]>([])
+  const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [restoring, setRestoring] = useState<string | null>(null)
+  const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [showTreeGroups, setShowTreeGroups] = useState<Set<string>>(new Set())
 
-    // Toggles the visibility of a version group in the tree view
-    const toggleTreeGroup = (groupId: string) => {
-      setShowTreeGroups(prev => {
-        const next = new Set(prev)
-        if (next.has(groupId)) {
-          next.delete(groupId)
-        } else {
-          next.add(groupId)
-        }
-        return next
-      })
-    }
-  
-    // Retrieves versions from database
-    const fetchVersions = async () => {
+  // Toggles the visibility of a version group in the tree view
+  const toggleTreeGroup = (groupId: string) => {
+    setShowTreeGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(groupId)) {
+        next.delete(groupId)
+      } else {
+        next.add(groupId)
+      }
+      return next
+    })
+  }
+
+  // Retrieves versions from database
+  const fetchVersions = async () => {
     setLoading(true)
     try {
       const data = await fetchVersion()
       setGroups(data)
       // Expand all groups by default
-      setExpandedGroups(new Set(data.map(g => g.resume_group_id)))
+      setExpandedGroups(new Set(data.map((g) => g.resume_group_id)))
     } catch (error) {
       toast.error("Failed to load saved resumes")
       console.error("Error fetching versions:", error)
@@ -45,7 +45,7 @@ export function useVersion() {
 
   // Toggles the visibility of a version group in a list view
   const toggleGroup = (groupId: string) => {
-    setExpandedGroups(prev => {
+    setExpandedGroups((prev) => {
       const next = new Set(prev)
       if (next.has(groupId)) {
         next.delete(groupId)
@@ -66,13 +66,13 @@ export function useVersion() {
     try {
       await deleteVersion(id)
       // Remove version from its group, and remove empty groups
-      setGroups(prevGroups =>
+      setGroups((prevGroups) =>
         prevGroups
-          .map(group => ({
+          .map((group) => ({
             ...group,
-            versions: group.versions.filter(v => v.id !== id),
+            versions: group.versions.filter((v) => v.id !== id),
           }))
-          .filter(group => group.versions.length > 0)
+          .filter((group) => group.versions.length > 0)
       )
       toast.success(`"${name}" deleted successfully`)
     } catch (error) {
@@ -97,7 +97,7 @@ export function useVersion() {
     setRestoring(id)
 
     try {
-      const response = await restoreVersion(id);
+      const response = await restoreVersion(id)
 
       const data = response
       const savedAt = new Date().toISOString()
@@ -132,6 +132,6 @@ export function useVersion() {
     handleRestoreClick,
     handleRestoreConfirm,
     showTreeGroups,
-    toggleTreeGroup
+    toggleTreeGroup,
   }
 }

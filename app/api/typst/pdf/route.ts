@@ -12,10 +12,7 @@ const FONT_FILES = [
 ]
 
 type TypstCompiler = {
-  pdf: (args: {
-    mainFileContent: string
-    inputs?: Record<string, string>
-  }) => Buffer
+  pdf: (args: { mainFileContent: string; inputs?: Record<string, string> }) => Buffer
 }
 
 let compiler: TypstCompiler | null = null
@@ -23,10 +20,10 @@ let compiler: TypstCompiler | null = null
 const templateCache: Record<string, Promise<string>> = {}
 
 const THEME_FILES: Record<string, string> = {
-  "classic":  "jakes-resume.typ",
-  "modern":   "jakes-resume-2.typ",
-  "accent":   "modern.typ",
-  "two-col":  "two-col.typ",
+  classic: "jakes-resume.typ",
+  modern: "jakes-resume-2.typ",
+  accent: "modern.typ",
+  "two-col": "two-col.typ",
 }
 
 const DEFAULT_THEME = "jakes-resume.typ"
@@ -48,9 +45,7 @@ function errorMessage(error: unknown): string {
 async function getCompiler(): Promise<TypstCompiler> {
   if (!compiler) {
     const { NodeCompiler } = await import("@myriaddreamin/typst-ts-node-compiler")
-    const fontBlobs = await Promise.all(
-      FONT_FILES.map((f) => readFile(join(FONTS_DIR, f)))
-    )
+    const fontBlobs = await Promise.all(FONT_FILES.map((f) => readFile(join(FONTS_DIR, f))))
     compiler = NodeCompiler.create({
       fontArgs: [{ fontBlobs }],
     }) as TypstCompiler
@@ -75,15 +70,11 @@ export async function POST(request: NextRequest) {
   try {
     const body: unknown = await request.json()
     const data = isRecord(body) ? body.data : null
-    const templateId = isRecord(body) && typeof body.template_id === "string"
-      ? body.template_id
-      : "classic"
+    const templateId =
+      isRecord(body) && typeof body.template_id === "string" ? body.template_id : "classic"
 
     if (!isRecord(data)) {
-      return NextResponse.json(
-        { error: "data field is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "data field is required" }, { status: 400 })
     }
 
     const [comp, template] = await Promise.all([getCompiler(), getTemplate(templateId)])
@@ -105,10 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Typst PDF generation error:", error)
     const message = errorMessage(error)
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

@@ -1,8 +1,8 @@
 export type FieldType = "text" | "date" | "textarea" | "tags"
 
 export type FieldConfig = {
-  name: string 
-  label: string 
+  name: string
+  label: string
   type: FieldType
   required?: boolean
   placeholder?: string
@@ -11,40 +11,116 @@ export type FieldConfig = {
 // Field configurations for each known item type
 export const ITEM_TYPE_FIELDS: Record<string, FieldConfig[]> = {
   "Work Experience": [
-    { name: "org", label: "Company", type: "text", required: true, placeholder: "Google, Microsoft, etc." },
-    { name: "role", label: "Position", type: "text", required: true, placeholder: "Software Engineer, PM, etc." },
-    { name: "location", label: "Location", type: "text", required: true, placeholder: "San Francisco, CA" },
+    {
+      name: "org",
+      label: "Company",
+      type: "text",
+      required: true,
+      placeholder: "Google, Microsoft, etc.",
+    },
+    {
+      name: "role",
+      label: "Position",
+      type: "text",
+      required: true,
+      placeholder: "Software Engineer, PM, etc.",
+    },
+    {
+      name: "location",
+      label: "Location",
+      type: "text",
+      required: true,
+      placeholder: "San Francisco, CA",
+    },
     { name: "start", label: "Start Date", type: "date", required: true },
     { name: "end", label: "End Date", type: "date" },
-    { name: "bullets", label: "Bullets", type: "textarea", required: true, placeholder: "One bullet per line\nBuilt X\nImproved Y" },
+    {
+      name: "bullets",
+      label: "Bullets",
+      type: "textarea",
+      required: true,
+      placeholder: "One bullet per line\nBuilt X\nImproved Y",
+    },
     { name: "skills", label: "Skills", type: "tags", placeholder: "JavaScript, React, Node.js" },
   ],
-  "Education": [
-    { name: "institution", label: "Institution", type: "text", required: true, placeholder: "UC Santa Cruz" },
-    { name: "location", label: "Location", type: "text", required: true, placeholder: "Santa Cruz, CA" },
+  Education: [
+    {
+      name: "institution",
+      label: "Institution",
+      type: "text",
+      required: true,
+      placeholder: "UC Santa Cruz",
+    },
+    {
+      name: "location",
+      label: "Location",
+      type: "text",
+      required: true,
+      placeholder: "Santa Cruz, CA",
+    },
     { name: "degree", label: "Degree", type: "text", placeholder: "Bachelor of Science" },
     { name: "field", label: "Field of Study", type: "text", placeholder: "Computer Science" },
     { name: "start", label: "Start Date", type: "date" },
     { name: "end", label: "End Date", type: "date" },
     { name: "gpa", label: "GPA", type: "text", placeholder: "3.8" },
-    { name: "bullets", label: "Details", type: "textarea", placeholder: "Relevant coursework, honors, etc." },
+    {
+      name: "bullets",
+      label: "Details",
+      type: "textarea",
+      placeholder: "Relevant coursework, honors, etc.",
+    },
   ],
-  "Project": [
-    { name: "title", label: "Project Name", type: "text", required: true, placeholder: "My Awesome Project" },
+  Project: [
+    {
+      name: "title",
+      label: "Project Name",
+      type: "text",
+      required: true,
+      placeholder: "My Awesome Project",
+    },
     { name: "description", label: "Description", type: "text", placeholder: "A brief description" },
     { name: "url", label: "URL", type: "text", placeholder: "https://github.com/..." },
     { name: "start", label: "Start Date", type: "date" },
     { name: "end", label: "End Date", type: "date" },
-    { name: "bullets", label: "Details", type: "textarea", placeholder: "Key features, technologies used" },
+    {
+      name: "bullets",
+      label: "Details",
+      type: "textarea",
+      placeholder: "Key features, technologies used",
+    },
     { name: "skills", label: "Skills", type: "tags", placeholder: "React, TypeScript, AWS" },
   ],
-  "Skill": [
-    { name: "category", label: "Category", type: "text", required: true, placeholder: "Languages, Frameworks, Tools" },
-    { name: "skills", label: "Skills", type: "tags", required: true, placeholder: "JavaScript, Python, Go" },
+  Skill: [
+    {
+      name: "category",
+      label: "Category",
+      type: "text",
+      required: true,
+      placeholder: "Languages, Frameworks, Tools",
+    },
+    {
+      name: "skills",
+      label: "Skills",
+      type: "tags",
+      required: true,
+      placeholder: "JavaScript, Python, Go",
+    },
   ],
-  "Link": [
-    { name: "label", label: "Label", type: "text", required: true, placeholder: "LinkedIn, GitHub, Portfolio" },
-    { name: "url", label: "URL", type: "text", required: true, placeholder: "https://linkedin.com/in/..." },
+  Link: [
+    {
+      name: "label",
+      label: "Label",
+      type: "text",
+      required: true,
+      placeholder: "LinkedIn, GitHub, Portfolio",
+    },
+    {
+      name: "url",
+      label: "URL",
+      type: "text",
+      required: true,
+      placeholder: "https://linkedin.com/in/...",
+    },
   ],
 }
 
@@ -65,14 +141,14 @@ export function getFieldsForType(displayName: string): FieldConfig[] {
 export function getTitleField(displayName: string): string {
   const fields = ITEM_TYPE_FIELDS[displayName]
   if (!fields) return "title"
-  
+
   // Map type to its "title" field
   const titleMap: Record<string, string> = {
     "Work Experience": "role",
-    "Education": "institution",
-    "Project": "title",
-    "Skill": "category",
-    "Link": "label",
+    Education: "institution",
+    Project: "title",
+    Skill: "category",
+    Link: "label",
   }
   return titleMap[displayName] || "title"
 }
@@ -81,9 +157,9 @@ export function getTitleField(displayName: string): string {
 export function getSubtitleField(displayName: string): string | null {
   const subtitleMap: Record<string, string> = {
     "Work Experience": "org",
-    "Education": "degree",
-    "Project": "description",
-    "Link": "url",
+    Education: "degree",
+    Project: "description",
+    Link: "url",
   }
   return subtitleMap[displayName] || null
 }

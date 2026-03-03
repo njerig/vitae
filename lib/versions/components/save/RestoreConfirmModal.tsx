@@ -11,18 +11,17 @@ export function RestoreConfirmModal({
   isOpen,
   onClose,
   onConfirm,
-  versionName
+  versionName,
 }: RestoreConfirmModalProps) {
   if (!isOpen) return null
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-serif text-2xl mb-4 text-(--ink)">
-          Restore Version?
-        </h3>
+        <h3 className="font-serif text-2xl mb-4 text-(--ink)">Restore Version?</h3>
         <p className="text-(--ink-fade) mb-6 leading-relaxed">
-          This will replace your current draft with <strong>&quot;{versionName}&quot;</strong>. This action cannot be undone.
+          This will replace your current draft with <strong>&quot;{versionName}&quot;</strong>. This
+          action cannot be undone.
         </p>
         <div className="flex gap-3 justify-end">
           <button onClick={onClose} className="btn-secondary">

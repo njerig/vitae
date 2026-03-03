@@ -3,15 +3,19 @@ import { Card } from "./Card"
 import { getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function LinkCard({ item, onEdit, onDelete }: CardProps) {
-
-    // Compute content from item and display in the <Card /> component
+  // Compute content from item and display in the <Card /> component
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = getBullets(c)
   const url = typeof c.url === "string" ? c.url : ""
   const displayUrl = url.replace(/^https?:\/\//, "").slice(0, 40)
 
   const subtitle = url ? (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="card-link text-sm truncate block hover:underline">
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="card-link text-sm truncate block hover:underline"
+    >
       {displayUrl}
       {displayUrl.length >= 40 ? "..." : ""}
     </a>

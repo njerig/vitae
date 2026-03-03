@@ -3,31 +3,34 @@ import Link from "next/link"
 
 export default function Page() {
   return (
-    <div className='page-container'>
-      <div className='page-bg-gradient'></div>
-      <div className='page-accent-light'></div>
+    <div className="page-container">
+      <div className="page-bg-gradient"></div>
+      <div className="page-accent-light"></div>
 
-      <div className='relative z-10'>
-        <div className='hero-section'>
-          <div className='w-full max-w-md'>
+      <div className="relative z-10">
+        <div className="hero-section">
+          <div className="w-full max-w-md">
             {}
-            <Link href='/'>
+            <Link href="/">
               <h1
-                className='text-5xl font-semibold text-center mb-2 text-gray-900 cursor-pointer hover:opacity-80 transition-opacity'
+                className="text-5xl font-semibold text-center mb-2 text-gray-900 cursor-pointer hover:opacity-80 transition-opacity"
                 style={{ textAlign: "center", marginLeft: "-50px" }}
               >
                 Vitae
               </h1>
             </Link>
-            <p className='text-center text-gray-600 mb-8' style={{ textAlign: "center", marginLeft: "-50px" }}>
+            <p
+              className="text-center text-gray-600 mb-8"
+              style={{ textAlign: "center", marginLeft: "-50px" }}
+            >
               Resume Version Control
             </p>
 
             <SignIn
-              routing='path'
-              path='/auth/sign-in'
-              signUpUrl='/auth/sign-up'
-              forceRedirectUrl='/home'
+              routing="path"
+              path="/auth/sign-in"
+              signUpUrl="/auth/sign-up"
+              forceRedirectUrl="/home"
               appearance={{
                 layout: {
                   socialButtonsPlacement: "top",
@@ -43,7 +46,8 @@ export default function Page() {
                   dividerLine: "bg-gray-300",
                   dividerText: "text-gray-500",
                   formButtonPrimary: "btn-primary w-full",
-                  formFieldInput: "rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base",
+                  formFieldInput:
+                    "rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base",
                   formFieldLabel: "text-gray-700 font-medium mb-2",
                   footerActionLink: "text-blue-600 font-medium hover:text-blue-700",
                   identityPreviewText: "text-gray-700",

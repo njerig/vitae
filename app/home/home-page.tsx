@@ -9,12 +9,29 @@ import { Spinner } from "@/lib/shared/components/Spinner"
 import { PageHeader } from "@/lib/shared/components/PageHeader"
 import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
 
-
 export default function HomeClient() {
   const {
-    items, itemTypes, selectedTypeId, setSelectedTypeId, stats, loading, saving, error,
-    isAddingItem, editingItem, deletingItem, isDeleting, formRef,
-    getLastEditedDate, startAdd, startEdit, cancel, submit, del, cancelDelete, confirmDelete,
+    items,
+    itemTypes,
+    selectedTypeId,
+    setSelectedTypeId,
+    stats,
+    loading,
+    saving,
+    error,
+    isAddingItem,
+    editingItem,
+    deletingItem,
+    isDeleting,
+    formRef,
+    getLastEditedDate,
+    startAdd,
+    startEdit,
+    cancel,
+    submit,
+    del,
+    cancelDelete,
+    confirmDelete,
   } = useCanon()
 
   return (
@@ -40,20 +57,41 @@ export default function HomeClient() {
               subtitle="Add, edit, and manage your career items."
               actions={
                 <>
-                  <button onClick={startAdd} className="btn-primary flex items-center gap-2 rounded-lg" disabled={saving || loading || itemTypes.length === 0}>
+                  <button
+                    onClick={startAdd}
+                    className="btn-primary flex items-center gap-2 rounded-lg"
+                    disabled={saving || loading || itemTypes.length === 0}
+                  >
                     Add Item
-                    {(saving || loading) ? (
+                    {saving || loading ? (
                       <Spinner size={20} color="white" inline />
                     ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                     )}
                   </button>
                   <Link href="/resume">
                     <button className="btn-secondary rounded-lg flex items-center gap-2">
                       Resume Builder
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -68,7 +106,6 @@ export default function HomeClient() {
                     Last edited: {getLastEditedDate()}
                   </p>
                 )}
-
               </div>
             </PageHeader>
           </div>
@@ -115,7 +152,10 @@ export default function HomeClient() {
             {/* List header */}
             <div className="mb-6">
               <h3>
-                {selectedTypeId ? itemTypes.find((t) => t.id === selectedTypeId)?.display_name : "All Items"} ({loading ? <Spinner size={12} inline /> : items.length})
+                {selectedTypeId
+                  ? itemTypes.find((t) => t.id === selectedTypeId)?.display_name
+                  : "All Items"}{" "}
+                ({loading ? <Spinner size={12} inline /> : items.length})
               </h3>
             </div>
 

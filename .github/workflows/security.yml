@@ -2,12 +2,12 @@ name: Security
 
 on:
   push:
-    branches: ['main', 'master']
+    branches: ["main", "master"]
   pull_request:
-    branches: ['*']
+    branches: ["*"]
   schedule:
     # Run weekly on Sundays at midnight
-    - cron: '0 0 * * 0'
+    - cron: "0 0 * * 0"
 
 jobs:
   # ============================================
@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['javascript-typescript']
+        language: ["javascript-typescript"]
 
     steps:
       - name: Checkout repository
@@ -41,7 +41,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: '/language:${{ matrix.language }}'
+          category: "/language:${{ matrix.language }}"
 
   # ============================================
   # Dependency Review (runs only on PRs)
@@ -50,7 +50,7 @@ jobs:
     name: Dependency Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
   npm-audit:
     name: npm Audit
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -76,7 +76,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Audit frontend dependencies
         run: npm audit --audit-level=high

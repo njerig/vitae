@@ -1,8 +1,8 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
-import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+import { defineConfig, globalIgnores } from "eslint/config"
+import nextVitals from "eslint-config-next/core-web-vitals"
+import nextTs from "eslint-config-next/typescript"
+import eslintConfigPrettier from "eslint-config-prettier"
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
-    }
+    },
   },
   globalIgnores([
     ".next/**",
@@ -23,6 +23,6 @@ const eslintConfig = defineConfig([
     "backend/**",
     "jest.config.js",
   ]),
-]);
+])
 
-export default eslintConfig;
+export default eslintConfig

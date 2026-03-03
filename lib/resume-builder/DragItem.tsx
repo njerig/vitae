@@ -36,7 +36,7 @@ export function DragItem({
   isSelected,
   toggleItem,
   onEditOverride,
-  hasOverride
+  hasOverride,
 }: DragItemProps) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -150,12 +150,12 @@ export function DragItem({
       bullets: [] as string[],
       skills: [] as string[],
       location: "",
-      technologies: [] as string[]
+      technologies: [] as string[],
     }
 
     const titleField = getTitleField(sectionName)
     const subtitleField = getSubtitleField(sectionName)
-    
+
     // Default extraction using the central fields configuration
     result.title = String(content[titleField] || item.title || "")
     if (subtitleField && content[subtitleField]) {
@@ -166,13 +166,13 @@ export function DragItem({
       const startDate = content.start ? formatDate(String(content.start)) : ""
       const endDate = content.end ? formatDate(String(content.end)) : ""
       result.dateString = startDate ? `${startDate} → ${endDate || "Present"}` : ""
-      result.bullets = Array.isArray(content.bullets) ? content.bullets as string[] : []
-      result.skills = Array.isArray(content.skills) ? content.skills as string[] : []
+      result.bullets = Array.isArray(content.bullets) ? (content.bullets as string[]) : []
+      result.skills = Array.isArray(content.skills) ? (content.skills as string[]) : []
       result.technologies = result.skills
     } else if (sectionName === "Education") {
       if (!result.title) result.title = String(content.school || "")
       if (!result.subtitle && content.field) result.subtitle = String(content.field)
-      
+
       result.location = String(content.location || "")
       const startDate = content.start || content.start_date || content.startDate
       const endDate = content.end || content.end_date || content.endDate || content.graduation_date
@@ -183,8 +183,9 @@ export function DragItem({
       }
       result.description = String(content.description || "")
     } else if (sectionName === "Project") {
-      if (!result.subtitle && (content.org || content.company)) result.subtitle = String(content.org || content.company)
-      
+      if (!result.subtitle && (content.org || content.company))
+        result.subtitle = String(content.org || content.company)
+
       const startDate = content.start || content.start_date
       const endDate = content.end || content.end_date
       if (startDate) {
@@ -192,8 +193,8 @@ export function DragItem({
         const formattedEnd = endDate ? formatDate(String(endDate)) : "Present"
         result.dateString = `${formattedStart} → ${formattedEnd}`
       }
-      result.bullets = Array.isArray(content.bullets) ? content.bullets as string[] : []
-      
+      result.bullets = Array.isArray(content.bullets) ? (content.bullets as string[]) : []
+
       // Prevent overlapping description with subtitle if they're identical over configuration
       if (result.subtitle !== content.description) {
         result.description = String(content.description || "")
@@ -201,8 +202,8 @@ export function DragItem({
           result.bullets = [result.description]
         }
       }
-      
-      result.skills = Array.isArray(content.skills) ? content.skills as string[] : []
+
+      result.skills = Array.isArray(content.skills) ? (content.skills as string[]) : []
       result.technologies = result.skills
     } else if (sectionName === "Skill") {
       if (Array.isArray(content.skills)) {
@@ -221,7 +222,7 @@ export function DragItem({
     }
 
     if (!result.title) {
-       result.title = sectionName === "Skill" ? "Skill" : "Untitled"
+      result.title = sectionName === "Skill" ? "Skill" : "Untitled"
     }
 
     return result
@@ -234,13 +235,23 @@ export function DragItem({
       data-item-draggable="true"
       onDragOver={handleItemDragOver}
       onDragLeave={handleItemDragLeave}
-      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setDropPosition(null) }}
+      onDrop={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setDropPosition(null)
+      }}
       className="relative"
     >
       {/* Drop indicator — above */}
       {dropPosition === "above" && (
-        <div className="absolute left-0 right-0 z-10 pointer-events-none flex items-center gap-1" style={{ top: "-5px" }}>
-          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
+        <div
+          className="absolute left-0 right-0 z-10 pointer-events-none flex items-center gap-1"
+          style={{ top: "-5px" }}
+        >
+          <div
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: "var(--accent)" }}
+          />
           <div className="flex-1 h-0.5 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
       )}
@@ -287,9 +298,13 @@ export function DragItem({
 
         <div className="flex-1 min-w-0 space-y-2">
           <div>
-            <div className="font-medium" style={{ color: "var(--ink)" }}>{extracted.title}</div>
+            <div className="font-medium" style={{ color: "var(--ink)" }}>
+              {extracted.title}
+            </div>
             {extracted.subtitle && (
-              <div className="text-sm" style={{ color: "var(--ink-fade)" }}>{extracted.subtitle}</div>
+              <div className="text-sm" style={{ color: "var(--ink-fade)" }}>
+                {extracted.subtitle}
+              </div>
             )}
           </div>
 
@@ -308,7 +323,9 @@ export function DragItem({
             <ul className="text-sm space-y-1 pl-4" style={{ color: "var(--ink)" }}>
               {extracted.bullets.map((bullet: string, idx: number) => (
                 <li key={idx} className="flex items-start">
-                  <span className="mr-2" style={{ color: "var(--ink-light)" }}>•</span>
+                  <span className="mr-2" style={{ color: "var(--ink-light)" }}>
+                    •
+                  </span>
                   <span>{bullet}</span>
                 </li>
               ))}
@@ -316,7 +333,9 @@ export function DragItem({
           )}
 
           {extracted.description && extracted.bullets.length === 0 && (
-            <div className="text-sm" style={{ color: "var(--ink)" }}>{extracted.description}</div>
+            <div className="text-sm" style={{ color: "var(--ink)" }}>
+              {extracted.description}
+            </div>
           )}
 
           {(extracted.skills.length > 0 || extracted.technologies.length > 0) && (
@@ -342,37 +361,39 @@ export function DragItem({
 
         <div className="flex items-center gap-2 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
           <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onEditOverride?.(item)
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-          onDragStart={(e) => e.preventDefault()}
-          draggable={false}
-          className="relative p-1.5 rounded-md border transition-colors cursor-pointer"
-          style={{
-            borderColor: hasOverride ? "var(--accent)" : "var(--grid)",
-            color: hasOverride ? "var(--accent)" : "var(--ink-light)",
-            backgroundColor: "var(--paper)"
-          }}
-          aria-label="Edit item for this resume"
-          title={hasOverride ? "Edited for this resume (click to modify)" : "Edit for this resume"}
-        >
-          <Pencil className="w-3.5 h-3.5" />
-          {hasOverride && (
-            <span
-              className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-              style={{ backgroundColor: "var(--accent)" }}
-            />
-          )}
-        </button>
-        <label className="text-xs" style={{ color: "var(--ink-light)" }}>#</label>
+            onClick={(e) => {
+              e.stopPropagation()
+              onEditOverride?.(item)
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onDragStart={(e) => e.preventDefault()}
+            draggable={false}
+            className="relative p-1.5 rounded-md border transition-colors cursor-pointer"
+            style={{
+              borderColor: hasOverride ? "var(--accent)" : "var(--grid)",
+              color: hasOverride ? "var(--accent)" : "var(--ink-light)",
+              backgroundColor: "var(--paper)",
+            }}
+            aria-label="Edit item for this resume"
+            title={
+              hasOverride ? "Edited for this resume (click to modify)" : "Edit for this resume"
+            }
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            {hasOverride && (
+              <span
+                className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                style={{ backgroundColor: "var(--accent)" }}
+              />
+            )}
+          </button>
+          <label className="text-xs" style={{ color: "var(--ink-light)" }}>
+            #
+          </label>
           <input
             type="text"
             value={
-              editingKey === `item-${sectionIndex}-${itemIndex}`
-                ? editingPosition
-                : itemIndex + 1
+              editingKey === `item-${sectionIndex}-${itemIndex}` ? editingPosition : itemIndex + 1
             }
             onFocus={() => handlePositionFocus(`item-${sectionIndex}-${itemIndex}`, itemIndex + 1)}
             onChange={(e) => setEditingPosition(e.target.value)}
@@ -404,8 +425,14 @@ export function DragItem({
 
       {/* Drop indicator — below */}
       {dropPosition === "below" && (
-        <div className="absolute left-0 right-0 z-10 pointer-events-none flex items-center gap-1" style={{ bottom: "-5px" }}>
-          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
+        <div
+          className="absolute left-0 right-0 z-10 pointer-events-none flex items-center gap-1"
+          style={{ bottom: "-5px" }}
+        >
+          <div
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: "var(--accent)" }}
+          />
           <div className="flex-1 h-0.5 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
       )}

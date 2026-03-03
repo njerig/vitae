@@ -8,7 +8,13 @@ type SpinnerProps = {
 
 export function Spinner({ size = 20, color = "var(--accent)", inline = false }: SpinnerProps) {
   return (
-    <span style={{ display: inline ? 'inline-block' : 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <span
+      style={{
+        display: inline ? "inline-block" : "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <ClipLoader size={size} color={color} />
     </span>
   )

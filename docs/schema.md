@@ -39,13 +39,13 @@ CREATE TABLE item_types (
 
 On user signup, create these default item_types:
 
-| display_name         |
-|----------------------|
-| Work Experience      |
-| Education            |
-| Project              |
-| Skill                |
-| Link                 |
+| display_name    |
+| --------------- |
+| Work Experience |
+| Education       |
+| Project         |
+| Skill           |
+| Link            |
 
 Users can create custom item_types (e.g., "Research", "Volunteer Work", "Publications") with any `display_name` they choose.
 
@@ -76,12 +76,12 @@ The `content` JSONB field has different schemas depending on the item type:
 
 ```typescript
 type WorkContent = {
-  org?: string;
-  role?: string;
-  start?: string;       // "YYYY-MM-DD"
-  end?: string | null;  // null means "Present"
-  bullets?: string[];
-  skills?: string[];
+  org?: string
+  role?: string
+  start?: string // "YYYY-MM-DD"
+  end?: string | null // null means "Present"
+  bullets?: string[]
+  skills?: string[]
 }
 ```
 
@@ -89,13 +89,13 @@ type WorkContent = {
 
 ```typescript
 type EducationContent = {
-  institution?: string;
-  degree?: string;
-  field?: string;
-  start?: string;
-  end?: string | null;
-  gpa?: string;
-  bullets?: string[];
+  institution?: string
+  degree?: string
+  field?: string
+  start?: string
+  end?: string | null
+  gpa?: string
+  bullets?: string[]
 }
 ```
 
@@ -103,12 +103,12 @@ type EducationContent = {
 
 ```typescript
 type ProjectContent = {
-  description?: string;
-  url?: string;
-  start?: string;
-  end?: string | null;
-  bullets?: string[];
-  skills?: string[];
+  description?: string
+  url?: string
+  start?: string
+  end?: string | null
+  bullets?: string[]
+  skills?: string[]
 }
 ```
 
@@ -116,8 +116,8 @@ type ProjectContent = {
 
 ```typescript
 type SkillContent = {
-  category?: string;    // e.g. "Languages", "Frameworks", "Tools"
-  skills?: string[];
+  category?: string // e.g. "Languages", "Frameworks", "Tools"
+  skills?: string[]
 }
 ```
 
@@ -125,8 +125,8 @@ type SkillContent = {
 
 ```typescript
 type LinkContent = {
-  url: string;
-  label?: string;       // e.g. "LinkedIn", "GitHub", "Portfolio"
+  url: string
+  label?: string // e.g. "LinkedIn", "GitHub", "Portfolio"
 }
 ```
 
