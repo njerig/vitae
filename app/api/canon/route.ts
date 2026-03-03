@@ -1,6 +1,3 @@
-// app/api/canon/route.ts
-// Canon Items API endpoints
-
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
 import { pool, ensureUserWithDefaults } from "@/lib/db"
@@ -12,7 +9,13 @@ import {
   getContentSchema,
 } from "@/lib/schemas"
 
-// GET /api/canon?item_type_id=<uuid> - List canon items
+/**
+ * GET /api/canon?item_type_id=<uuid>
+ * Retrieves a list of canon items for the authenticated user.
+ * 
+ * @param request The incoming request containing an optional `item_type_id` search param.
+ * @returns A JSON response containing an array of canon items or an error message.
+ */
 export async function GET(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -22,6 +25,8 @@ export async function GET(request: NextRequest) {
   await ensureUserWithDefaults(userId)
 
   const searchParams = request.nextUrl.searchParams
+
+  // Valdiate the query through zod
   const queryResult = ItemTypeQuerySchema.safeParse({
     item_type_id: searchParams.get("item_type_id") || undefined,
   })
@@ -34,7 +39,6 @@ export async function GET(request: NextRequest) {
   }
 
   const { item_type_id } = queryResult.data
-
   const { rows } = await pool.query(
     item_type_id
       ? `SELECT id, user_id, item_type_id, title, position, content, created_at, updated_at
@@ -51,7 +55,13 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(rows)
 }
 
-// POST /api/canon - Create a new canon item
+/**
+ * POST /api/canon
+ * Creates a new canon item for the authenticated user.
+ * 
+ * @param request The incoming request containing the item data
+ * @returns A JSON response containing the newly created canon item or an error message.
+ */
 export async function POST(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -61,6 +71,8 @@ export async function POST(request: NextRequest) {
   await ensureUserWithDefaults(userId)
 
   const body = await request.json()
+
+  // Data validation through zod
   const result = CreateCanonItemSchema.safeParse(body)
   if (!result.success) {
     return NextResponse.json(
@@ -81,7 +93,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid item_type_id" }, { status: 400 })
   }
 
-  // Validate content against the appropriate schema
+  // Validate content against the appropriate schema through zod
   const contentSchema = getContentSchema(typeCheck.rows[0].display_name)
   const contentResult = contentSchema.safeParse(content)
   if (!contentResult.success) {
@@ -91,6 +103,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Insert into db
   const { rows } = await pool.query(
     `INSERT INTO canon_items (user_id, item_type_id, title, position, content)
      VALUES ($1, $2, $3, $4, $5::jsonb)
@@ -101,7 +114,13 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(rows[0], { status: 201 })
 }
 
-// PATCH /api/canon?id=<uuid> - Update a canon item
+/**
+ * PATCH /api/canon?id=<uuid>
+ * Updates an existing canon item for the authenticated user by its ID.
+ * 
+ * @param request The incoming request containing the item's `id` as a search param and update fields in the body.
+ * @returns A JSON response containing the updated canon item or an error message.
+ */
 export async function PATCH(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -109,7 +128,7 @@ export async function PATCH(request: NextRequest) {
   }
   await ensureUserWithDefaults(userId)
 
-
+  // Ensure parameters are valid through zod validation
   const searchParams = request.nextUrl.searchParams
   const idResult = IdQuerySchema.safeParse({ id: searchParams.get("id") })
   if (!idResult.success) {
@@ -121,6 +140,7 @@ export async function PATCH(request: NextRequest) {
 
   const { id } = idResult.data
 
+  // Ensure the request body is valid through zod validation
   const body = await request.json()
   const bodyResult = PatchCanonItemSchema.safeParse(body)
   if (!bodyResult.success) {
@@ -146,7 +166,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Not found" }, { status: 404 })
     }
 
-    // Merge existing content with new content (new values override old)
+    // Merge existing content with new content
+    // The new values override the old
     const mergedContent = { ...existing.rows[0].content, ...content }
 
     // Validate the merged content against the appropriate schema
@@ -160,7 +181,8 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
-  // Build dynamic SET clause
+  // Build a dynamic SQL UPDATE query that only modifies the fields provided in the request body.
+  // It assigns parameter indices to each provided value and merges new JSON content with the existing content.
   const sets: string[] = []
   const vals: (string | number)[] = [id, userId]
   let paramIndex = 3
@@ -199,7 +221,13 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json(rows[0])
 }
 
-// DELETE /api/canon?id=<uuid> - Delete a canon item
+/**
+ * DELETE /api/canon?id=<uuid>
+ * Deletes a specific canon item for the authenticated user by its ID.
+ * 
+ * @param request The incoming request containing the item's `id` as a search param.
+ * @returns A 204 No Content response on successful deletion, or an error message.
+ */
 export async function DELETE(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -208,7 +236,7 @@ export async function DELETE(request: NextRequest) {
 
   await ensureUserWithDefaults(userId)
 
-
+  // Validate search params through zod
   const searchParams = request.nextUrl.searchParams
   const idResult = IdQuerySchema.safeParse({ id: searchParams.get("id") })
   if (!idResult.success) {
