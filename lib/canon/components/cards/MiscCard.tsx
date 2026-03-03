@@ -7,6 +7,8 @@ type MiscCardProps = CardProps & {
 }
 
 export function MiscCard({ item, typeName, onEdit, onDelete }: MiscCardProps) {
+  
+  // Compute content from item and display in the <Card /> component
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = getBullets(c)
 

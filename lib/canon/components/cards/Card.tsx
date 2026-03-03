@@ -16,8 +16,8 @@ type CardProps = {
 export function Card({ icon, title, subtitle, meta, body, onEdit, onDelete, selected, onToggle }: CardProps) {
   return (
     <div className="card">
+      {/* Toggle checkbox */}
       <div className="flex gap-4">
-        { }
         {onToggle && (
           <div className="flex items-start pt-3" onClick={(e) => e.stopPropagation()}>
             <input
@@ -33,10 +33,12 @@ export function Card({ icon, title, subtitle, meta, body, onEdit, onDelete, sele
           </div>
         )}
 
+        {/* The component's icon */}
         <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shrink-0 border border-gray-200">
           {icon}
         </div>
 
+        {/* The component's metadata */}
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start gap-4">
             <div className="min-w-0">

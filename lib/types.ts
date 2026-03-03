@@ -1,6 +1,3 @@
-// lib/types.ts
-// Shared TypeScript types for Vitae
-
 // General Item type used to create new item types
 export type ItemType = {
   id: string // UUID
