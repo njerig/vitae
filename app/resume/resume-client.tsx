@@ -158,9 +158,9 @@ export default function ResumeClient({
                 <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
               </Link>
               <div className="flex flex-col gap-0.5">
-                <h3 className="text-2xl font-semibold whitespace-nowrap" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
+                <span className="text-2xl font-semibold whitespace-nowrap" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
                   Resume Builder
-                </h3>
+                </span>
                 {isDirty && (
                   <span className="text-xs" style={{ color: "var(--ink-fade)" }}>
                     Unsaved changes
