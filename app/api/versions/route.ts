@@ -4,13 +4,19 @@ import { pool, ensureUserWithDefaults } from "@/lib/db"
 import { IdQuerySchema, SaveVersionSchema, VersionsArraySchema } from "@/lib/schemas"
 import type { VersionGroup } from "@/lib/types"
 
-// GET /api/versions - Get all saved resume versions for the current user, grouped by resume
+/**
+ * GET /api/versions
+ * Retrieves all saved resume versions, grouped by resume.
+ * 
+ * @returns A JSON response containing an array of VersionGroup objects or an error message.
+ */
 export async function GET() {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  // Get all versions for the user
   const { rows } = await pool.query(
     `SELECT id, user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at 
      FROM versions 
@@ -19,6 +25,7 @@ export async function GET() {
     [userId]
   )
 
+  // Ensure row data is valid
   const result = VersionsArraySchema.safeParse(rows)
   if (!result.success) {
     return NextResponse.json(
@@ -34,7 +41,7 @@ export async function GET() {
     if (!groupMap.has(groupId)) {
       groupMap.set(groupId, {
         resume_group_id: groupId,
-        group_name: version.group_name, // use the stored group_name
+        group_name: version.group_name,
         versions: [],
       })
     }
@@ -49,7 +56,13 @@ export async function GET() {
   return NextResponse.json(groups, { status: 200 })
 }
 
-// POST /api/versions - Save a snapshot of the current resume version
+/**
+ * POST /api/versions
+ * Saves a snapshot of the current working state as a new resume version.
+ * 
+ * @param request The incoming request containing the group name, version name, and optional parent version ID.
+ * @returns A JSON response containing the newly created version or an error message.
+ */
 export async function POST(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -58,6 +71,7 @@ export async function POST(request: NextRequest) {
 
   await ensureUserWithDefaults(userId)
 
+  // Ensure the request body is valid
   const body = await request.json()
   const result = SaveVersionSchema.safeParse(body)
   if (!result.success) {
@@ -73,8 +87,9 @@ export async function POST(request: NextRequest) {
   let resume_group_id: string | null = null
   let resolved_group_name: string = group_name || ''
 
+  // If a parent id exists, obtain the resume_group_id and group_name from the parent version
+  // If not, then we assume it's a new parent version
   if (parent_version_id) {
-    // Look up the parent version to inherit its resume_group_id and group_name
     const { rows: parentRows } = await pool.query(
       `SELECT resume_group_id, group_name FROM versions WHERE id = $1 AND user_id = $2`,
       [parent_version_id, userId]
@@ -141,13 +156,20 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(rows[0], { status: 201 })
 }
 
-// DELETE /api/versions?id=<uuid> - Delete a specific version
+/**
+ * DELETE /api/versions
+ * Deletes a specific version for a user by its ID and reparents its children.
+ * 
+ * @param request The incoming request containing the version's `id` as a search param.
+ * @returns A JSON response indicating success or an error message.
+ */
 export async function DELETE(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  // Get params and ensure they are valid
   const { searchParams } = new URL(request.url)
   const result = IdQuerySchema.safeParse({ id: searchParams.get("id") })
   if (!result.success) {
@@ -159,6 +181,7 @@ export async function DELETE(request: NextRequest) {
 
   const { id } = result.data
 
+  // Obtain the parent version
   const { rows: targetRows } = await pool.query(
     `SELECT parent_version_id FROM versions WHERE id = $1 AND user_id = $2`,
     [id, userId]
@@ -170,11 +193,13 @@ export async function DELETE(request: NextRequest) {
 
   const parentOfDeleted = targetRows[0].parent_version_id
 
+  // Set the new parent
   await pool.query(
     `UPDATE versions SET parent_version_id = $1 WHERE parent_version_id = $2 AND user_id = $3`,
     [parentOfDeleted, id, userId]
   )
 
+  // Delete the version to be deleted
   const { rowCount } = await pool.query(
     `DELETE FROM versions WHERE id = $1 AND user_id = $2`,
     [id, userId]

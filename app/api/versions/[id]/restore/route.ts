@@ -1,18 +1,25 @@
 import { auth } from "@clerk/nextjs/server"
-import { NextRequest, NextResponse } from "next/server"
-import { pool } from "@/lib/db"
+import { NextResponse } from "next/server"
+import { ensureUserWithDefaults, pool } from "@/lib/db"
 import { IdQuerySchema } from "@/lib/schemas"
 
-// POST /api/versions/[id]/restore - Restore a version to the working state
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+/**
+ * POST /api/versions/[id]/restore
+ * Restores a specific version snapshot to the user's working state.
+ * 
+ * @param params The dynamic route parameters containing the version `id` to restore.
+ * @returns A JSON response confirming success and providing the restored version details.
+ */
+export async function POST({ params }: { params: Promise<{ id: string }> }) {
+
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  await ensureUserWithDefaults(userId)
+
+  // validate params
   const { id } = await params
   const result = IdQuerySchema.safeParse({ id })
   if (!result.success) {
@@ -22,7 +29,7 @@ export async function POST(
     )
   }
 
-  // Get the version snapshot (only if it belongs to the user)
+  // Get the version snapshot
   const { rows: versionRows } = await pool.query(
     `SELECT id, resume_group_id, snapshot FROM versions WHERE id = $1 AND user_id = $2`,
     [id, userId]
