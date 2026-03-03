@@ -55,11 +55,12 @@ export function SaveResumeButton({ workingState, parentVersionId, syncToBackend 
     <>
       <button
         onClick={handleOpenModal}
-        className="btn-primary rounded-md px-2 py-1 text-sm flex items-center gap-1"
+        className="btn-primary rounded-lg flex items-center gap-1.5"
+        style={{ padding: "0.8rem", fontSize: "0.8rem" }}
         disabled={!hasSelectedItems}
         title={!hasSelectedItems ? "Select items to save a resume version" : "Save current selection as a resume version"}
       >
-        <Save className="w-6 h-6" />
+        <Save className="w-3.5 h-3.5" />
         Save Resume
       </button>
 
