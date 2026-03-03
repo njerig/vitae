@@ -7,9 +7,8 @@ import { ProjectCard } from "./cards/ProjectCard"
 import { SkillCard } from "./cards/SkillCard"
 import { LinkCard } from "./cards/LinkCard"
 import { MiscCard } from "./cards/MiscCard"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
 
-type Props = {
+type CanonListProps = {
   items: CanonItem<unknown>[]
   itemTypes: ItemType[]
   onEdit: (item: CanonItem<unknown>) => void
@@ -18,7 +17,7 @@ type Props = {
   toggleItem?: (id: string, typeId: string) => void
 }
 
-export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, toggleItem }: Props) {
+export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, toggleItem }: CanonListProps) {
 
   const getTypeName = (typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown"
 
@@ -30,6 +29,7 @@ export function CanonList({ items, itemTypes, onEdit, onDelete, isSelected, togg
     const selected = isSelected ? isSelected(item.id) : false
     const handleToggle = toggleItem ? () => toggleItem(item.id, item.item_type_id) : undefined
 
+    // Depending on the type of the item we are listing, conditionally render the appropriate card
     switch (typeName) {
       case "Work Experience":
         return <WorkCard item={item} onEdit={handleEdit} onDelete={handleDelete} selected={selected} onToggle={handleToggle} />

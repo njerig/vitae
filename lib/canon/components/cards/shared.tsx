@@ -17,6 +17,8 @@ export function formatDate(dateStr: string | undefined | null): string {
   return `${month}-${day}-${year}`
 }
 
+// Get bullet points from content and returns them as a string
+// with one bullet point corresponding to one new line
 export function getBullets(content: Record<string, unknown>): string[] {
   const raw = content.bullets
 
@@ -34,6 +36,7 @@ export function getBullets(content: Record<string, unknown>): string[] {
   return []
 }
 
+// Display the bullet points in a list after it has been cleaned
 export function renderBulletList(bullets: string[]): ReactNode {
   if (bullets.length === 0) return undefined
 

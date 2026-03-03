@@ -5,7 +5,7 @@ export function ProjectFormFields({ form, setForm, hasError }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Row: Title + URL */}
+      {/* Row: Title and URL */}
       <div className="grid grid-cols-2 gap-3">
         <TextField
           label="Project Name"

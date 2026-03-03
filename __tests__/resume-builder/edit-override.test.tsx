@@ -26,7 +26,7 @@ jest.mock("lucide-react", () => ({
 }))
 
 // Mock Spinner
-jest.mock("@/lib/components/Spinner", () => ({
+jest.mock("@/lib/shared/components/Spinner", () => ({
   Spinner: ({ size }: { size?: number }) => <span data-testid="spinner">Loading...</span>,
 }))
 

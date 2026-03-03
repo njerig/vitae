@@ -25,13 +25,13 @@ export function EducationFormFields({ form, setForm, hasError }: Props) {
         />
       </div>
       
-      {/* Row: Degree + Field */}
+      {/* Row: Degree and Field */}
       <div className="grid grid-cols-2 gap-3">
         <TextField label="Degree" value={form.degree ?? ""} onChange={update("degree")} placeholder="Bachelor of Science" />
         <TextField label="Field of Study" value={form.field ?? ""} onChange={update("field")} placeholder="Computer Science" />
       </div>
 
-      {/* Row: Dates + GPA */}
+      {/* Row: Dates and GPA */}
       <div className="grid grid-cols-3 gap-3">
         <DateField label="Start Date" value={form.start ?? ""} onChange={update("start")} hasError={hasError("start")} />
         <DateField label="End Date" value={form.end ?? ""} onChange={update("end")} hasError={hasError("end")} />

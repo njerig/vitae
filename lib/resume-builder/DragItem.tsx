@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { GripVertical } from "./GripVertical"
 import { Pencil } from "lucide-react"
+import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
 
 interface DragItemProps {
   item: any
@@ -152,9 +153,16 @@ export function DragItem({
       technologies: [] as string[]
     }
 
+    const titleField = getTitleField(sectionName)
+    const subtitleField = getSubtitleField(sectionName)
+    
+    // Default extraction using the central fields configuration
+    result.title = String(content[titleField] || item.title || "")
+    if (subtitleField && content[subtitleField]) {
+      result.subtitle = String(content[subtitleField])
+    }
+
     if (sectionName === "Work Experience") {
-      result.title = String(content.role || "")
-      result.subtitle = String(content.org || "")
       const startDate = content.start ? formatDate(String(content.start)) : ""
       const endDate = content.end ? formatDate(String(content.end)) : ""
       result.dateString = startDate ? `${startDate} → ${endDate || "Present"}` : ""
@@ -162,8 +170,9 @@ export function DragItem({
       result.skills = Array.isArray(content.skills) ? content.skills as string[] : []
       result.technologies = result.skills
     } else if (sectionName === "Education") {
-      result.title = String(content.institution || content.school || "")
-      result.subtitle = String(content.degree || content.field || "")
+      if (!result.title) result.title = String(content.school || "")
+      if (!result.subtitle && content.field) result.subtitle = String(content.field)
+      
       result.location = String(content.location || "")
       const startDate = content.start || content.start_date || content.startDate
       const endDate = content.end || content.end_date || content.endDate || content.graduation_date
@@ -174,8 +183,8 @@ export function DragItem({
       }
       result.description = String(content.description || "")
     } else if (sectionName === "Project") {
-      result.title = String(content.title || item.title || "")
-      result.subtitle = String(content.org || content.company || "")
+      if (!result.subtitle && (content.org || content.company)) result.subtitle = String(content.org || content.company)
+      
       const startDate = content.start || content.start_date
       const endDate = content.end || content.end_date
       if (startDate) {
@@ -183,15 +192,19 @@ export function DragItem({
         const formattedEnd = endDate ? formatDate(String(endDate)) : "Present"
         result.dateString = `${formattedStart} → ${formattedEnd}`
       }
-      result.description = String(content.description || "")
       result.bullets = Array.isArray(content.bullets) ? content.bullets as string[] : []
-      if (result.bullets.length === 0 && result.description) {
-        result.bullets = [result.description]
+      
+      // Prevent overlapping description with subtitle if they're identical over configuration
+      if (result.subtitle !== content.description) {
+        result.description = String(content.description || "")
+        if (result.bullets.length === 0 && result.description) {
+          result.bullets = [result.description]
+        }
       }
+      
       result.skills = Array.isArray(content.skills) ? content.skills as string[] : []
       result.technologies = result.skills
     } else if (sectionName === "Skill") {
-      result.title = String(content.category || content.title || item.title || "Skill")
       if (Array.isArray(content.skills)) {
         result.skills = content.skills as string[]
       } else if (typeof content.skills === "string") {
@@ -201,12 +214,14 @@ export function DragItem({
       }
       result.subtitle = result.skills.join(", ")
     } else if (sectionName === "Link") {
-      result.title = String(content.label || content.title || "")
-      result.subtitle = String(content.url || "")
+      // Subtitle handled by getSubtitleField mapped to "url"
     } else {
-      result.title = String(content.title || item.title || "Untitled")
-      result.subtitle = String(content.subtitle || "")
       result.description = String(content.description || "")
+      if (!result.subtitle && content.subtitle) result.subtitle = String(content.subtitle)
+    }
+
+    if (!result.title) {
+       result.title = sectionName === "Skill" ? "Skill" : "Untitled"
     }
 
     return result

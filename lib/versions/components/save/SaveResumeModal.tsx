@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, FormEvent, useEffect } from "react"
-import { Spinner } from "@/lib/components/Spinner"
+import { Spinner } from "@/lib/shared/components/Spinner"
 import type { VersionGroup } from "@/lib/types"
 import { fetchVersion } from "../../api"
 import toast from "react-hot-toast"
@@ -62,6 +62,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
     fetchGroups()
   }, [defaultParentVersionId])
 
+  // Handles form submission and calls API
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -101,6 +102,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
       }}
     >
       <div className="modal" onClick={(e) => e.stopPropagation()}>
+        
         <h3 className="text-2xl font-semibold mb-4" style={{ color: "var(--ink)" }}>
           Save Resume Version
         </h3>
@@ -110,7 +112,8 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
             : "Save the current state as a new version of an existing resume."
           }
         </p>
-
+        
+        {/* Form to handle saving the resume */}
         <form onSubmit={handleSubmit}>
           {/* Version Group Selector */}
           <div className="mb-4">
@@ -150,7 +153,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
             )}
           </div>
 
-          {/* Resume Name — only shown for new resumes */}
+          {/* Resume Name*/}
           {isNewResume && (
             <div className="mb-4">
               <label
@@ -178,7 +181,7 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
             </div>
           )}
 
-          {/* Version Note — optional commit message */}
+          {/* Version Note */}
           <div className="mb-4">
             <label
               htmlFor="version-note"
@@ -203,13 +206,15 @@ export function SaveResumeModal({ onSave, onClose, saving, defaultParentVersionI
               autoFocus={!isNewResume}
             />
           </div>
-
+            
+          {/* Displays any errors regarding the save operation */}
           {error && (
             <p className="text-sm mb-4" style={{ color: "#dc2626" }}>
               {error}
             </p>
           )}
 
+          {/* Save and Cancel buttons */}
           <div className="flex gap-3 justify-end">
             <button
               type="button"

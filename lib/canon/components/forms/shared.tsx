@@ -1,6 +1,7 @@
 // Shared form utilities and types
 import type { FormError } from "../../useCanon"
 
+// This props type is used by all form components
 export type Props = {
   form: Record<string, string>
   setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>
@@ -56,7 +57,7 @@ export function DateField({ label, required, value, onChange, hasError }: FormFi
   )
 }
 
-// Textarea field
+// Textarea field (bullet points)
 export function TextareaField({
   label,
   required,
@@ -82,7 +83,7 @@ export function TextareaField({
   )
 }
 
-// Tags input (comma-separated)
+// Tags field
 export function TagsField({ label, required, value, onChange, hasError, placeholder }: FormFieldProps) {
   return (
     <div>
@@ -97,16 +98,6 @@ export function TagsField({ label, required, value, onChange, hasError, placehol
         placeholder={placeholder}
       />
       <p className="text-gray-400 text-xs mt-0.5">Separate with commas</p>
-    </div>
-  )
-}
-
-// Form section with border
-export function FormSection({ children, title }: { children: React.ReactNode; title?: string }) {
-  return (
-    <div className="space-y-3">
-      {title && <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide">{title}</h4>}
-      {children}
     </div>
   )
 }

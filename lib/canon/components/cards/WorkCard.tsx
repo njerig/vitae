@@ -3,6 +3,7 @@ import { Card } from "./Card"
 import { formatDate, getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function WorkCard({ item, onEdit, onDelete, selected, onToggle }: CardProps) {
+  // Compute content from item and display in the <Card /> component
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = getBullets(c)
   const skills = (c.skills as string[]) ?? []

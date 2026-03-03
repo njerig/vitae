@@ -13,7 +13,8 @@ export function useVersion() {
     const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
     const [showTreeGroups, setShowTreeGroups] = useState<Set<string>>(new Set())
-  
+
+    // Toggles the visibility of a version group in the tree view
     const toggleTreeGroup = (groupId: string) => {
       setShowTreeGroups(prev => {
         const next = new Set(prev)
@@ -26,6 +27,7 @@ export function useVersion() {
       })
     }
   
+    // Retrieves versions from database
     const fetchVersions = async () => {
     setLoading(true)
     try {
@@ -41,6 +43,7 @@ export function useVersion() {
     }
   }
 
+  // Toggles the visibility of a version group in a list view
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
       const next = new Set(prev)
@@ -53,6 +56,7 @@ export function useVersion() {
     })
   }
 
+  // Deletes a version
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"? This action cannot be undone.`)) {
       return
@@ -79,10 +83,12 @@ export function useVersion() {
     }
   }
 
+  // Opens a confirmation dialog to restore a version
   const handleRestoreClick = (id: string, name: string) => {
     setConfirmRestore({ id, name })
   }
 
+  // Restores a version
   const handleRestoreConfirm = async () => {
     if (!confirmRestore) return
 

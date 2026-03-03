@@ -1,9 +1,8 @@
-// lib/db.ts
 // Database connection pool for Next.js API routes
 
 import { Pool } from "pg"
 
-// Create a singleton pool instance
+// Create a pool instance
 const globalForPg = globalThis as unknown as { pool: Pool | undefined }
 
 export const pool =
@@ -26,10 +25,7 @@ export const DEFAULT_ITEM_TYPES = [
   "Link",
 ]
 
-/**
- * Ensures user row exists and creates default item_types if new.
- * Uses a transaction to ensure atomicity.
- */
+// Ensures user row exists and creates default item_types if new.
 export async function ensureUserWithDefaults(userId: string): Promise<void> {
   const client = await pool.connect()
   try {

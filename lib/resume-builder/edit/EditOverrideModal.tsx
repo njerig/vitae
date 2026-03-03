@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import type { CanonItem } from "@/lib/types"
 import type { OverrideData } from "@/lib/working-state/useWorkingState"
 import type { FormError } from "@/lib/canon/useCanon"
-import { getFieldsForType, type FieldConfig } from "@/lib/canon/fields"
+import { getFieldsForType, type FieldConfig } from "@/lib/shared/fields"
 import { getContentSchema } from "@/lib/schemas"
 import { WorkFormFields } from "@/lib/canon/components/forms/WorkForm"
 import { EducationFormFields } from "@/lib/canon/components/forms/EducationForm"
@@ -12,10 +12,10 @@ import { ProjectFormFields } from "@/lib/canon/components/forms/ProjectForm"
 import { SkillFormFields } from "@/lib/canon/components/forms/SkillForm"
 import { LinkFormFields } from "@/lib/canon/components/forms/LinkForm"
 import { GenericFormFields } from "@/lib/canon/components/forms/GenericForm"
-import { Spinner } from "@/lib/components/Spinner"
+import { Spinner } from "@/lib/shared/components/Spinner"
 import toast from "react-hot-toast"
 
-type Props = {
+type EditOverrideModalProps = {
   item: CanonItem<unknown>
   typeName: string
   override?: OverrideData
@@ -25,11 +25,12 @@ type Props = {
   saving?: boolean
 }
 
-export function EditOverrideModal({ item, typeName, override, onSave, onReset, onClose, saving }: Props) {
+export function EditOverrideModal({ item, typeName, override, onSave, onReset, onClose, saving }: EditOverrideModalProps) {
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
   const [error, setError] = useState<FormError>(null)
 
-  // Build initial form values from current item content (with override applied)
+  // Build initial form values from current item content
+  // If override content is provided, then fill the form values with override content
   const initialForm = useMemo(() => {
     const content = (override?.content
       ? { ...(item.content as Record<string, unknown>), ...override.content }
@@ -54,6 +55,7 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
 
   const hasError = (fieldName: string) => error?.fields.includes(fieldName) ?? false
 
+  // Transforms the raw text input from the form into valid and structured content for the database
   const buildContent = () => {
     const content: Record<string, unknown> = {}
 
@@ -80,6 +82,7 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
     return content
   }
 
+  // Handles form submission and calls API
   const handleSubmit = async () => {
     setError(null)
     const content = buildContent()
@@ -111,6 +114,7 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
     }
   }
 
+  // Handles reset to original and calls API
   const handleReset = async () => {
     try {
       await onReset(item.id)
@@ -121,7 +125,7 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
     }
   }
 
-  // Render type-specific form fields (same as CanonForm)
+  // Render type-specific form fields
   const renderFormFields = () => {
     const props = { form, setForm, hasError }
 
@@ -151,6 +155,7 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
           Changes only affect this resume, not the original item.
         </p>
 
+      {/* Display errors */}
         {error && (
           <div
             className="mb-4 p-3 rounded-lg text-sm whitespace-pre-wrap"
@@ -163,9 +168,8 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
             {error.message}
           </div>
         )}
-
+         {/* Display the type of the item */}
         <div className="space-y-4">
-          {/* Show type as read-only info */}
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: "var(--ink-fade)" }}>
               Item Type

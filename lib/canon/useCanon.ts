@@ -93,7 +93,7 @@ export function useCanon() {
     }
   }, [])
 
-  // Update an item
+  // Update an item with partial data
   const patch = useCallback(async (id: string, patchData: { title?: string; position?: number; content?: unknown }) => {
     setSaving(true)
     setError(null)

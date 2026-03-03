@@ -58,7 +58,6 @@ export function TemplateSelectorButton({ selectedTemplateId, onSelect }: Templat
           <rect x="1" y="8" width="5" height="5" rx="0.75" stroke="currentColor" strokeWidth="1.25" />
           <rect x="8" y="8" width="5" height="5" rx="0.75" stroke="currentColor" strokeWidth="1.25" />
         </svg>
-        <span style={{ color: "var(--ink-fade, #6b7280)" }}>Template:</span>
         <span style={{ color: "var(--ink, #111)", fontWeight: 600 }}>{activeTemplate.name}</span>
         {/* Chevron */}
         <svg

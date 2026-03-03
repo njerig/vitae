@@ -1,6 +1,3 @@
-// API client for canon items and item types
-// Auth is handled automatically via Clerk cookies - no token needed
-
 import type { CanonItem, ItemType } from "@/lib/types"
 import toast from "react-hot-toast"
 
@@ -15,7 +12,7 @@ export class ValidationError extends Error {
   }
 }
 
-// Human-readable labels for field names
+// Labels for field names
 const FIELD_LABELS: Record<string, string> = {
   org: "Company",
   role: "Position",
@@ -32,7 +29,9 @@ const FIELD_LABELS: Record<string, string> = {
 // Returns a success or error message from the API to the frontend
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    const data = await res.json().catch(() => null) // read error from backend without crashing
+
+    // read error from backend without crashing
+    const data = await res.json().catch(() => null)
 
     // Extract readable error from Zod issues if present
     if (data?.issues && Array.isArray(data.issues)) {
@@ -46,8 +45,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
       throw new ValidationError(messages.join("\n"), fields)
     }
 
-    // catch any other errors that didn't come from zod - show toast
+    // Catch any other errors that didn't come from zod
     const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
+
+    // Show a toast (just for canon items though)
     toast.error(errorMessage)
     throw new Error(errorMessage)
   }
@@ -58,7 +59,11 @@ async function handleResponse<T>(res: Response): Promise<T> {
 // Item Types API
 // ─────────────────────────────────────────────────────────────
 
-// Lists the item types
+/**
+ * Retrieves a list of all available item types (e.g., "Work Experience", "Education").
+ * 
+ * @returns A promise resolving to an array of ItemType objects.
+ */
 export async function listItemTypes(): Promise<ItemType[]> {
   const res = await fetch(`/api/item-types`, {
     cache: "no-store",
@@ -66,7 +71,12 @@ export async function listItemTypes(): Promise<ItemType[]> {
   return handleResponse<ItemType[]>(res)
 }
 
-// Creates an item type
+/**
+ * Creates a new item type.
+ * 
+ * @param input An object containing the display_name for the new item type.
+ * @returns A promise resolving to the newly created ItemType.
+ */
 export async function createItemType(input: { display_name: string }): Promise<ItemType> {
   const res = await fetch(`/api/item-types`, {
     method: "POST",
@@ -80,7 +90,13 @@ export async function createItemType(input: { display_name: string }): Promise<I
 // Canon Items API
 // ─────────────────────────────────────────────────────────────
 
-// Lists the canon items; allows a user to specifically get one of a type or all canon items
+/**
+ * Retrieves canon items from the database.
+ * If an itemTypeId is provided, filters the results to only include items of that type.
+ * 
+ * @param itemTypeId (Optional) The UUID of the item type to filter by.
+ * @returns A promise resolving to an array of CanonItem objects.
+ */
 export async function listCanonItems<T = unknown>(itemTypeId?: string): Promise<CanonItem<T>[]> {
   // build query string based on if the item type was provided
   const qs = itemTypeId ? `?item_type_id=${encodeURIComponent(itemTypeId)}` : ""
@@ -90,7 +106,12 @@ export async function listCanonItems<T = unknown>(itemTypeId?: string): Promise<
   return handleResponse<CanonItem<T>[]>(res)
 }
 
-// Creates a canon item
+/**
+ * Creates a new canon item (like a new work experience entry) for the user.
+ * 
+ * @param input An object containing fields to create a canon item.
+ * @returns A promise resolving to the newly created CanonItem.
+ */
 export async function createCanonItem<T = unknown>(input: {
   item_type_id: string
   title?: string
@@ -105,7 +126,13 @@ export async function createCanonItem<T = unknown>(input: {
   return handleResponse<CanonItem<T>>(res)
 }
 
-// Updates a canon item based on an item's ID
+/**
+ * Updates an existing canon item by applying a partial patch.
+ * 
+ * @param id The UUID of the canon item to update.
+ * @param patch An object containing the fields to update.
+ * @returns A promise resolving to the updated CanonItem.
+ */
 export async function patchCanonItem<T = unknown>(
   id: string,
   patch: { title?: string; position?: number; content?: T },
@@ -118,7 +145,11 @@ export async function patchCanonItem<T = unknown>(
   return handleResponse<CanonItem<T>>(res)
 }
 
-// Deletes a canon item based on an item's ID
+/**
+ * Deletes a canon item by its UUID.
+ * 
+ * @param id The UUID of the canon item to delete.
+ */
 export async function deleteCanonItem(id: string): Promise<void> {
   const res = await fetch(`/api/canon?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
@@ -142,7 +173,11 @@ export type WorkingStateResponse = {
   updated_at: string | null
 }
 
-// Gets the user's current working state
+/**
+ * Retrieves the user's current working state (their active resume layout and overrides).
+ * 
+ * @returns A promise resolving to a WorkingStateResponse containing the state and its last updated timestamp.
+ */
 export async function getWorkingState(): Promise<WorkingStateResponse> {
   const res = await fetch(`/api/working-state`, {
     cache: "no-store",
@@ -150,7 +185,12 @@ export async function getWorkingState(): Promise<WorkingStateResponse> {
   return handleResponse<WorkingStateResponse>(res)
 }
 
-// Updates the user's working state
+/**
+ * Updates the user's current working state (saving their active resume layout and overrides).
+ * 
+ * @param state The entire new working state to save.
+ * @returns A promise resolving to the updated WorkingStateResponse from the server.
+ */
 export async function updateWorkingState(state: WorkingState): Promise<WorkingStateResponse> {
   const res = await fetch(`/api/working-state`, {
     method: "PUT",
