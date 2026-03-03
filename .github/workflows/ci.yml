@@ -28,8 +28,8 @@ jobs:
       - name: Run Prettier Check
         run: npm run format:check
 
-  typecheck:
-    name: Typecheck
+  typecheck_build_test:
+    name: Typecheck, Build, & Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -41,40 +41,10 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm ci
+
       - name: Run TypeScript compiler
         run: npx tsc
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-      - name: Install dependencies
-        run: npm ci
-      - name: Run Jest Tests
-        run: npm run test
-        env:
-          CI: true
-
-  build:
-    name: Build Next.js
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-      - name: Install dependencies
-        run: npm ci
       - name: Cache Next.js build
         uses: actions/cache@v4
         with:
@@ -84,6 +54,7 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
             nextjs-${{ runner.os }}-
+
       - name: Build Next.js
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
@@ -97,3 +68,8 @@ jobs:
           API_URL: ${{ secrets.API_URL }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run build
+
+      - name: Run Jest Tests
+        run: npm run test
+        env:
+          CI: true
