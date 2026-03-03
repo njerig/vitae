@@ -231,7 +231,7 @@ export default function ResumeClient({
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="bg-white rounded-2xl border shadow-sm flex flex-col flex-1 overflow-hidden" style={{ borderColor: "var(--grid)" }}>
             {/* Preview header */}
-            <div className="p-8 border-b flex-shrink-0 bg-white z-10" style={{ borderColor: "var(--grid)" }}>
+            <div className="p-8 border-b shrink-0 bg-white z-10" style={{ borderColor: "var(--grid)" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: "1rem" }}>
                 {/* Left: title */}
                 <h3 className="text-2xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
