@@ -1,11 +1,8 @@
-// lib/canon/fields.ts
-// Field configuration registry for dynamic form rendering
-
 export type FieldType = "text" | "date" | "textarea" | "tags"
 
 export type FieldConfig = {
-  name: string // key in content object
-  label: string // UI label
+  name: string 
+  label: string 
   type: FieldType
   required?: boolean
   placeholder?: string
@@ -59,12 +56,12 @@ export const GENERIC_FIELDS: FieldConfig[] = [
   { name: "bullets", label: "Details", type: "textarea", placeholder: "One item per line" },
 ]
 
-// Get fields for an item type (falls back to generic)
+// Get fields for an item type
 export function getFieldsForType(displayName: string): FieldConfig[] {
   return ITEM_TYPE_FIELDS[displayName] || GENERIC_FIELDS
 }
 
-// Get the primary title field for an item type (for display in list)
+// Get the primary title field for an item type
 export function getTitleField(displayName: string): string {
   const fields = ITEM_TYPE_FIELDS[displayName]
   if (!fields) return "title"
@@ -80,12 +77,13 @@ export function getTitleField(displayName: string): string {
   return titleMap[displayName] || "title"
 }
 
-// Get the subtitle field for an item type (for display in list)
+// Get the subtitle field for an item type
 export function getSubtitleField(displayName: string): string | null {
   const subtitleMap: Record<string, string> = {
     "Work Experience": "org",
     "Education": "degree",
     "Project": "description",
+    "Link": "url",
   }
   return subtitleMap[displayName] || null
 }

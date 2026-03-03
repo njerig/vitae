@@ -3,16 +3,16 @@
 import { useMemo, useState } from "react"
 import type { CanonItem, ItemType } from "@/lib/types"
 import type { FormError } from "../useCanon"
-import { getFieldsForType, type FieldConfig } from "../fields"
+import { getFieldsForType, type FieldConfig } from "../../shared/fields"
 import { WorkFormFields } from "./forms/WorkForm"
 import { EducationFormFields } from "./forms/EducationForm"
 import { ProjectFormFields } from "./forms/ProjectForm"
 import { SkillFormFields } from "./forms/SkillForm"
 import { LinkFormFields } from "./forms/LinkForm"
 import { GenericFormFields } from "./forms/GenericForm"
-import { Spinner } from "@/lib/components/Spinner"
+import { Spinner } from "@/lib/shared/components/Spinner"
 
-type Props = {
+type CanonFormProps = {
   itemTypes: ItemType[]
   editing?: CanonItem<unknown> | null
   defaultTypeId?: string
@@ -25,16 +25,17 @@ type Props = {
 // Base input styles
 const inputBase = "w-full px-3 py-2 bg-white rounded-lg text-gray-900 border text-sm"
 
-export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmit, saving, error }: Props) {
-  // Compute initial type ID from props (no effect needed)
+export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmit, saving, error }: CanonFormProps) {
+  // Compute initial type ID from props
   const initialTypeId = editing?.item_type_id ?? defaultTypeId ?? itemTypes[0]?.id ?? ""
   const [selectedTypeId, setSelectedTypeId] = useState<string>(initialTypeId)
 
+  // Compute selected type and display the appropriate form fields
   const selectedType = useMemo(() => itemTypes.find((t) => t.id === selectedTypeId), [itemTypes, selectedTypeId])
   const typeName = selectedType?.display_name ?? ""
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
 
-  // Compute initial form values from props (no effect needed)
+  // Compute initial form values from props
   const initialForm = useMemo(() => {
     const content = (editing?.content ?? {}) as Record<string, unknown>
     const initial: Record<string, string> = {}
@@ -57,6 +58,8 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
 
   const hasError = (fieldName: string) => error?.fields.includes(fieldName) ?? false
 
+  // Build content from form values for a specific item type and sends 
+  // it to the onSubmit callback, which sends it to the backend/API
   const buildContent = () => {
     const content: Record<string, unknown> = {}
 
@@ -83,6 +86,7 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
     return content
   }
 
+  // Handle the form's submission for a specific item type
   const submit = async () => {
     const content = buildContent()
     const titleField = fields.find((f: FieldConfig) => f.name === "title") || fields.find((f: FieldConfig) => f.required && f.type === "text")

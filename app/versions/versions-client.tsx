@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import { PageHeader } from "@/lib/components/PageHeader"
-import { Spinner } from "@/lib/components/Spinner"
+import { PageHeader } from "@/lib/shared/components/PageHeader"
+import { Spinner } from "@/lib/shared/components/Spinner"
 import { RestoreConfirmModal } from "@/lib/versions/components/save/RestoreConfirmModal"
 import { ChevronRight, ChevronDown, GitBranch } from "lucide-react"
 import { useVersion } from "@/lib/versions/useVersion"
