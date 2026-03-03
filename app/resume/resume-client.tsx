@@ -150,82 +150,87 @@ export default function ResumeClient({
         className="relative z-10 flex flex-1 min-h-0 gap-6 px-8"
         style={{ paddingTop: "calc(var(--navbar-height, 4rem) + 4rem)", paddingBottom: "1.5rem" }}
       >
-        {/* Left column — scrolls independently */}
-        <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
-          <div className="space-y-6 pb-8">
-            {/* Header card — back button + title + save button */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-4">
-              <div className="flex flex-row items-center gap-6">
-                <Link href="/home">
-                  <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
-                </Link>
-                <PageHeader title="Resume Builder" subtitle="Drag to reorder sections and items." />
-              </div>
-              <div className="flex flex-row items-center gap-4">
+        {/* Left column — fixed height with internal scroll */}
+        <div className="flex-1 min-w-0 flex flex-col relative" style={{ height: "100%" }}>
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-2 z-20 shrink-0 mb-6">
+            <div className="flex flex-row items-center gap-6">
+              <Link href="/home">
+                <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
+              </Link>
+              <div className="flex flex-col gap-0.5">
+                <h3 className="text-2xl font-semibold whitespace-nowrap" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
+                  Resume Builder
+                </h3>
                 {isDirty && (
                   <span className="text-xs" style={{ color: "var(--ink-fade)" }}>
                     Unsaved changes
                   </span>
                 )}
-                <div className="flex flex-row items-center justify-center gap-2">
-                  <SaveResumeButton workingState={workingState} parentVersionId={parentVersionId} syncToBackend={syncToBackend} />
-                  <button
-                    type="button"
-                    onClick={handleExportPdf}
-                    disabled={exportingPdf}
-                    className="btn-secondary rounded-md px-2 py-1 text-sm flex items-center gap-1"
-                    title="Download resume as PDF"
-                  >
-                    {exportingPdf ? <Spinner size={16} color="var(--ink)" /> : <Download className="w-6 h-6" />}
-                    Export PDF
-                  </button>
-                </div>
               </div>
             </div>
+            <div className="flex flex-row items-center gap-4">
 
-            {isDragging && (
-              <div className="rounded-xl p-4" style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}>
-                <p className="text-sm" style={{ color: "var(--paper)" }}>
-                  <strong>Drop to reorder.</strong> Item order will be saved automatically.
-                </p>
+              <div className="flex flex-row items-center justify-center gap-2">
+                <SaveResumeButton workingState={workingState} parentVersionId={parentVersionId} syncToBackend={syncToBackend} />
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={exportingPdf}
+                  className="btn-secondary rounded-lg flex items-center gap-1.5"
+                  style={{ padding: "0.8rem", fontSize: "0.8rem" }}
+                  title="Download resume as PDF"
+                >
+                  {exportingPdf ? <Spinner size={13} color="var(--ink)" /> : <Download className="w-3.5 h-3.5" />}
+                  Export PDF
+                </button>
               </div>
-            )}
-
-            {sections.length === 0 ? (
-              <div
-                className="bg-white rounded-2xl border p-12 text-center shadow-sm"
-                style={{
-                  borderColor: "var(--grid)",
-                }}
-              >
-                <p style={{ color: "var(--ink-fade)" }}>No items yet. Add some items to your Career History to get started!</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {sections.map((section, sectionIndex) => (
-                  <DragSection
-                    key={section.typeId}
-                    section={section}
-                    sectionIndex={sectionIndex}
-                    sections={sections}
-                    setSections={setSections}
-                    draggedSection={draggedSection}
-                    setDraggedSection={setDraggedSection}
-                    draggedItem={draggedItem}
-                    setDraggedItem={setDraggedItem}
-                    saveItemPosition={saveItemPosition}
-                    formatDate={formatDate}
-                    handleItemDragEnd={handleItemDragEnd}
-                    isSelected={isSelected}
-                    toggleItem={toggleItem}
-                    onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
-                    getOverride={getOverride}
-                  />
-                ))}
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+
+            <div className="flex-1 overflow-y-auto pb-8 space-y-6" style={{ scrollbarGutter: "stable" }}>
+              {isDragging && (
+                <div className="rounded-xl p-4" style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}>
+                  <p className="text-sm" style={{ color: "var(--paper)" }}>
+                    <strong>Drop to reorder.</strong> Item order will be saved automatically.
+                  </p>
+                </div>
+              )}
+
+              {sections.length === 0 ? (
+                <div
+                  className="bg-white rounded-2xl border p-12 text-center shadow-sm"
+                  style={{
+                    borderColor: "var(--grid)",
+                  }}
+                >
+                  <p style={{ color: "var(--ink-fade)" }}>No items yet. Add some items to your Career History to get started!</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {sections.map((section, sectionIndex) => (
+                    <DragSection
+                      key={section.typeId}
+                      section={section}
+                      sectionIndex={sectionIndex}
+                      sections={sections}
+                      setSections={setSections}
+                      draggedSection={draggedSection}
+                      setDraggedSection={setDraggedSection}
+                      draggedItem={draggedItem}
+                      setDraggedItem={setDraggedItem}
+                      saveItemPosition={saveItemPosition}
+                      formatDate={formatDate}
+                      handleItemDragEnd={handleItemDragEnd}
+                      isSelected={isSelected}
+                      toggleItem={toggleItem}
+                      onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
+                      getOverride={getOverride}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
         {/* Right column — fixed height with internal scroll */}
         <div className="flex-1 min-w-0 flex flex-col">
@@ -252,7 +257,7 @@ export default function ResumeClient({
                     </p>
                   )}
                   {(versionSavedAt || updatedAt) && (
-                    <p className="text-sm" style={{ color: "var(--ink-fade)" }}>
+                    <p className="text-xs" style={{ color: "var(--ink-fade)" }}>
                       Updated at: {formatDateTime((versionSavedAt || updatedAt)!)}
                     </p>
                   )}
