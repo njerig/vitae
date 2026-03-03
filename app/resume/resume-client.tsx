@@ -227,11 +227,11 @@ export default function ResumeClient({
           </div>
         </div>
 
-        {/* Right column — scrolls independently */}
-        <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
-          <div className="bg-white rounded-2xl border shadow-sm flex flex-col" style={{ borderColor: "var(--grid)", minHeight: "100%" }}>
+        {/* Right column — fixed height with internal scroll */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="bg-white rounded-2xl border shadow-sm flex flex-col flex-1 overflow-hidden" style={{ borderColor: "var(--grid)" }}>
             {/* Preview header */}
-            <div className="p-8 border-b flex-shrink-0" style={{ borderColor: "var(--grid)" }}>
+            <div className="p-8 border-b flex-shrink-0 bg-white z-10" style={{ borderColor: "var(--grid)" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: "1rem" }}>
                 {/* Left: title */}
                 <h3 className="text-2xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
@@ -261,12 +261,14 @@ export default function ResumeClient({
             </div>
 
             {/* Preview body */}
-            <div className="rounded-b-2xl overflow-clip">
-              <ResumePreview
-                sections={filteredSections.length > 0 ? filteredSections : sections}
-                profile={previewProfile}
-                selectedTemplate={workingState.template_id ?? "classic"}
-              />
+            <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
+              <div className="rounded-b-2xl overflow-clip">
+                <ResumePreview
+                  sections={filteredSections.length > 0 ? filteredSections : sections}
+                  profile={previewProfile}
+                  selectedTemplate={workingState.template_id ?? "classic"}
+                />
+              </div>
             </div>
           </div>
         </div>
