@@ -120,6 +120,7 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
     <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
       <h3 className="text-xl font-semibold text-gray-900 mb-4">{editing ? "Edit Item" : "Add New Item"}</h3>
 
+      {/* Display any errors */}
       {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">{error.message}</div>}
 
       <div className="space-y-4">

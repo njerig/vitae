@@ -33,6 +33,7 @@ export function SaveResumeButton({ workingState, parentVersionId, syncToBackend 
     setIsModalOpen(true)
   }
 
+  // Handles the save by calling the API
   const handleSave = async (
     groupName: string,
     versionNote: string,

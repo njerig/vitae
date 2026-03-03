@@ -1,6 +1,3 @@
-// API client for canon items and item types
-// Auth is handled automatically via Clerk cookies - no token needed
-
 import type { CanonItem, ItemType } from "@/lib/types"
 import toast from "react-hot-toast"
 

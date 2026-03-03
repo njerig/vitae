@@ -5,13 +5,16 @@ export function GenericFormFields({ form, setForm, hasError }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* Title */}
       <TextField label="Title" required value={form.title ?? ""} onChange={update("title")} hasError={hasError("title")} placeholder="Item title" />
 
+      {/* Row: Dates */}
       <div className="grid grid-cols-2 gap-3">
         <DateField label="Start Date" value={form.start ?? ""} onChange={update("start")} />
         <DateField label="End Date" value={form.end ?? ""} onChange={update("end")} />
       </div>
 
+      {/* Details */}
       <TextareaField label="Details" value={form.bullets ?? ""} onChange={update("bullets")} placeholder="One item per line" />
     </div>
   )
