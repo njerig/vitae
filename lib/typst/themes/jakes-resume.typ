@@ -46,6 +46,31 @@
   align(center)[#content]
 }
 
+#let profile_header(
+  name: "User",
+  links: (),
+  contact: "",
+) = {
+  [= #name]
+  if links.len() > 0 [
+    #let joined = links.map(l => {
+      let text = l.at("text", default: "")
+      if text == "" { [] }
+      else {
+        let href = l.at("href", default: none)
+        if href == none { [#text] } else { link(href)[#text] }
+      }
+    }).join([ | ])
+    #profile_links(joined)
+  ] else if contact != "" [
+    #profile_links(contact)
+  ]
+}
+
+#let render_sections(sections, linear_renderer) = {
+  linear_renderer(sections)
+}
+
 // -- Component functions ------------------------------------------------------
 #let date_pattern = "[month repr:short]. [year]"
 

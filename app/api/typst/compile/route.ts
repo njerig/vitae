@@ -17,9 +17,9 @@ const templateCache: Record<string, Promise<string>> = {}
 
 const THEME_FILES: Record<string, string> = {
   "classic":  "jakes-resume.typ",
-  "modern":   "jakes-resume-2.typ",
-  "accent":   "modern.typ",
+  "modern":   "modern.typ",
   "two-col":  "two-col.typ",
+  "highlight":  "highlight.typ",
   // Add more template_ids here as new themes are built
 }
 
