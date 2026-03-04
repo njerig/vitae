@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { readFile } from "node:fs/promises"
+import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { buildResumeViewModel } from "@/lib/typst/view-model"
 
 const FONTS_DIR = join(process.cwd(), "lib", "typst", "themes", "fonts")
-const FONT_FILES = [
-  "Figtree-Regular.ttf",
-  "Figtree-Bold.ttf",
-  "Figtree-Italic.ttf",
-  "Figtree-BoldItalic.ttf",
-]
+const FONT_EXT = /\.(ttf|otf)$/i
 
 type TypstCompiler = {
   pdf: (args: {
@@ -24,9 +19,10 @@ const templateCache: Record<string, Promise<string>> = {}
 
 const THEME_FILES: Record<string, string> = {
   "classic":  "jakes-resume.typ",
-  "modern":   "jakes-resume-2.typ",
-  "accent":   "modern.typ",
+  "modern":   "modern.typ",
   "two-col":  "two-col.typ",
+  "highlight":  "highlight.typ",
+  "gradient":  "gradient.typ",
 }
 
 const DEFAULT_THEME = "jakes-resume.typ"
@@ -48,9 +44,11 @@ function errorMessage(error: unknown): string {
 async function getCompiler(): Promise<TypstCompiler> {
   if (!compiler) {
     const { NodeCompiler } = await import("@myriaddreamin/typst-ts-node-compiler")
-    const fontBlobs = await Promise.all(
-      FONT_FILES.map((f) => readFile(join(FONTS_DIR, f)))
-    )
+    const entries = await readdir(FONTS_DIR, { withFileTypes: true })
+    const fontFiles = entries
+      .filter((e) => e.isFile() && FONT_EXT.test(e.name))
+      .map((e) => join(FONTS_DIR, e.name))
+    const fontBlobs = await Promise.all(fontFiles.map((p) => readFile(p)))
     compiler = NodeCompiler.create({
       fontArgs: [{ fontBlobs }],
     }) as TypstCompiler
