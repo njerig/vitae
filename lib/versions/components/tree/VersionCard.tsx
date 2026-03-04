@@ -1,6 +1,6 @@
 "use client"
 
-import { formatDateTime } from "@/lib/utils"
+import { formatDateTime } from "@/lib/shared/utils"
 
 type Version = {
   id: string

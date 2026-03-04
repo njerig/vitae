@@ -3,8 +3,8 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
-import { CreateItemTypeSchema } from "@/lib/schemas"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
+import { CreateItemTypeSchema } from "@/lib/shared/schemas"
 
 // GET /api/item-types - List all item types for the user
 export async function GET() {

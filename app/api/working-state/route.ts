@@ -3,8 +3,8 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
-import { WorkingStateSchema } from "@/lib/schemas"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
+import { WorkingStateSchema } from "@/lib/shared/schemas"
 
 // GET /api/working-state - Get user's current working state
 export async function GET() {

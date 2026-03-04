@@ -1,7 +1,7 @@
 // app/api/section-order/route.ts
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
 
 // GET /api/section-order - Get user's saved section order
 export async function GET() {

@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 
 jest.useFakeTimers()
 

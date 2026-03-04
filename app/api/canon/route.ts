@@ -1,13 +1,13 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
 import {
   CreateCanonItemSchema,
   PatchCanonItemSchema,
   IdQuerySchema,
   ItemTypeQuerySchema,
   getContentSchema,
-} from "@/lib/schemas"
+} from "@/lib/shared/schemas"
 
 /**
  * GET /api/canon?item_type_id=<uuid>

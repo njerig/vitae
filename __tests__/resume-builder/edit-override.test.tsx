@@ -7,7 +7,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import { act } from "react"
 
 // Mock react-hot-toast

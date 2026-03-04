@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useEffect } from "react"
 import { Spinner } from "@/lib/shared/components/Spinner"
-import type { VersionGroup } from "@/lib/types"
+import type { VersionGroup } from "@/lib/shared/types"
 import { fetchVersion } from "../../api"
 import toast from "react-hot-toast"
 

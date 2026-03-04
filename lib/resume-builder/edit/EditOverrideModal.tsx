@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import type { CanonItem } from "@/lib/types"
+import type { CanonItem } from "@/lib/shared/types"
 import type { OverrideData } from "@/lib/working-state/useWorkingState"
 import type { FormError } from "@/lib/canon/useCanon"
 import { getFieldsForType, type FieldConfig } from "@/lib/shared/fields"
-import { getContentSchema } from "@/lib/schemas"
+import { getContentSchema } from "@/lib/shared/schemas"
 import { WorkFormFields } from "@/lib/canon/components/forms/WorkForm"
 import { EducationFormFields } from "@/lib/canon/components/forms/EducationForm"
 import { ProjectFormFields } from "@/lib/canon/components/forms/ProjectForm"

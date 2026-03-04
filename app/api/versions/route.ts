@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
-import { IdQuerySchema, SaveVersionSchema, VersionsArraySchema } from "@/lib/schemas"
-import type { VersionGroup } from "@/lib/types"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
+import { IdQuerySchema, SaveVersionSchema, VersionsArraySchema } from "@/lib/shared/schemas"
+import type { VersionGroup } from "@/lib/shared/types"
 
 /**
  * GET /api/versions

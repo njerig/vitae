@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import type { CanonItem } from "@/lib/types"
+import type { CanonItem } from "@/lib/shared/types"
 
 type Section = {
   typeName: string

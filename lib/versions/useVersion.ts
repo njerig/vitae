@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import toast from "react-hot-toast"
-import { VersionGroup } from "../types"
+import { VersionGroup } from "../shared/types"
 import { deleteVersion, fetchVersion, restoreVersion } from "./api"
 
 export function useVersion() {

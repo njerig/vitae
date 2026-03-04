@@ -3,7 +3,7 @@ import { act } from "@testing-library/react"
 import ResumeClient from "@/app/resume/resume-client"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { useCanon } from "@/lib/canon/useCanon"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 
 jest.mock("@/lib/working-state/useWorkingState")
 jest.mock("@/lib/canon/useCanon")

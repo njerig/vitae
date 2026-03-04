@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 
 interface TimelineProps {
   items: CanonItem<unknown>[]

@@ -1,4 +1,4 @@
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import toast from "react-hot-toast"
 
 // Custom error class that carries both a readable message and the list of invalid field names

@@ -1,6 +1,6 @@
 // Shared types and utilities for canon cards
 import type { ReactNode } from "react"
-import type { CanonItem } from "@/lib/types"
+import type { CanonItem } from "@/lib/shared/types"
 
 export type CardProps = {
   item: CanonItem<unknown>

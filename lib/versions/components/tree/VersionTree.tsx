@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { formatDateTime } from "@/lib/utils"
-import type { Version } from "@/lib/types"
+import { formatDateTime } from "@/lib/shared/utils"
+import type { Version } from "@/lib/shared/types"
 
 interface VersionTreeProps {
   versions: Version[]

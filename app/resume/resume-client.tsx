@@ -15,8 +15,8 @@ import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorBut
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
-import type { CanonItem, ItemType } from "@/lib/types"
-import { formatDateTime, formatDate } from "@/lib/utils"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
+import { formatDateTime, formatDate } from "@/lib/shared/utils"
 
 export default function ResumeClient({
   userName,

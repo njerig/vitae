@@ -1,6 +1,6 @@
 "use client"
 
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import { WorkCard } from "./cards/WorkCard"
 import { EducationCard } from "./cards/EducationCard"
 import { ProjectCard } from "./cards/ProjectCard"

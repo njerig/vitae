@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { ensureUserWithDefaults, pool } from "@/lib/db"
-import { IdQuerySchema } from "@/lib/schemas"
+import { ensureUserWithDefaults, pool } from "@/lib/shared/db"
+import { IdQuerySchema } from "@/lib/shared/schemas"
 
 /**
  * POST /api/versions/[id]/restore

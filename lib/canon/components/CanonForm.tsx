@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import type { FormError } from "../useCanon"
 import { getFieldsForType, type FieldConfig } from "../../shared/fields"
 import { WorkFormFields } from "./forms/WorkForm"

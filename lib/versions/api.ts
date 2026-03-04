@@ -1,4 +1,4 @@
-import type { VersionGroup } from "@/lib/types"
+import type { VersionGroup } from "@/lib/shared/types"
 
 // Custom error class that carries both a readable message and the list of invalid field names
 export class ValidationError extends Error {
