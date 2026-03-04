@@ -20,7 +20,7 @@ const THEME_FILES: Record<string, string> = {
   "modern":   "modern.typ",
   "two-col":  "two-col.typ",
   "highlight":  "highlight.typ",
-  // Add more template_ids here as new themes are built
+  "gradient":  "gradient.typ",
 }
 
 const DEFAULT_THEME = "jakes-resume.typ"

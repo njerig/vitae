@@ -22,6 +22,7 @@ const THEME_FILES: Record<string, string> = {
   "modern":   "modern.typ",
   "two-col":  "two-col.typ",
   "highlight":  "highlight.typ",
+  "gradient":  "gradient.typ",
 }
 
 const DEFAULT_THEME = "jakes-resume.typ"
