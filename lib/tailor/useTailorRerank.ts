@@ -96,4 +96,3 @@ export function useTailorRerank(
 
   return { showTailorModal, setShowTailorModal, tailoring, handleTailor }
 }
-

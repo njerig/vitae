@@ -48,7 +48,10 @@ export async function POST(request: NextRequest) {
   const sectionDescriptions = sections
     .map((section) => {
       const itemList = section.items
-        .map((item) => `  - ID: "${item.id}" | Title: "${item.title}" | Details: ${JSON.stringify(item.content)}`)
+        .map(
+          (item) =>
+            `  - ID: "${item.id}" | Title: "${item.title}" | Details: ${JSON.stringify(item.content)}`
+        )
         .join("\n")
       return `Section: "${section.type_name}" (type_id: "${section.item_type_id}")\n${itemList}`
     })
