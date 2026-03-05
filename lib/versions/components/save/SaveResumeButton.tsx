@@ -60,7 +60,7 @@ export function SaveResumeButton({
     <>
       <button
         onClick={handleOpenModal}
-        className="btn-primary rounded-lg flex items-center gap-1.5"
+        className="btn-primary h-14 rounded-lg flex items-center justify-center gap-1.5 w-32"
         style={{ padding: "0.8rem", fontSize: "0.8rem" }}
         disabled={!hasSelectedItems}
         title={
@@ -69,7 +69,7 @@ export function SaveResumeButton({
             : "Save current selection as a resume version"
         }
       >
-        <Save className="w-3.5 h-3.5" />
+        <Save className="w-6 h-6" />
         Save Resume
       </button>
 
