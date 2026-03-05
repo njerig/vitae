@@ -6,10 +6,12 @@ import { Toaster } from "react-hot-toast"
 import { DragSection } from "../../lib/resume-builder/DragSection"
 import { Spinner } from "@/lib/shared/components/Spinner"
 import { SaveResumeButton } from "@/lib/versions/components/save/SaveResumeButton"
-import { ChevronLeft, Download } from "lucide-react"
+import { ChevronLeft, Download, Sparkles } from "lucide-react"
 import { ResumeBuilderPreview } from "./ResumeBuilderPreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorButton"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
+import { TailorModal } from "@/lib/tailor/components/TailorModal"
+import { useTailorRerank } from "@/lib/tailor/useTailorRerank"
 import type { ArchivedCanonItem, CanonItem } from "@/lib/shared/types"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
 import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
@@ -46,6 +48,8 @@ export default function ResumeBuilderClient({
   }, [parentVersionId])
 
   const {
+    allItems,
+    itemTypes,
     editingItem,
     setEditingItem,
     workingState,
@@ -75,7 +79,7 @@ export default function ResumeBuilderClient({
     isDragging,
     saveItemPosition,
     isLoading,
-  } = useResumeBuilder(userName, archivedItems)
+  } = useResumeBuilder(userName)
   if (isLoading) {
     return (
       <div className="page-container">
@@ -143,6 +147,17 @@ export default function ResumeBuilderClient({
             </div>
             <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row items-center justify-center gap-2">
+                {/*Tailor Resume Button*/}
+                <button
+                  type="button"
+                  onClick={() => setShowTailorModal(true)}
+                  className="btn-primary rounded-lg flex items-center gap-1.5"
+                  style={{ padding: "0.8rem", fontSize: "0.8rem" }}
+                  title="Tailor resume to a job description"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Tailor
+                </button>
                 <SaveResumeButton
                   workingState={workingState}
                   parentVersionId={parentVersionId}
@@ -293,6 +308,15 @@ export default function ResumeBuilderClient({
           onReset={clearOverride}
           onClose={() => setEditingItem(null)}
           saving={workingStateSaving}
+        />
+      )}
+
+      {/* Tailor Resume Modal */}
+      {showTailorModal && (
+        <TailorModal
+          onTailor={handleTailor}
+          onClose={() => setShowTailorModal(false)}
+          tailoring={tailoring}
         />
       )}
     </div>

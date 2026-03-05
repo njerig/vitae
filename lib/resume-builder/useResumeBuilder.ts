@@ -137,6 +137,8 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
   const previewSections = filteredSections.length > 0 ? filteredSections : sections
 
   return {
+    allItems,
+    itemTypes,
     editingItem,
     setEditingItem,
     workingState,
