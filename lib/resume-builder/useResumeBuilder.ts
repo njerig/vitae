@@ -106,6 +106,8 @@ export function useResumeBuilder(userName: string) {
   const previewSections = filteredSections.length > 0 ? filteredSections : sections
 
   return {
+    allItems,
+    itemTypes,
     editingItem,
     setEditingItem,
     workingState,
