@@ -46,9 +46,9 @@ export function ResumeBuilderPreview({
     const viewBoxValue = svgElement.getAttribute("viewBox")
     const viewBoxParts = viewBoxValue
       ? viewBoxValue
-        .trim()
-        .split(/\s+/)
-        .map((v) => Number.parseFloat(v))
+          .trim()
+          .split(/\s+/)
+          .map((v) => Number.parseFloat(v))
       : []
     const docHeight = Number.isFinite(viewBoxParts[3]) ? viewBoxParts[3] : 792
     const pageHeightPt = 792
