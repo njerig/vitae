@@ -57,6 +57,7 @@ export default function ResumeBuilderClient({
     isDirty,
     isSelected,
     toggleItem,
+    updateStateLocally,
     syncToBackend,
     updatedAt,
     getOverride,
@@ -84,7 +85,9 @@ export default function ResumeBuilderClient({
   // Tailor modal state and handler
   const { showTailorModal, setShowTailorModal, tailoring, handleTailor } = useTailorRerank(
     sections,
-    setSections
+    setSections,
+    workingState,
+    updateStateLocally
   )
   if (isLoading) {
     return (

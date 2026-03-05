@@ -146,6 +146,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     isDirty,
     isSelected,
     toggleItem,
+    updateStateLocally,
     syncToBackend,
     updatedAt,
     getOverride,
