@@ -245,8 +245,49 @@
   }
 }
 
-/// Formats a resume in a top-to-bottom layout.
-/// - profile (dict): the profile to format
-/// - sections (list): the sections to format
-/// -> block
-#let render-resume(profile, sections) = render-resume-linear(profile, sections)
+/// Renders the resume. Layout and which entry kinds are supported are theme-defined 
+/// (add more `kind` branches for custom sections).
+#let render-resume(profile, sections) = {
+  profile-header(
+    name: profile.at("name", default: "User"),
+    links: profile.at("links", default: ()),
+  )
+  for section in sections [
+    #let title = section.at("title", default: "")
+    #let entries = section.at("entries", default: ())
+    #if title != "" and entries.len() > 0 [
+      == #title
+      #for entry in entries [
+        #let kind = entry.at("kind", default: "")
+        #if kind == "school" [
+          #school(
+            institution: entry.at("institution", default: ""),
+            location: entry.at("location", default: ""),
+            dates: entry.at("dates", default: (start: none, end: none)),
+            degree: entry.at("degree", default: ""),
+            gpa: entry.at("gpa", default: ""),
+            bullets: entry.at("bullets", default: ()),
+          )
+        ] else if kind == "work" [
+          #work(
+            position: entry.at("position", default: ""),
+            organization: entry.at("organization", default: ""),
+            location: entry.at("location", default: ""),
+            dates: entry.at("dates", default: (start: none, end: none)),
+            skills: entry.at("skills", default: ()),
+            bullets: entry.at("bullets", default: ()),
+          )
+        ] else if kind == "project" [
+          #project(
+            name: entry.at("name", default: ""),
+            dates: entry.at("dates", default: (start: none, end: none)),
+            skills: entry.at("skills", default: ()),
+            bullets: entry.at("bullets", default: ()),
+          )
+        ] else if kind == "skills" [
+          #skills(items: entry.at("items", default: ()))
+        ]
+      ]
+    ]
+  ]
+}

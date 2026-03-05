@@ -85,7 +85,6 @@
 #let profile-header(
   name: "User",
   links: (),
-  contact: "",
 ) = {
   let parts = name.split(regex("\\s*,\\s*"))
   let primary = parts.at(0, default: name)
@@ -93,8 +92,6 @@
 
   let right_content = if links.len() > 0 [
     #profile_links(links)
-  ] else if contact != "" [
-    #contact
   ] else []
 
   block(below: 1em)[
@@ -234,7 +231,6 @@
   profile-header(
     name: profile.at("name", default: "User"),
     links: profile.at("links", default: ()),
-    contact: profile.at("contact", default: ""),
   )
 
   let rows = sections.filter(sec => {

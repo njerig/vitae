@@ -62,18 +62,15 @@ async function getCompiler() {
   return compiler
 }
 
-const LINEAR_LAYOUT_PATH = join(process.cwd(), "lib", "typst", "linear-layout.typ")
-const RESUME_ADAPTER_PATH = join(process.cwd(), "lib", "typst", "json-adapter.typ")
-
 async function getTemplate(templateId: string): Promise<string> {
   if (!templateCache[templateId]) {
     const themeFile = THEME_FILES[templateId] ?? DEFAULT_THEME
     const themePath = join(process.cwd(), "lib", "typst", "themes", themeFile)
+    const adapterPath = join(process.cwd(), "lib", "typst", "json-adapter.typ")
     templateCache[templateId] = Promise.all([
-      readFile(LINEAR_LAYOUT_PATH, "utf8"),
       readFile(themePath, "utf8"),
-      readFile(RESUME_ADAPTER_PATH, "utf8"),
-    ]).then(([linearLayout, theme, adapter]) => `${linearLayout}\n\n${theme}\n\n${adapter}`)
+      readFile(adapterPath, "utf8"),
+    ]).then(([theme, adapter]) => `${theme}\n\n${adapter}`)
   }
   return templateCache[templateId]
 }
