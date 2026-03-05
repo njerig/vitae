@@ -1,6 +1,6 @@
 // __tests__/resume-builder/version-display.test.tsx
 import { render, screen, waitFor } from '@testing-library/react'
-import ResumeClient from '@/app/resume/resume-client'
+import ResumeBuilderPage from '@/app/resume/ResumeBuilderPage'
 import { useCanon } from '@/lib/canon/useCanon'
 import { useWorkingState } from '@/lib/working-state/useWorkingState'
 
@@ -16,25 +16,25 @@ describe('Version Display', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    ;(useCanon as jest.Mock).mockReturnValue({
-      allItems: [],
-      itemTypes: [],
-      loading: false,
-      patch: jest.fn(),
-    })
+      ; (useCanon as jest.Mock).mockReturnValue({
+        allItems: [],
+        itemTypes: [],
+        loading: false,
+        patch: jest.fn(),
+      })
 
-    // Updated to match new useWorkingState API
-    ;(useWorkingState as jest.Mock).mockReturnValue({
-      state: { sections: [] },
-      loading: false,
-      saving: false,
-      isDirty: false,
-      isSelected: jest.fn(),
-      toggleItem: jest.fn(),
-      updateStateLocally: jest.fn(),
-      syncToBackend: jest.fn().mockResolvedValue(undefined),
-      updatedAt: '2026-02-16T10:30:00.000Z',
-    })
+      // Updated to match new useWorkingState API
+      ; (useWorkingState as jest.Mock).mockReturnValue({
+        state: { sections: [] },
+        loading: false,
+        saving: false,
+        isDirty: false,
+        isSelected: jest.fn(),
+        toggleItem: jest.fn(),
+        updateStateLocally: jest.fn(),
+        syncToBackend: jest.fn().mockResolvedValue(undefined),
+        updatedAt: '2026-02-16T10:30:00.000Z',
+      })
 
     require('@/lib/resume-builder/useDragState').useDragState = jest.fn(() => ({
       draggedItem: null,
@@ -52,7 +52,7 @@ describe('Version Display', () => {
   })
 
   it('displays version name when provided', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName="Software Engineer Resume" versionSavedAt={null} parentVersionId={null} />)
+    render(<ResumeBuilderPage userName="Test User" userId="user-123" versionName="Software Engineer Resume" versionSavedAt={null} parentVersionId={null} />)
 
     await waitFor(() => {
       expect(screen.getByText('Version: Software Engineer Resume')).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('Version Display', () => {
   })
 
   it('does not display version label when versionName is null', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+    render(<ResumeBuilderPage userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
     await waitFor(() => {
       expect(screen.queryByText(/^Version:/)).not.toBeInTheDocument()
@@ -68,7 +68,7 @@ describe('Version Display', () => {
   })
 
   it('displays updated timestamp', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+    render(<ResumeBuilderPage userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
     await waitFor(() => {
       expect(screen.getByText(/Updated at:/)).toBeInTheDocument()
@@ -76,7 +76,7 @@ describe('Version Display', () => {
   })
 
   it('formats timestamp correctly', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+    render(<ResumeBuilderPage userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
     await waitFor(() => {
       expect(screen.getByText(/Updated at: 02\/16\/2026, \d{1,2}:\d{2} [AP]M/)).toBeInTheDocument()
@@ -84,7 +84,7 @@ describe('Version Display', () => {
   })
 
   it('displays both version name and timestamp when both present', async () => {
-    render(<ResumeClient userName="Test User" userId="user-123" versionName="My Resume" versionSavedAt={null} parentVersionId={null} />)
+    render(<ResumeBuilderPage userName="Test User" userId="user-123" versionName="My Resume" versionSavedAt={null} parentVersionId={null} />)
 
     await waitFor(() => {
       expect(screen.getByText('Version: My Resume')).toBeInTheDocument()
@@ -93,7 +93,7 @@ describe('Version Display', () => {
   })
 
   it('shows Unsaved changes indicator when isDirty is true', async () => {
-    ;(useWorkingState as jest.Mock).mockReturnValue({
+    ; (useWorkingState as jest.Mock).mockReturnValue({
       state: { sections: [] },
       loading: false,
       saving: false,
@@ -105,7 +105,7 @@ describe('Version Display', () => {
       updatedAt: null,
     })
 
-    render(<ResumeClient userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+    render(<ResumeBuilderPage userName="Test User" userId="user-123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
     await waitFor(() => {
       expect(screen.getByText(/Unsaved changes/i)).toBeInTheDocument()

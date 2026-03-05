@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
 export type { ResumeTemplate } from "@/lib/resume-builder/templates"
 export { RESUME_TEMPLATES }
-import { useResumePreview } from "@/lib/resume-builder/useResumePreview"
+import { useResumeBuilderPreview } from "@/lib/resume-builder/useResumeBuilderPreview"
 
 type Section = {
   typeName: string
@@ -31,7 +31,7 @@ export function ResumeBuilderPreview({
   profile,
   selectedTemplate,
 }: ResumeBuilderPreviewProps) {
-  const { svg, loading, error, errorForExistingSvg } = useResumePreview({
+  const { svg, loading, error, errorForExistingSvg } = useResumeBuilderPreview({
     sections,
     profile,
     selectedTemplate,

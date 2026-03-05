@@ -1,5 +1,5 @@
 import { render, screen, act } from "@testing-library/react"
-import { ResumePreview } from "@/app/resume/ResumePreview"
+import { ResumeBuilderPreview } from "@/app/resume/ResumeBuilderPreview"
 
 async function flushMicrotasks() {
   // Flush a couple microtask turns for state updates.
@@ -17,11 +17,11 @@ function deferred<T>() {
   return { promise, resolve, reject }
 }
 
-describe("ResumePreview error handling", () => {
+describe("ResumeBuilderPreview error handling", () => {
   beforeEach(() => {
     jest.useFakeTimers()
-    ;(global.fetch as unknown) = jest.fn()
-    jest.spyOn(console, "error").mockImplementation(() => {})
+      ; (global.fetch as unknown) = jest.fn()
+    jest.spyOn(console, "error").mockImplementation(() => { })
   })
 
   afterEach(() => {
@@ -30,12 +30,12 @@ describe("ResumePreview error handling", () => {
   })
 
   it("shows a blocking error when initial compilation fails", async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+    ; (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: "0: bad typst" }),
     })
 
-    render(<ResumePreview sections={[]} profile={{ name: "Test" }} />)
+    render(<ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />)
 
     expect(screen.getByText("Generating preview...")).toBeInTheDocument()
 
@@ -49,7 +49,7 @@ describe("ResumePreview error handling", () => {
   })
 
   it("keeps last SVG and shows non-blocking banner when updates fail", async () => {
-    ;(global.fetch as jest.Mock)
+    ; (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         ok: true,
         text: async () => "<svg><text>ok</text></svg>",
@@ -60,7 +60,7 @@ describe("ResumePreview error handling", () => {
       })
 
     const { container, rerender } = render(
-      <ResumePreview sections={[]} profile={{ name: "Test" }} />
+      <ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />
     )
 
     await act(async () => {
@@ -70,7 +70,7 @@ describe("ResumePreview error handling", () => {
 
     expect(container.innerHTML).toContain("<svg")
 
-    rerender(<ResumePreview sections={[{ typeName: "Work", typeId: "1", items: [] }]} profile={{ name: "Test" }} />)
+    rerender(<ResumeBuilderPreview sections={[{ typeName: "Work", typeId: "1", items: [] }]} profile={{ name: "Test" }} />)
 
     await act(async () => {
       jest.advanceTimersByTime(500)
@@ -83,7 +83,7 @@ describe("ResumePreview error handling", () => {
   })
 
   it("clears non-blocking error banner after next successful update", async () => {
-    ;(global.fetch as jest.Mock)
+    ; (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         ok: true,
         text: async () => "<svg><text>v1</text></svg>",
@@ -97,14 +97,14 @@ describe("ResumePreview error handling", () => {
         text: async () => "<svg><text>v2</text></svg>",
       })
 
-    const { rerender } = render(<ResumePreview sections={[]} profile={{ name: "Test" }} />)
+    const { rerender } = render(<ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />)
 
     await act(async () => {
       jest.advanceTimersByTime(500)
       await flushMicrotasks()
     })
 
-    rerender(<ResumePreview sections={[{ typeName: "Work", typeId: "1", items: [] }]} profile={{ name: "Test" }} />)
+    rerender(<ResumeBuilderPreview sections={[{ typeName: "Work", typeId: "1", items: [] }]} profile={{ name: "Test" }} />)
     await act(async () => {
       jest.advanceTimersByTime(500)
       await flushMicrotasks()
@@ -112,7 +112,7 @@ describe("ResumePreview error handling", () => {
     expect(screen.getByText("Preview update failed")).toBeInTheDocument()
 
     rerender(
-      <ResumePreview
+      <ResumeBuilderPreview
         sections={[{ typeName: "Work", typeId: "1", items: [{ id: 1 }] as any[] }]}
         profile={{ name: "Test" }}
       />
@@ -129,18 +129,18 @@ describe("ResumePreview error handling", () => {
     const slow = deferred<{ ok: boolean; text: () => Promise<string> }>()
     const fast = deferred<{ ok: boolean; text: () => Promise<string> }>()
 
-    ;(global.fetch as jest.Mock)
-      .mockImplementationOnce(() => slow.promise)
-      .mockImplementationOnce(() => fast.promise)
+      ; (global.fetch as jest.Mock)
+        .mockImplementationOnce(() => slow.promise)
+        .mockImplementationOnce(() => fast.promise)
 
-    const { container, rerender } = render(<ResumePreview sections={[]} profile={{ name: "Test" }} />)
+    const { container, rerender } = render(<ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />)
 
     await act(async () => {
       jest.advanceTimersByTime(500)
       await flushMicrotasks()
     })
 
-    rerender(<ResumePreview sections={[{ typeName: "Work", typeId: "1", items: [] }]} profile={{ name: "Test" }} />)
+    rerender(<ResumeBuilderPreview sections={[{ typeName: "Work", typeId: "1", items: [] }]} profile={{ name: "Test" }} />)
     await act(async () => {
       jest.advanceTimersByTime(500)
       await flushMicrotasks()

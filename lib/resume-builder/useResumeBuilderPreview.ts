@@ -15,7 +15,7 @@ type ProfileLink = {
   href?: string
 }
 
-type UseResumePreviewArgs = {
+type UseResumeBuilderPreviewArgs = {
   sections: Section[]
   profile?: {
     name?: string
@@ -24,7 +24,11 @@ type UseResumePreviewArgs = {
   selectedTemplate?: string
 }
 
-export function useResumePreview({ sections, profile, selectedTemplate }: UseResumePreviewArgs) {
+export function useResumeBuilderPreview({
+  sections,
+  profile,
+  selectedTemplate,
+}: UseResumeBuilderPreviewArgs) {
   const [svg, setSvg] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

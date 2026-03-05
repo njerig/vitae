@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react"
 import { act } from "@testing-library/react"
-import ResumeClient from "@/app/resume/resume-client"
+import ResumeBuilderPage from "@/app/resume/ResumeBuilderPage"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { useCanon } from "@/lib/canon/useCanon"
 import type { CanonItem, ItemType } from "@/lib/shared/types"
@@ -11,8 +11,8 @@ jest.mock("next/link", () => {
   return ({ children, href }: any) => <a href={href}>{children}</a>
 })
 
-jest.mock("@/app/resume/ResumePreview", () => ({
-  ResumePreview: ({ sections, profile }: any) => (
+jest.mock("@/app/resume/ResumeBuilderPreview", () => ({
+  ResumeBuilderPreview: ({ sections, profile }: any) => (
     <div data-testid="resume-preview">
       <div>Preview for {profile.name}</div>
       <div>{sections.length} sections</div>
@@ -106,32 +106,32 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
   const mockPatch = jest.fn()
 
   beforeEach(() => {
-    jest.spyOn(console, "log").mockImplementation(() => {})
+    jest.spyOn(console, "log").mockImplementation(() => { })
     jest.clearAllMocks()
 
-    ;(useCanon as jest.Mock).mockReturnValue({
-      allItems: mockItems,
-      itemTypes: mockItemTypes,
-      loading: false,
-      patch: mockPatch,
-    })
-
-    ;(useWorkingState as jest.Mock).mockReturnValue(
-      makeWorkingStateMock({
-        updateStateLocally: mockUpdateStateLocally,
-        syncToBackend: mockSyncToBackend,
+      ; (useCanon as jest.Mock).mockReturnValue({
+        allItems: mockItems,
+        itemTypes: mockItemTypes,
+        loading: false,
+        patch: mockPatch,
       })
-    )
+
+      ; (useWorkingState as jest.Mock).mockReturnValue(
+        makeWorkingStateMock({
+          updateStateLocally: mockUpdateStateLocally,
+          syncToBackend: mockSyncToBackend,
+        })
+      )
   })
 
   afterEach(() => {
-    ;(console.log as jest.Mock).mockRestore()
+    ; (console.log as jest.Mock).mockRestore()
     jest.clearAllTimers()
   })
 
   describe("Initial Load", () => {
     it("loads sections in default order when no working state exists", () => {
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionHeaders = screen.getAllByRole("heading", { level: 3 })
 
@@ -149,11 +149,11 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         ],
       }
 
-      ;(useWorkingState as jest.Mock).mockReturnValue(
-        makeWorkingStateMock({ state: savedWorkingState })
-      )
+        ; (useWorkingState as jest.Mock).mockReturnValue(
+          makeWorkingStateMock({ state: savedWorkingState })
+        )
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionHeaders = screen.getAllByRole("heading", { level: 3 })
 
@@ -171,11 +171,11 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         ],
       }
 
-      ;(useWorkingState as jest.Mock).mockReturnValue(
-        makeWorkingStateMock({ state: savedWorkingState })
-      )
+        ; (useWorkingState as jest.Mock).mockReturnValue(
+          makeWorkingStateMock({ state: savedWorkingState })
+        )
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const workSection = screen.getByText("Work Experience")
         .closest("div[draggable='true']")
@@ -189,7 +189,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
     })
 
     it("does not trigger syncToBackend on initial load", () => {
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       act(() => {
         jest.advanceTimersByTime(2000)
@@ -202,7 +202,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Section Reordering", () => {
     it("updates local state when section position changes (no API call)", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionOrderLabels = screen.getAllByText("Section order:")
       const firstLabel = sectionOrderLabels[0]
@@ -230,7 +230,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Item Reordering", () => {
     it("updates local state when item position changes (no API call)", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const hashLabels = screen.getAllByText("#")
       const firstLabel = hashLabels[0]
@@ -253,7 +253,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
     })
 
     it("does not call canon patch on reorder — only local state updated", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const hashLabels = screen.getAllByText("#")
       const firstLabel = hashLabels[0]
@@ -277,7 +277,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Debouncing", () => {
     it("immediately updates local state on each reorder (no debounce)", async () => {
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionOrderLabels = screen.getAllByText("Section order:")
       const firstLabel = sectionOrderLabels[0]
@@ -323,14 +323,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         ],
       }
 
-      ;(useWorkingState as jest.Mock).mockReturnValue(
-        makeWorkingStateMock({
-          state: savedWorkingState,
-          updateStateLocally: mockUpdateStateLocally,
-        })
-      )
+        ; (useWorkingState as jest.Mock).mockReturnValue(
+          makeWorkingStateMock({
+            state: savedWorkingState,
+            updateStateLocally: mockUpdateStateLocally,
+          })
+        )
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       act(() => {
         jest.advanceTimersByTime(2000)
@@ -342,34 +342,34 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Loading States", () => {
     it("shows loading state while fetching data", () => {
-      ;(useCanon as jest.Mock).mockReturnValue({
+      ; (useCanon as jest.Mock).mockReturnValue({
         allItems: [],
         itemTypes: [],
         loading: true,
         patch: mockPatch,
       })
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getByText(/Loading your resume/i)).toBeInTheDocument()
     })
 
     it("shows 'Unsaved changes' indicator when isDirty is true", () => {
-      ;(useWorkingState as jest.Mock).mockReturnValue(
+      ; (useWorkingState as jest.Mock).mockReturnValue(
         makeWorkingStateMock({ isDirty: true })
       )
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getByText(/Unsaved changes/i)).toBeInTheDocument()
     })
 
     it("does not show 'Unsaved changes' when isDirty is false", () => {
-      ;(useWorkingState as jest.Mock).mockReturnValue(
+      ; (useWorkingState as jest.Mock).mockReturnValue(
         makeWorkingStateMock({ isDirty: false })
       )
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.queryByText(/Unsaved changes/i)).not.toBeInTheDocument()
     })
@@ -377,14 +377,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Edge Cases", () => {
     it("handles empty sections gracefully", () => {
-      ;(useCanon as jest.Mock).mockReturnValue({
+      ; (useCanon as jest.Mock).mockReturnValue({
         allItems: [],
         itemTypes: mockItemTypes,
         loading: false,
         patch: mockPatch,
       })
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getByText(/No items yet/i)).toBeInTheDocument()
     })
@@ -392,14 +392,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
     it("filters out sections with no items", () => {
       const workItemsOnly: CanonItem[] = [mockItems[0], mockItems[1]]
 
-      ;(useCanon as jest.Mock).mockReturnValue({
-        allItems: workItemsOnly,
-        itemTypes: mockItemTypes,
-        loading: false,
-        patch: mockPatch,
-      })
+        ; (useCanon as jest.Mock).mockReturnValue({
+          allItems: workItemsOnly,
+          itemTypes: mockItemTypes,
+          loading: false,
+          patch: mockPatch,
+        })
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       const sectionHeaders = screen.getAllByRole("heading", { level: 3 })
       const resumeSections = sectionHeaders.filter(h =>
@@ -418,14 +418,14 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
         mockItems[3],
       ]
 
-      ;(useCanon as jest.Mock).mockReturnValue({
-        allItems: singleItemPerSection,
-        itemTypes: mockItemTypes,
-        loading: false,
-        patch: mockPatch,
-      })
+        ; (useCanon as jest.Mock).mockReturnValue({
+          allItems: singleItemPerSection,
+          itemTypes: mockItemTypes,
+          loading: false,
+          patch: mockPatch,
+        })
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       expect(screen.getAllByText("1 item").length).toBe(3)
     })
@@ -433,7 +433,7 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
   describe("Full Round-Trip Persistence", () => {
     it("simulates full persistence cycle: reorder → local update → save button → verify", async () => {
-      const { unmount } = render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      const { unmount } = render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       let sectionHeaders = screen.getAllByRole("heading", { level: 3 })
       const resumeSections = sectionHeaders.filter(h =>
@@ -469,11 +469,11 @@ describe("Resume Builder - Reorder Persistence Integration", () => {
 
       unmount()
 
-      ;(useWorkingState as jest.Mock).mockReturnValue(
-        makeWorkingStateMock({ state: savedState })
-      )
+        ; (useWorkingState as jest.Mock).mockReturnValue(
+          makeWorkingStateMock({ state: savedState })
+        )
 
-      render(<ResumeClient userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
+      render(<ResumeBuilderPage userName="Test User" userId="user_123" versionName={null} versionSavedAt={null} parentVersionId={null} />)
 
       sectionHeaders = screen.getAllByRole("heading", { level: 3 })
       const reloadedSections = sectionHeaders.filter(h =>

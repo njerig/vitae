@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 /**
- * Tests for /api/typst/compile error handling.
+ * Tests for /api/resume/compile/svg error handling.
  *
  * We mock the native Typst compiler and file reads so tests stay fast
  * and don't depend on platform-specific bindings.
@@ -21,7 +21,7 @@ jest.mock("@myriaddreamin/typst-ts-node-compiler", () => ({
   NodeCompiler: { create: mockCreate },
 }))
 
-describe("/api/typst/compile (route handler)", () => {
+describe("/api/resume/compile/svg (route handler)", () => {
   beforeEach(() => {
     jest.resetModules()
     mockReadFile.mockReset().mockResolvedValue("/* typst */")
@@ -37,7 +37,7 @@ describe("/api/typst/compile (route handler)", () => {
   })
 
   it("returns 400 when data is missing", async () => {
-    const { POST } = await import("@/app/api/typst/compile/route")
+    const { POST } = await import("@/app/api/resume/compile/svg/route")
 
     const req = { json: async () => ({}) } as any
     const res = await POST(req)
@@ -47,7 +47,7 @@ describe("/api/typst/compile (route handler)", () => {
   })
 
   it("returns 400 when body is not an object", async () => {
-    const { POST } = await import("@/app/api/typst/compile/route")
+    const { POST } = await import("@/app/api/resume/compile/svg/route")
 
     const req = { json: async () => "not-an-object" } as any
     const res = await POST(req)
@@ -59,7 +59,7 @@ describe("/api/typst/compile (route handler)", () => {
   it("returns svg on success with expected content type", async () => {
     mockSvg.mockReturnValue("<svg><text>ok</text></svg>")
 
-    const { POST } = await import("@/app/api/typst/compile/route")
+    const { POST } = await import("@/app/api/resume/compile/svg/route")
     const req = { json: async () => ({ data: { profile: { name: "Test" }, sections: [] } }) } as any
     const res = await POST(req)
 
@@ -73,7 +73,7 @@ describe("/api/typst/compile (route handler)", () => {
       throw new Error("normal error message")
     })
 
-    const { POST } = await import("@/app/api/typst/compile/route")
+    const { POST } = await import("@/app/api/resume/compile/svg/route")
     const req = { json: async () => ({ data: { profile: {}, sections: [] } }) } as any
     const res = await POST(req)
 
@@ -88,7 +88,7 @@ describe("/api/typst/compile (route handler)", () => {
       throw err
     })
 
-    const { POST } = await import("@/app/api/typst/compile/route")
+    const { POST } = await import("@/app/api/resume/compile/svg/route")
 
     const req = { json: async () => ({ data: { profile: {}, sections: [] } }) } as any
     const res = await POST(req)
@@ -100,7 +100,7 @@ describe("/api/typst/compile (route handler)", () => {
   it("caches compiler/template across requests in same module instance", async () => {
     mockSvg.mockReturnValue("<svg>cached</svg>")
 
-    const { POST } = await import("@/app/api/typst/compile/route")
+    const { POST } = await import("@/app/api/resume/compile/svg/route")
     const req = { json: async () => ({ data: { profile: {}, sections: [] } }) } as any
 
     const res1 = await POST(req)
