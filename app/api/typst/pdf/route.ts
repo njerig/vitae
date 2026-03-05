@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { NextRequest, NextResponse } from "next/server"
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
@@ -5,6 +7,8 @@ import { buildResumeViewModel } from "@/lib/typst/view-model"
 
 const FONTS_DIR = join(process.cwd(), "lib", "typst", "themes", "fonts")
 const FONT_EXT = /\.(ttf|otf)$/i
+
+const TMP_WORKSPACE = join(tmpdir(), `vitae-${process.pid}`)
 
 type TypstCompiler = {
   pdf: (args: {
@@ -43,6 +47,7 @@ function errorMessage(error: unknown): string {
 
 async function getCompiler(): Promise<TypstCompiler> {
   if (!compiler) {
+    mkdirSync(TMP_WORKSPACE, { recursive: true })
     const { NodeCompiler } = await import("@myriaddreamin/typst-ts-node-compiler")
     const entries = await readdir(FONTS_DIR, { withFileTypes: true })
     const fontFiles = entries
@@ -50,21 +55,25 @@ async function getCompiler(): Promise<TypstCompiler> {
       .map((e) => join(FONTS_DIR, e.name))
     const fontBlobs = await Promise.all(fontFiles.map((p) => readFile(p)))
     compiler = NodeCompiler.create({
+      workspace: TMP_WORKSPACE,
       fontArgs: [{ fontBlobs }],
     }) as TypstCompiler
   }
   return compiler
 }
 
+const LINEAR_LAYOUT_PATH = join(process.cwd(), "lib", "typst", "linear-layout.typ")
+const RESUME_ADAPTER_PATH = join(process.cwd(), "lib", "typst", "json-adapter.typ")
+
 async function getTemplate(templateId: string): Promise<string> {
   if (!templateCache[templateId]) {
     const themeFile = THEME_FILES[templateId] ?? DEFAULT_THEME
     const themePath = join(process.cwd(), "lib", "typst", "themes", themeFile)
-    const resumePath = join(process.cwd(), "lib", "typst", "json-adapter.typ")
     templateCache[templateId] = Promise.all([
+      readFile(LINEAR_LAYOUT_PATH, "utf8"),
       readFile(themePath, "utf8"),
-      readFile(resumePath, "utf8"),
-    ]).then(([theme, resume]) => `${theme}\n\n${resume}`)
+      readFile(RESUME_ADAPTER_PATH, "utf8"),
+    ]).then(([linearLayout, theme, adapter]) => `${linearLayout}\n\n${theme}\n\n${adapter}`)
   }
   return templateCache[templateId]
 }
@@ -87,10 +96,13 @@ export async function POST(request: NextRequest) {
     const [comp, template] = await Promise.all([getCompiler(), getTemplate(templateId)])
     const vm = buildResumeViewModel(data)
 
+    const dataPath = join(TMP_WORKSPACE, "resume-data.json")
+    writeFileSync(dataPath, JSON.stringify(vm), "utf-8")
+
     const pdfBuffer = comp.pdf({
       mainFileContent: template,
       inputs: {
-        data: JSON.stringify(vm),
+        data: "resume-data.json",
       },
     })
 

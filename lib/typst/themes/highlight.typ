@@ -1,3 +1,12 @@
+// -- Page setup ---------------------------------------------------------------
+#set page(margin: (
+  left: 0.5in,
+  right: 0.5in,
+  top: 0.5in,
+  bottom: 0.5in,
+))
+
+// -- Theme parameters ---------------------------------------------------------
 #let sizes = (
   body: 12pt,
   section: 13pt,
@@ -13,15 +22,9 @@
   section-col-bg: rgb("#eadfcd"),
 )
 
-#set page(margin: (
-  left: 0.5in,
-  right: 0.5in,
-  top: 0.5in,
-  bottom: 0.5in,
-))
-
 #set text(font: "Crimson Pro", size: sizes.body)
 
+// -- Show rules ---------------------------------------------------------------
 #show heading.where(level: 1): it => {
   align(center)[
     #text(size: sizes.name, weight: "bold")[#it]
@@ -39,11 +42,47 @@
   underline(offset: 3pt)[#it]
 }
 
-#let profile_links(content) = {
-  align(center)[#content]
+// -- Date formatting ----------------------------------------------------------
+/// example: "Jan. 2025"
+#let date_pattern = "[month repr:short]. [year]"
+
+/// A helper to format a date as a string.
+/// - d (datetime | none): the date to format
+/// -> str
+#let fmt_date(d) = {
+  if d == none { "" } else { d.display(date_pattern) }
 }
 
-#let profile_header(
+/// A helper to format a date range as a string.
+/// - dates (dict): the date range to format
+/// -> str
+#let date_range(dates) = {
+  let s = fmt_date(dates.start)
+  let e = fmt_date(dates.end)
+  if s == "" { "" } else { s + sym.dash.en + (if e != "" { e } else { "Present" }) }
+}
+
+// -- Component functions ------------------------------------------------------
+
+/// Formats a list of links as a single block.
+/// - links (list): the list of links to format
+/// -> block
+#let profile_links(links) = {
+  links.map(l => {
+    let text = l.at("text", default: "")
+    if text == "" { [] }
+    else {
+      let href = l.at("href", default: none)
+      if href == none { [#text] } else { link(href)[#text] }
+    }
+  }).join(linebreak())
+}
+
+/// Formats a profile header as a single block.
+/// - name (str): the name of the profile
+/// - links (list): the list of links to format
+/// -> block
+#let profile-header(
   name: "User",
   links: (),
   contact: "",
@@ -52,20 +91,11 @@
   let primary = parts.at(0, default: name)
   let suffix = if parts.len() > 1 { parts.slice(1).join(", ") } else { "" }
 
-  let right_content = if links.len() > 0 {
-    links.map(l => {
-      let text = l.at("text", default: "")
-      if text == "" { [] }
-      else {
-        let href = l.at("href", default: none)
-        if href == none { [#text] } else { link(href)[#text] }
-      }
-    }).join(linebreak())
-  } else if contact != "" {
-    contact
-  } else {
-    []
-  }
+  let right_content = if links.len() > 0 [
+    #profile_links(links)
+  ] else if contact != "" [
+    #contact
+  ] else []
 
   block(below: 1em)[
     #grid(
@@ -87,35 +117,23 @@
   line(length: 100%, stroke: 0.5pt + black)
 }
 
-#let date_pattern = "[month repr:short]. [year]"
-
-#let dt_from_parts(p) = {
-  if p == none { none } else {
-    let y = p.at("year", default: none)
-    let m = p.at("month", default: 1)
-    if y == none { none } else { datetime(year: y, month: m, day: 1) }
-  }
-}
-
-#let fmt_date(d) = {
-  if d == none { "" } else { d.display(date_pattern) }
-}
-
-#let date_range(dates) = {
-  let s = fmt_date(dates.start)
-  let e = fmt_date(dates.end)
-  if s == "" { "" } else { s + sym.dash.en + (if e != "" { e } else { "Present" }) }
-}
-
+/// Formats a school entry as a single block.
+/// - institution (str): the name of the institution
+/// - location (str): the location of the institution
+/// - dates (dict): the date range of the institution
+/// - degree (str): the degree of the institution
+/// - gpa (str): the GPA of the institution
+/// - bullets (list): the list of bullets to format
+/// -> block
 #let school(
   institution: "",
   location: "",
   dates: (start: none, end: none),
   degree: "",
-  GPA: "",
+  gpa: "",
   bullets: (),
-) = {  
-  let has_body = GPA != "" or bullets.len() > 0
+) = {
+  let has_body = gpa != "" or bullets.len() > 0
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
     [#strong(institution)],
@@ -125,8 +143,8 @@
   )
   if has_body {
     block(above: sizes.item-body-gap)[
-      #if GPA != "" [
-        GPA: #GPA
+      #if gpa != "" [
+        GPA: #gpa
       ]
       #if bullets.len() > 0 [
         #list(..bullets.map(b => [#b]))
@@ -135,6 +153,14 @@
   }
 }
 
+/// Formats a work entry as a single block.
+/// - organization (str): the name of the organization
+/// - location (str): the location of the organization
+/// - dates (dict): the date range of the organization
+/// - position (str): the position of the organization
+/// - skills (list): the list of skills to format
+/// - bullets (list): the list of bullets to format
+/// -> block
 #let work(
   organization: "",
   location: "",
@@ -163,6 +189,12 @@
   }
 }
 
+/// Formats a project entry as a single block.
+/// - name (str): the name of the project
+/// - dates (dict): the date range of the project
+/// - skills (list): the list of skills to format
+/// - bullets (list): the list of bullets to format
+/// -> block
 #let project(
   name: "",
   dates: (start: none, end: none),
@@ -181,17 +213,30 @@
   }
 }
 
+/// Formats a skills entry as a single block.
+/// - items (list): the list of skills to format
+/// -> block
 #let skills(items: ()) = {
   let lines = items.map(it => {
-    let label = it.at(0, default: "")
-    let values = it.at(1, default: ())
+    let label = it.at("label", default: "")
+    let values = it.at("values", default: ())
     if label == "" or values.len() == 0 { [] }
     else { [#strong(label): #values.join(", ")] }
   })
   list(..lines)
 }
 
-#let render_sections(sections, linear_renderer) = {
+/// Formats a resume in a two-column layout.
+/// - profile (dict): the profile to format
+/// - sections (list): the sections to format
+/// -> block
+#let render-resume(profile, sections) = {
+  profile-header(
+    name: profile.at("name", default: "User"),
+    links: profile.at("links", default: ()),
+    contact: profile.at("contact", default: ""),
+  )
+
   let rows = sections.filter(sec => {
     let title = sec.at("title", default: "")
     let entries = sec.at("entries", default: ())
@@ -204,53 +249,35 @@
     (
       [#block(fill: colors.section-col-bg, inset: (x: 0.45em, y: 0.2em))[#strong(title)]],
       [
-        #for e in entries [
-          #let kind = e.at("kind", default: "")
-
+        #for entry in entries [
+          #let kind = entry.at("kind", default: "")
           #if kind == "school" [
-            #let d = e.at("dates", default: (:))
             #school(
-              institution: e.at("institution", default: ""),
-              location: e.at("location", default: ""),
-              dates: (
-                start: dt_from_parts(d.at("start", default: none)),
-                end: dt_from_parts(d.at("end", default: none)),
-              ),
-              degree: e.at("degree", default: ""),
-              GPA: e.at("gpa", default: ""),
-              bullets: e.at("bullets", default: ()),
+              institution: entry.at("institution", default: ""),
+              location: entry.at("location", default: ""),
+              dates: entry.at("dates", default: (start: none, end: none)),
+              degree: entry.at("degree", default: ""),
+              gpa: entry.at("gpa", default: ""),
+              bullets: entry.at("bullets", default: ()),
             )
           ] else if kind == "work" [
-            #let d = e.at("dates", default: (:))
             #work(
-              position: e.at("position", default: ""),
-              organization: e.at("organization", default: ""),
-              location: e.at("location", default: ""),
-              dates: (
-                start: dt_from_parts(d.at("start", default: none)),
-                end: dt_from_parts(d.at("end", default: none)),
-              ),
-              skills: e.at("skills", default: ()),
-              bullets: e.at("bullets", default: ()),
+              position: entry.at("position", default: ""),
+              organization: entry.at("organization", default: ""),
+              location: entry.at("location", default: ""),
+              dates: entry.at("dates", default: (start: none, end: none)),
+              skills: entry.at("skills", default: ()),
+              bullets: entry.at("bullets", default: ()),
             )
           ] else if kind == "project" [
-            #let d = e.at("dates", default: (:))
             #project(
-              name: e.at("name", default: ""),
-              dates: (
-                start: dt_from_parts(d.at("start", default: none)),
-                end: dt_from_parts(d.at("end", default: none)),
-              ),
-              skills: e.at("skills", default: ()),
-              bullets: e.at("bullets", default: ()),
+              name: entry.at("name", default: ""),
+              dates: entry.at("dates", default: (start: none, end: none)),
+              skills: entry.at("skills", default: ()),
+              bullets: entry.at("bullets", default: ()),
             )
           ] else if kind == "skills" [
-            #skills(
-              items: e.at("items", default: ()).map(it => (
-                it.at("label", default: ""),
-                it.at("values", default: ()),
-              )),
-            )
+            #skills(items: entry.at("items", default: ()))
           ]
         ]
       ],

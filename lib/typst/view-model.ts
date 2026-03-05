@@ -52,7 +52,6 @@ export type ResumeViewModel = {
   profile: {
     name: string
     links: ProfileLink[]
-    contact?: string
   }
   sections: Array<{
     title: string
@@ -104,12 +103,10 @@ function normalizeProfile(input: unknown): ResumeViewModel["profile"] {
     : []
 
   const name = asString(p.name).trim()
-  const contact = asString(p.contact).trim()
 
   return {
     name: name || "User",
     links,
-    contact: contact || undefined,
   }
 }
 

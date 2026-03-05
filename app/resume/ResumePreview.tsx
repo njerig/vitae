@@ -21,7 +21,6 @@ type ResumePreviewProps = {
   sections: Section[]
   profile?: {
     name?: string
-    contact?: string
     links?: ProfileLink[]
   }
   selectedTemplate?: string
@@ -44,7 +43,6 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumePre
     return {
       profile: {
         name: profile?.name,
-        contact: profile?.contact,
         links: profile?.links,
       },
       sections,

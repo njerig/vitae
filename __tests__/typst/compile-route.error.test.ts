@@ -109,8 +109,8 @@ describe("/api/typst/compile (route handler)", () => {
     expect(res1.status).toBe(200)
     expect(res2.status).toBe(200)
     expect(mockCreate).toHaveBeenCalledTimes(1)
-    // 4 font files + theme + json adapter
-    expect(mockReadFile).toHaveBeenCalledTimes(6)
+    // 4 font files + linear-layout + theme + json adapter
+    expect(mockReadFile).toHaveBeenCalledTimes(7)
   })
 })
 

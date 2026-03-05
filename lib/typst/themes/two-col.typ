@@ -39,7 +39,7 @@
   accent-fg: rgb("#06402b")
 )
 
-// -- Helpers ----------------------------------------------------------------
+// -- Helpers ------------------------------------------------------------------
 #let plain-text(c) = {
   if type(c) == str { c }
   else if c == [] { " " }
@@ -79,54 +79,77 @@
   underline(offset: 3pt)[#it]
 }
 
-#let profile_links(content) = {
-  align(left)[#content]
-}
+// -- Date formatting ----------------------------------------------------------
 
-#let profile_header(
-  name: "User",
-  links: (),
-  contact: "",
-) = {
-  [= #name]
-  if links.len() > 0 [
-    #let joined = links.map(l => {
-      let text = l.at("text", default: "")
-      if text == "" { [] }
-      else {
-        let href = l.at("href", default: none)
-        if href == none { [#text] } else { link(href)[#text] }
-      }
-    }).join([ | ])
-    #profile_links(joined)
-  ] else if contact != "" [
-    #profile_links(contact)
-  ]
-}
 
-#let render_sections(sections, linear_renderer) = {
-  linear_renderer(sections)
-}
-
-// -- Component functions ------------------------------------------------------
+/// example: "Jan. 2025"
 #let date_pattern = "[month repr:short]. [year]"
 
+/// A helper to format a date as a string.
+/// - d (datetime | none): the date to format
+/// -> str
 #let fmt_date(d) = {
   if d == none { "" } else { d.display(date_pattern) }
 }
 
+
+/// A helper to format a date range as a string.
+/// - dates (dict): the date range to format
+/// -> str
 #let date_range(dates) = {
   let s = fmt_date(dates.start)
   let e = fmt_date(dates.end)
   if s == "" { "" } else { s + " " + sym.dash.en + " " + (if e != "" { e } else { "Present" }) }
 }
 
+// -- Component functions ------------------------------------------------------
+
+/// Formats a list of links as a single block.
+/// - links (list): the list of links to format
+/// -> block
+#let profile_links(links) = {
+  let joined = links.map(l => {
+    let text = l.at("text", default: "")
+    if text == "" { [] }
+    else {
+      let href = l.at("href", default: none)
+      if href == none { [#text] } else { link(href)[#text] }
+    }
+  }).join([ | ])
+  align(left)[#joined]
+}
+
+/// Formats a profile header as a single block.
+/// - name (str): the name of the profile
+/// - links (list): the list of links to format
+/// -> block
+#let profile-header(
+  name: "User",
+  links: (),
+  contact: "",
+) = {
+  [= #name]
+  if links.len() > 0 [
+    #profile_links(links)
+  ] else if contact != "" [
+    #align(left)[#contact]
+  ]
+}
+
+/// Formats a school entry as a single block.
+/// - institution (str): the name of the institution
+/// - location (str): the location of the institution
+/// - dates (dict): the date range of the institution
+/// - degree (str): the degree of the institution
+/// - gpa (str): the GPA of the institution
+/// - bullets (list): the list of bullets to format
+/// -> block
 #let school(
   institution: "",
   location: "",
   dates: (start: none, end: none),
   degree: "",
-  GPA: "",
+  gpa: "",
   bullets: (),
 ) = {
   grid(
@@ -137,11 +160,19 @@
     [#date_range(dates)],
   )
   list(
-    ..(if GPA != "" { ([GPA: #GPA],) } else { () }),
+    ..(if gpa != "" { ([GPA: #gpa],) } else { () }),
     ..bullets.map(b => [#b]),
   )
 }
 
+/// Formats a work entry as a single block.
+/// - organization (str): the name of the organization
+/// - location (str): the location of the organization
+/// - dates (dict): the date range of the organization
+/// - position (str): the position of the organization
+/// - skills (list): the list of skills to format
+/// - bullets (list): the list of bullets to format
+/// -> block
 #let work(
   organization: "",
   location: "",
@@ -163,6 +194,12 @@
   )
 }
 
+/// Formats a project entry as a single block.
+/// - name (str): the name of the project
+/// - dates (dict): the date range of the project
+/// - skills (list): the list of skills to format
+/// - bullets (list): the list of bullets to format
+/// -> block
 #let project(
   name: "",
   dates: (start: none, end: none),
@@ -177,11 +214,14 @@
   list(..bullets.map(b => [#b]))
 }
 
+/// Formats a skills entry as a single block.
+/// - items (list): the list of skills to format
+/// -> block
 #let skills(items: ()) = {
-  let rows = items.filter(it => it.at(0, default: "") != "" and it.at(1, default: ()).len() > 0)
+  let rows = items.filter(it => it.at("label", default: "") != "" and it.at("values", default: ()).len() > 0)
   for it in rows {
-    let label = it.at(0, default: "")
-    let values = it.at(1, default: ())
+    let label = it.at("label", default: "")
+    let values = it.at("values", default: ())
     [#strong(label):]
     [
       #values.map(v => box(
@@ -193,3 +233,9 @@
     ]
   }
 }
+
+/// Formats a resume in a top-to-bottom layout.
+/// - profile (dict): the profile to format
+/// - sections (list): the sections to format
+/// -> block
+#let render-resume(profile, sections) = render-resume-linear(profile, sections)
