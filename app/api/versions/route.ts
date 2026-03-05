@@ -1,13 +1,13 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
-import { IdQuerySchema, SaveVersionSchema, VersionsArraySchema } from "@/lib/schemas"
-import type { VersionGroup } from "@/lib/types"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
+import { IdQuerySchema, SaveVersionSchema, VersionsArraySchema } from "@/lib/shared/schemas"
+import type { VersionGroup } from "@/lib/shared/types"
 
 /**
  * GET /api/versions
  * Retrieves all saved resume versions, grouped by resume.
- * 
+ *
  * @returns A JSON response containing an array of VersionGroup objects or an error message.
  */
 export async function GET() {
@@ -47,7 +47,10 @@ export async function GET() {
     }
     groupMap.get(groupId)!.versions.push({
       ...version,
-      created_at: typeof version.created_at === 'string' ? version.created_at : version.created_at.toISOString(),
+      created_at:
+        typeof version.created_at === "string"
+          ? version.created_at
+          : version.created_at.toISOString(),
     })
   }
 
@@ -59,7 +62,7 @@ export async function GET() {
 /**
  * POST /api/versions
  * Saves a snapshot of the current working state as a new resume version.
- * 
+ *
  * @param request The incoming request containing the group name, version name, and optional parent version ID.
  * @returns A JSON response containing the newly created version or an error message.
  */
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
 
   // Determine the resume_group_id and group_name
   let resume_group_id: string | null = null
-  let resolved_group_name: string = group_name || ''
+  let resolved_group_name: string = group_name || ""
 
   // If a parent id exists, obtain the resume_group_id and group_name from the parent version
   // If not, then we assume it's a new parent version
@@ -103,10 +106,7 @@ export async function POST(request: NextRequest) {
 
   // For new groups, require a group_name
   if (!resume_group_id && !group_name) {
-    return NextResponse.json(
-      { error: "Resume name is required for new resumes" },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: "Resume name is required for new resumes" }, { status: 400 })
   }
 
   // Check group_name uniqueness for new groups
@@ -133,19 +133,19 @@ export async function POST(request: NextRequest) {
   if (rows.length === 0)
     return NextResponse.json({ error: "Working state not found" }, { status: 404 })
 
-  const state = rows[0].state;
-  const updated_at = rows[0].updated_at;
+  const state = rows[0].state
+  const updated_at = rows[0].updated_at
 
   // Insert the version
   if (resume_group_id) {
-    ({ rows } = await pool.query(
+    ;({ rows } = await pool.query(
       `INSERT INTO versions (user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at)
        VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)
        RETURNING id, user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at`,
       [userId, resume_group_id, parent_version_id, resolved_group_name, name, state, updated_at]
     ))
   } else {
-    ({ rows } = await pool.query(
+    ;({ rows } = await pool.query(
       `INSERT INTO versions (user_id, parent_version_id, group_name, name, snapshot, created_at)
        VALUES ($1, $2, $3, $4, $5::jsonb, $6)
        RETURNING id, user_id, resume_group_id, parent_version_id, group_name, name, snapshot, created_at`,
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
 /**
  * DELETE /api/versions
  * Deletes a specific version for a user by its ID and reparents its children.
- * 
+ *
  * @param request The incoming request containing the version's `id` as a search param.
  * @returns A JSON response indicating success or an error message.
  */
@@ -200,10 +200,10 @@ export async function DELETE(request: NextRequest) {
   )
 
   // Delete the version to be deleted
-  const { rowCount } = await pool.query(
-    `DELETE FROM versions WHERE id = $1 AND user_id = $2`,
-    [id, userId]
-  )
+  const { rowCount } = await pool.query(`DELETE FROM versions WHERE id = $1 AND user_id = $2`, [
+    id,
+    userId,
+  ])
 
   if (rowCount === 0) {
     return NextResponse.json({ error: "Version not found" }, { status: 404 })

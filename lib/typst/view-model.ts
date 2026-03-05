@@ -15,11 +15,7 @@ function asStringArray(v: unknown): string[] {
 
 function normalizeHref(hrefRaw: string): string | undefined {
   const href = hrefRaw.trim()
-  if (
-    href.length > 0 &&
-    href.length <= 2048 &&
-    /^(https?:\/\/|mailto:|tel:)/.test(href)
-  ) {
+  if (href.length > 0 && href.length <= 2048 && /^(https?:\/\/|mailto:|tel:)/.test(href)) {
     return href
   }
   return undefined
@@ -254,4 +250,3 @@ export function buildResumeViewModel(input: unknown): ResumeViewModel {
 
   return { profile: { ...baseProfile, links }, sections }
 }
-

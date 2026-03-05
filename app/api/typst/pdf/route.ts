@@ -11,10 +11,7 @@ const FONT_EXT = /\.(ttf|otf)$/i
 const TMP_WORKSPACE = join(tmpdir(), `vitae-${process.pid}`)
 
 type TypstCompiler = {
-  pdf: (args: {
-    mainFileContent: string
-    inputs?: Record<string, string>
-  }) => Buffer
+  pdf: (args: { mainFileContent: string; inputs?: Record<string, string> }) => Buffer
 }
 
 let compiler: TypstCompiler | null = null
@@ -22,11 +19,11 @@ let compiler: TypstCompiler | null = null
 const templateCache: Record<string, Promise<string>> = {}
 
 const THEME_FILES: Record<string, string> = {
-  "classic":  "jakes-resume.typ",
-  "modern":   "modern.typ",
-  "two-col":  "two-col.typ",
-  "highlight":  "highlight.typ",
-  "gradient":  "gradient.typ",
+  classic: "jakes-resume.typ",
+  modern: "modern.typ",
+  "two-col": "two-col.typ",
+  highlight: "highlight.typ",
+  gradient: "gradient.typ",
 }
 
 const DEFAULT_THEME = "jakes-resume.typ"
@@ -79,15 +76,11 @@ export async function POST(request: NextRequest) {
   try {
     const body: unknown = await request.json()
     const data = isRecord(body) ? body.data : null
-    const templateId = isRecord(body) && typeof body.template_id === "string"
-      ? body.template_id
-      : "classic"
+    const templateId =
+      isRecord(body) && typeof body.template_id === "string" ? body.template_id : "classic"
 
     if (!isRecord(data)) {
-      return NextResponse.json(
-        { error: "data field is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "data field is required" }, { status: 400 })
     }
 
     const [comp, template] = await Promise.all([getCompiler(), getTemplate(templateId)])
@@ -112,10 +105,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Typst PDF generation error:", error)
     const message = errorMessage(error)
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

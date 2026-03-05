@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { VersionTree } from '@/lib/versions/components/tree/VersionTree'
-import type { Version } from '@/lib/types'
+import type { Version } from '@/lib/shared/types'
 
 function makeVersion(id: string, name: string, parentId: string | null): Version {
     return { id, user_id: 'user-1', resume_group_id: 'group-1', parent_version_id: parentId, group_name: 'Test Resume', name, snapshot: { sections: [] }, created_at: `2026-01-0${id.slice(-1)}T00:00:00Z` }

@@ -16,7 +16,8 @@ interface VersionsClientProps {
 }
 
 export default function VersionsClient({ userName }: VersionsClientProps) {
-  const {groups,
+  const {
+    groups,
     loading,
     deleting,
     restoring,
@@ -29,9 +30,9 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
     handleRestoreClick,
     handleRestoreConfirm,
     showTreeGroups,
-    toggleTreeGroup
-   } = useVersion();
-  
+    toggleTreeGroup,
+  } = useVersion()
+
   useEffect(() => {
     fetchVersions()
   }, [])
@@ -42,7 +43,14 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
         <div className="page-bg-gradient"></div>
         <div className="relative z-10 pt-32 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1rem",
+              }}
+            >
               <Spinner size={40} />
               <p style={{ color: "var(--ink-light)" }}>Loading your saved resumes...</p>
             </div>
@@ -77,14 +85,15 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
 
           {/* Empty State */}
           {groups.length === 0 ? (
-            <div className="bg-white rounded-2xl border p-12 text-center shadow-sm" style={{ borderColor: "var(--grid)" }}>
+            <div
+              className="bg-white rounded-2xl border p-12 text-center shadow-sm"
+              style={{ borderColor: "var(--grid)" }}
+            >
               <p style={{ color: "var(--ink-fade)", fontSize: "1.125rem", marginBottom: "1rem" }}>
                 No saved resumes yet. Create one from the Resume Builder!
               </p>
               <Link href="/resume">
-                <button className="btn-primary">
-                  Go to Resume Builder
-                </button>
+                <button className="btn-primary">Go to Resume Builder</button>
               </Link>
             </div>
           ) : (
@@ -103,8 +112,9 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                       className="flex-1 flex items-center gap-3 text-left p-2"
                     >
                       <ChevronDown
-                        className={`h-4 w-4 transition-transform ${expandedGroups.has(group.resume_group_id) ? "" : "-rotate-90"
-                          }`}
+                        className={`h-4 w-4 transition-transform ${
+                          expandedGroups.has(group.resume_group_id) ? "" : "-rotate-90"
+                        }`}
                         style={{ color: "var(--ink-fade)" }}
                       />
                       <div>
@@ -119,38 +129,52 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                         </p>
                       </div>
                     </button>
-                    
+
                     <div className="px-3">
                       <button
                         onClick={(e) => {
-                          e.stopPropagation();
-                          toggleTreeGroup(group.resume_group_id);
+                          e.stopPropagation()
+                          toggleTreeGroup(group.resume_group_id)
                           // Auto expand group when showing tree
-                          if (!showTreeGroups.has(group.resume_group_id) && !expandedGroups.has(group.resume_group_id)) {
-                            toggleGroup(group.resume_group_id);
+                          if (
+                            !showTreeGroups.has(group.resume_group_id) &&
+                            !expandedGroups.has(group.resume_group_id)
+                          ) {
+                            toggleGroup(group.resume_group_id)
                           }
                         }}
-                        className={`p-2 rounded-md transition-colors ${showTreeGroups.has(group.resume_group_id) ? 'bg-indigo-50 hover:bg-indigo-100' : 'hover:bg-gray-100'}`}
-                        title={showTreeGroups.has(group.resume_group_id) ? "Hide Tree View" : "Show Tree View"}
+                        className={`p-2 rounded-md transition-colors ${showTreeGroups.has(group.resume_group_id) ? "bg-indigo-50 hover:bg-indigo-100" : "hover:bg-gray-100"}`}
+                        title={
+                          showTreeGroups.has(group.resume_group_id)
+                            ? "Hide Tree View"
+                            : "Show Tree View"
+                        }
                       >
-                        <GitBranch className="h-5 w-5" style={{ color: showTreeGroups.has(group.resume_group_id) ? "var(--accent)" : "var(--ink-fade)" }} />
+                        <GitBranch
+                          className="h-5 w-5"
+                          style={{
+                            color: showTreeGroups.has(group.resume_group_id)
+                              ? "var(--accent)"
+                              : "var(--ink-fade)",
+                          }}
+                        />
                       </button>
                     </div>
                   </div>
 
                   {showTreeGroups.has(group.resume_group_id) ? (
-                    <div className="p-5 border-t" style={{ borderColor: 'var(--grid)' }}>
-                      <VersionTree 
-                        versions={group.versions} 
-                        onDelete={handleDelete} 
-                        onRestore={handleRestoreClick} 
-                        deleting={deleting} 
-                        restoring={restoring} 
+                    <div className="p-5 border-t" style={{ borderColor: "var(--grid)" }}>
+                      <VersionTree
+                        versions={group.versions}
+                        onDelete={handleDelete}
+                        onRestore={handleRestoreClick}
+                        deleting={deleting}
+                        restoring={restoring}
                       />
                     </div>
                   ) : (
                     /* Version Cards within group */
-                    (expandedGroups.has(group.resume_group_id) && (
+                    expandedGroups.has(group.resume_group_id) && (
                       <div
                         className="flex flex-col gap-2 px-5 pb-5"
                         style={{ borderTop: "1px solid var(--grid)" }}
@@ -158,7 +182,10 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                         {group.versions.map((version, index) => (
                           <div key={version.id} className="flex items-stretch gap-3">
                             {/* Timeline connector */}
-                            <div className="flex flex-col items-center pt-4" style={{ width: "20px" }}>
+                            <div
+                              className="flex flex-col items-center pt-4"
+                              style={{ width: "20px" }}
+                            >
                               <div
                                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                 style={{
@@ -166,7 +193,10 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                                 }}
                               />
                               {index < group.versions.length - 1 && (
-                                <div className="flex-1 w-px mt-1" style={{ backgroundColor: "var(--grid)" }} />
+                                <div
+                                  className="flex-1 w-px mt-1"
+                                  style={{ backgroundColor: "var(--grid)" }}
+                                />
                               )}
                             </div>
                             {/* Card */}
@@ -182,7 +212,7 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
                           </div>
                         ))}
                       </div>
-                    ))
+                    )
                   )}
                 </div>
               ))}

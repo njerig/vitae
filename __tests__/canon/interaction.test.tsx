@@ -3,10 +3,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
 import { useCanon } from "@/lib/canon/useCanon"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import * as canonApi from "@/lib/canon/api"
 import { ValidationError } from "@/lib/canon/api"
-import { getContentSchema } from "@/lib/schemas"
+import { getContentSchema } from "@/lib/shared/schemas"
 
 jest.mock("@/lib/canon/api", () => {
   const actual = jest.requireActual("@/lib/canon/api")

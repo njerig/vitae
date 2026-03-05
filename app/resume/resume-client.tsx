@@ -15,8 +15,8 @@ import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorBut
 import { useDragState } from "@/lib/resume-builder/useDragState"
 import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
-import type { CanonItem, ItemType } from "@/lib/types"
-import { formatDateTime, formatDate } from "@/lib/utils"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
+import { formatDateTime, formatDate } from "@/lib/shared/utils"
 
 export default function ResumeClient({
   userName,
@@ -55,7 +55,13 @@ export default function ResumeClient({
     [itemTypes]
   )
 
-  const { sections, setSections } = useResumeSections(allItems, itemTypes, workingState, workingStateLoading, updateStateLocally)
+  const { sections, setSections } = useResumeSections(
+    allItems,
+    itemTypes,
+    workingState,
+    workingStateLoading,
+    updateStateLocally
+  )
 
   const filteredSections = useMemo(() => {
     const selectedIds = new Set(workingState.sections.flatMap((s) => s.item_ids))
@@ -70,7 +76,7 @@ export default function ResumeClient({
 
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
 
-  const saveItemPosition = useCallback(async (_itemId: string, _position: number) => { }, [])
+  const saveItemPosition = useCallback(async (_itemId: string, _position: number) => {}, [])
 
   const selectedTemplateId = workingState.template_id ?? "classic"
 
@@ -105,7 +111,14 @@ export default function ResumeClient({
     }
   }, [previewProfile, filteredSections, sections, selectedTemplateId])
 
-  const { draggedItem, setDraggedItem, draggedSection, setDraggedSection, handleItemDragEnd, isDragging } = useDragState(sections, saveItemPosition)
+  const {
+    draggedItem,
+    setDraggedItem,
+    draggedSection,
+    setDraggedSection,
+    handleItemDragEnd,
+    isDragging,
+  } = useDragState(sections, saveItemPosition)
 
   const savingToastId = useRef<string | null>(null)
 
@@ -129,7 +142,14 @@ export default function ResumeClient({
         <div className="page-bg-gradient"></div>
         <div className="relative z-10 pt-32 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1rem",
+              }}
+            >
               <Spinner size={40} />
               <p style={{ color: "var(--ink-light)" }}>Loading your resume...</p>
             </div>
@@ -141,9 +161,19 @@ export default function ResumeClient({
 
   return (
     // Full viewport height — no page-level scroll
-    <div className="page-container" style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} toastOptions={{ style: { zIndex: 99999 } }} />
-      <div className="page-bg-gradient" style={{ position: "fixed", inset: 0, pointerEvents: "none" }} />
+    <div
+      className="page-container"
+      style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}
+    >
+      <Toaster
+        position="top-center"
+        containerStyle={{ zIndex: 99999 }}
+        toastOptions={{ style: { zIndex: 99999 } }}
+      />
+      <div
+        className="page-bg-gradient"
+        style={{ position: "fixed", inset: 0, pointerEvents: "none" }}
+      />
 
       {/* Two-column body — each column scrolls independently, navbar offset at top */}
       <div
@@ -158,7 +188,10 @@ export default function ResumeClient({
                 <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
               </Link>
               <div className="flex flex-col gap-0.5">
-                <span className="text-2xl font-semibold whitespace-nowrap" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
+                <span
+                  className="text-2xl font-semibold whitespace-nowrap"
+                  style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
+                >
                   Resume Builder
                 </span>
                 {isDirty && (
@@ -169,9 +202,12 @@ export default function ResumeClient({
               </div>
             </div>
             <div className="flex flex-row items-center gap-4">
-
               <div className="flex flex-row items-center justify-center gap-2">
-                <SaveResumeButton workingState={workingState} parentVersionId={parentVersionId} syncToBackend={syncToBackend} />
+                <SaveResumeButton
+                  workingState={workingState}
+                  parentVersionId={parentVersionId}
+                  syncToBackend={syncToBackend}
+                />
                 <button
                   type="button"
                   onClick={handleExportPdf}
@@ -180,66 +216,94 @@ export default function ResumeClient({
                   style={{ padding: "0.8rem", fontSize: "0.8rem" }}
                   title="Download resume as PDF"
                 >
-                  {exportingPdf ? <Spinner size={13} color="var(--ink)" /> : <Download className="w-3.5 h-3.5" />}
+                  {exportingPdf ? (
+                    <Spinner size={13} color="var(--ink)" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5" />
+                  )}
                   Export PDF
                 </button>
               </div>
             </div>
           </div>
 
-            <div className="flex-1 overflow-y-auto pb-8 space-y-6" style={{ scrollbarGutter: "stable" }}>
-              {isDragging && (
-                <div className="rounded-xl p-4" style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}>
-                  <p className="text-sm" style={{ color: "var(--paper)" }}>
-                    <strong>Drop to reorder.</strong> Item order will be saved automatically.
-                  </p>
-                </div>
-              )}
+          <div
+            className="flex-1 overflow-y-auto pb-8 space-y-6"
+            style={{ scrollbarGutter: "stable" }}
+          >
+            {isDragging && (
+              <div
+                className="rounded-xl p-4"
+                style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}
+              >
+                <p className="text-sm" style={{ color: "var(--paper)" }}>
+                  <strong>Drop to reorder.</strong> Item order will be saved automatically.
+                </p>
+              </div>
+            )}
 
-              {sections.length === 0 ? (
-                <div
-                  className="bg-white rounded-2xl border p-12 text-center shadow-sm"
-                  style={{
-                    borderColor: "var(--grid)",
-                  }}
-                >
-                  <p style={{ color: "var(--ink-fade)" }}>No items yet. Add some items to your Career History to get started!</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {sections.map((section, sectionIndex) => (
-                    <DragSection
-                      key={section.typeId}
-                      section={section}
-                      sectionIndex={sectionIndex}
-                      sections={sections}
-                      setSections={setSections}
-                      draggedSection={draggedSection}
-                      setDraggedSection={setDraggedSection}
-                      draggedItem={draggedItem}
-                      setDraggedItem={setDraggedItem}
-                      saveItemPosition={saveItemPosition}
-                      formatDate={formatDate}
-                      handleItemDragEnd={handleItemDragEnd}
-                      isSelected={isSelected}
-                      toggleItem={toggleItem}
-                      onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
-                      getOverride={getOverride}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            {sections.length === 0 ? (
+              <div
+                className="bg-white rounded-2xl border p-12 text-center shadow-sm"
+                style={{
+                  borderColor: "var(--grid)",
+                }}
+              >
+                <p style={{ color: "var(--ink-fade)" }}>
+                  No items yet. Add some items to your Career History to get started!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {sections.map((section, sectionIndex) => (
+                  <DragSection
+                    key={section.typeId}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                    sections={sections}
+                    setSections={setSections}
+                    draggedSection={draggedSection}
+                    setDraggedSection={setDraggedSection}
+                    draggedItem={draggedItem}
+                    setDraggedItem={setDraggedItem}
+                    saveItemPosition={saveItemPosition}
+                    formatDate={formatDate}
+                    handleItemDragEnd={handleItemDragEnd}
+                    isSelected={isSelected}
+                    toggleItem={toggleItem}
+                    onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
+                    getOverride={getOverride}
+                  />
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
         {/* Right column — fixed height with internal scroll */}
         <div className="flex-1 min-w-0 flex flex-col">
-          <div className="bg-white rounded-2xl border shadow-sm flex flex-col flex-1 overflow-hidden" style={{ borderColor: "var(--grid)" }}>
+          <div
+            className="bg-white rounded-2xl border shadow-sm flex flex-col flex-1 overflow-hidden"
+            style={{ borderColor: "var(--grid)" }}
+          >
             {/* Preview header */}
-            <div className="p-8 border-b shrink-0 bg-white z-10" style={{ borderColor: "var(--grid)" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: "1rem" }}>
+            <div
+              className="p-8 border-b shrink-0 bg-white z-10"
+              style={{ borderColor: "var(--grid)" }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto 1fr",
+                  alignItems: "center",
+                  gap: "1rem",
+                }}
+              >
                 {/* Left: title */}
-                <h3 className="text-2xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
+                <h3
+                  className="text-2xl font-semibold"
+                  style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
+                >
                   Resume Preview
                 </h3>
 

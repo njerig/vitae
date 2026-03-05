@@ -55,19 +55,10 @@ export function DeleteItemModal({ itemTitle, onConfirm, onClose, deleting }: Del
 
         <form onSubmit={handleConfirm}>
           <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary"
-              disabled={deleting}
-            >
+            <button type="button" onClick={onClose} className="btn-secondary" disabled={deleting}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={deleting}
-            >
+            <button type="submit" className="btn-primary" disabled={deleting}>
               {deleting ? (
                 <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <Spinner size={16} color="white" inline />

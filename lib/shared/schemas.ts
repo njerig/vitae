@@ -4,9 +4,7 @@
 import { z } from "zod"
 
 // Helper for date validation
-const dateString = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (use YYYY-MM-DD)")
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (use YYYY-MM-DD)")
 
 const optionalDateString = z
   .string()
@@ -78,10 +76,10 @@ export const GenericContentSchema = z.record(z.string(), z.unknown())
 // Map item type display names to their content schemas
 const CONTENT_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "Work Experience": WorkContentSchema,
-  "Education": EducationContentSchema,
-  "Project": ProjectContentSchema,
-  "Skill": SkillContentSchema,
-  "Link": LinkContentSchema,
+  Education: EducationContentSchema,
+  Project: ProjectContentSchema,
+  Skill: SkillContentSchema,
+  Link: LinkContentSchema,
 }
 
 /**
@@ -161,7 +159,7 @@ export const ResumeNameSchema = z.object({ name: z.string().min(1, "Resume name 
 // Save version request — group_name for new repos, name as commit message
 export const SaveVersionSchema = z.object({
   group_name: z.string().min(1).optional(),
-  name: z.string().default(''),
+  name: z.string().default(""),
   parent_version_id: z.string().uuid().nullable().optional(),
 })
 

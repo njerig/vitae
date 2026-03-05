@@ -17,7 +17,7 @@ export function DragSection({
   isSelected,
   toggleItem,
   onEditOverride,
-  getOverride
+  getOverride,
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -26,7 +26,7 @@ export function DragSection({
   // Ref so dragover always reads current draggedSection without re-registering listener
   const draggedSectionRef = useRef(draggedSection)
   useEffect(() => {
-  draggedSectionRef.current = draggedSection
+    draggedSectionRef.current = draggedSection
   }, [draggedSection])
 
   // Throttle: skip setSections calls when target slot hasn't changed
@@ -118,12 +118,21 @@ export function DragSection({
       className="relative"
       onDragOver={handleSectionDragOver}
       onDragLeave={handleSectionDragLeave}
-      onDrop={(e) => { e.preventDefault(); setDropPosition(null) }}
+      onDrop={(e) => {
+        e.preventDefault()
+        setDropPosition(null)
+      }}
     >
       {/* Drop indicator — above */}
       {dropPosition === "above" && (
-        <div className="absolute left-0 right-0 z-20 pointer-events-none flex items-center gap-1" style={{ top: "-6px" }}>
-          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
+        <div
+          className="absolute left-0 right-0 z-20 pointer-events-none flex items-center gap-1"
+          style={{ top: "-6px" }}
+        >
+          <div
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: "var(--accent)" }}
+          />
           <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
       )}
@@ -172,12 +181,12 @@ export function DragSection({
           </div>
 
           <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
-            <label className="text-xs" style={{ color: "var(--ink-light)" }}>Section order:</label>
+            <label className="text-xs" style={{ color: "var(--ink-light)" }}>
+              Section order:
+            </label>
             <input
               type="text"
-              value={
-                editingKey === `section-${sectionIndex}` ? editingPosition : sectionIndex + 1
-              }
+              value={editingKey === `section-${sectionIndex}` ? editingPosition : sectionIndex + 1}
               onFocus={() => handlePositionFocus(`section-${sectionIndex}`, sectionIndex + 1)}
               onChange={(e) => setEditingPosition(e.target.value)}
               onBlur={(e) => {
@@ -225,15 +234,21 @@ export function DragSection({
               toggleItem={toggleItem}
               onEditOverride={onEditOverride}
               hasOverride={!!getOverride?.(item.id)}
-          />
+            />
           ))}
         </div>
       </div>
 
       {/* Drop indicator — below */}
       {dropPosition === "below" && (
-        <div className="absolute left-0 right-0 z-20 pointer-events-none flex items-center gap-1" style={{ bottom: "-6px" }}>
-          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
+        <div
+          className="absolute left-0 right-0 z-20 pointer-events-none flex items-center gap-1"
+          style={{ bottom: "-6px" }}
+        >
+          <div
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: "var(--accent)" }}
+          />
           <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
       )}

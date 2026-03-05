@@ -7,13 +7,13 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
     <div className="space-y-4">
       {/* Row 1: Position */}
       <TextField
-          label="Position"
-          required
-          value={form.role ?? ""}
-          onChange={update("role")}
-          hasError={hasError("role")}
-          placeholder="Software Engineer..."
-        />
+        label="Position"
+        required
+        value={form.role ?? ""}
+        onChange={update("role")}
+        hasError={hasError("role")}
+        placeholder="Software Engineer..."
+      />
       {/* Row 2: Company + Location */}
       <div className="grid grid-cols-2 gap-3">
         <TextField
@@ -36,8 +36,19 @@ export function WorkFormFields({ form, setForm, hasError }: Props) {
 
       {/* Row 2: Dates */}
       <div className="grid grid-cols-2 gap-3">
-        <DateField label="Start Date" required value={form.start ?? ""} onChange={update("start")} hasError={hasError("start")} />
-        <DateField label="End Date" value={form.end ?? ""} onChange={update("end")} hasError={hasError("end")} />
+        <DateField
+          label="Start Date"
+          required
+          value={form.start ?? ""}
+          onChange={update("start")}
+          hasError={hasError("start")}
+        />
+        <DateField
+          label="End Date"
+          value={form.end ?? ""}
+          onChange={update("end")}
+          hasError={hasError("end")}
+        />
       </div>
 
       {/* Bullets */}

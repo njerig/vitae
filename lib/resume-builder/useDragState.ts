@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import type { CanonItem } from "@/lib/types"
+import type { CanonItem } from "@/lib/shared/types"
 
 type Section = {
   typeName: string
@@ -29,9 +29,7 @@ export function useDragState(
       return
     }
 
-    const hasOrderChanged = section.items.some(
-      (item, index) => item.position !== index
-    )
+    const hasOrderChanged = section.items.some((item, index) => item.position !== index)
 
     if (!hasOrderChanged) {
       setDraggedItem(null)
@@ -55,6 +53,6 @@ export function useDragState(
     draggedSection,
     setDraggedSection,
     handleItemDragEnd,
-    isDragging
+    isDragging,
   }
 }

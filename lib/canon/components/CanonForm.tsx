@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import type { FormError } from "../useCanon"
 import { getFieldsForType, type FieldConfig } from "../../shared/fields"
 import { WorkFormFields } from "./forms/WorkForm"
@@ -17,7 +17,12 @@ type CanonFormProps = {
   editing?: CanonItem<unknown> | null
   defaultTypeId?: string
   onCancel: () => void
-  onSubmit: (payload: { item_type_id: string; title: string; position: number; content: Record<string, unknown> }) => Promise<void> | void
+  onSubmit: (payload: {
+    item_type_id: string
+    title: string
+    position: number
+    content: Record<string, unknown>
+  }) => Promise<void> | void
   saving?: boolean
   error?: FormError
 }
@@ -25,13 +30,24 @@ type CanonFormProps = {
 // Base input styles
 const inputBase = "w-full px-3 py-2 bg-white rounded-lg text-gray-900 border text-sm"
 
-export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmit, saving, error }: CanonFormProps) {
+export function CanonForm({
+  itemTypes,
+  editing,
+  defaultTypeId,
+  onCancel,
+  onSubmit,
+  saving,
+  error,
+}: CanonFormProps) {
   // Compute initial type ID from props
   const initialTypeId = editing?.item_type_id ?? defaultTypeId ?? itemTypes[0]?.id ?? ""
   const [selectedTypeId, setSelectedTypeId] = useState<string>(initialTypeId)
 
   // Compute selected type and display the appropriate form fields
-  const selectedType = useMemo(() => itemTypes.find((t) => t.id === selectedTypeId), [itemTypes, selectedTypeId])
+  const selectedType = useMemo(
+    () => itemTypes.find((t) => t.id === selectedTypeId),
+    [itemTypes, selectedTypeId]
+  )
   const typeName = selectedType?.display_name ?? ""
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
 
@@ -58,7 +74,7 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
 
   const hasError = (fieldName: string) => error?.fields.includes(fieldName) ?? false
 
-  // Build content from form values for a specific item type and sends 
+  // Build content from form values for a specific item type and sends
   // it to the onSubmit callback, which sends it to the backend/API
   const buildContent = () => {
     const content: Record<string, unknown> = {}
@@ -89,7 +105,9 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
   // Handle the form's submission for a specific item type
   const submit = async () => {
     const content = buildContent()
-    const titleField = fields.find((f: FieldConfig) => f.name === "title") || fields.find((f: FieldConfig) => f.required && f.type === "text")
+    const titleField =
+      fields.find((f: FieldConfig) => f.name === "title") ||
+      fields.find((f: FieldConfig) => f.required && f.type === "text")
     const title = titleField ? (form[titleField.name] ?? "") : ""
 
     await onSubmit({
@@ -122,10 +140,16 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-      <h3 className="text-xl font-semibold text-gray-900 mb-4">{editing ? "Edit Item" : "Add New Item"}</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-4">
+        {editing ? "Edit Item" : "Add New Item"}
+      </h3>
 
       {/* Display any errors */}
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">{error.message}</div>}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-wrap">
+          {error.message}
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* Type selector */}
@@ -152,12 +176,14 @@ export function CanonForm({ itemTypes, editing, defaultTypeId, onCancel, onSubmi
         <div className="flex gap-3 pt-2">
           <button onClick={submit} disabled={saving} className="btn-primary">
             {saving ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <Spinner size={16} color="white" inline />
                 {editing ? "Updating..." : "Adding..."}
               </span>
+            ) : editing ? (
+              "Update"
             ) : (
-              editing ? "Update" : "Add Item"
+              "Add Item"
             )}
           </button>
           <button onClick={onCancel} disabled={saving} className="btn-secondary">

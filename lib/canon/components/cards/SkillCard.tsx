@@ -3,7 +3,6 @@ import { Card } from "./Card"
 import { getBullets, renderBulletList, type CardProps } from "./shared"
 
 export function SkillCard({ item, onEdit, onDelete }: CardProps) {
-
   // Compute content from item and display in the <Card /> component
   const c = (item.content ?? {}) as Record<string, unknown>
   const bullets = getBullets(c)

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 
 interface TimelineProps {
   items: CanonItem<unknown>[]
@@ -63,13 +63,22 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
       : []
 
     // Combine and sort chronologically
-    const allItems = [...workItems, ...eduItems].sort((a, b) => a.start.getTime() - b.start.getTime())
+    const allItems = [...workItems, ...eduItems].sort(
+      (a, b) => a.start.getTime() - b.start.getTime()
+    )
 
     if (allItems.length === 0) return null
 
     // Insert gap segments between items
     const allSegments: Array<
-      | { type: "work" | "education"; name: string; start: Date; end: Date; startYear: number; endYear: number }
+      | {
+          type: "work" | "education"
+          name: string
+          start: Date
+          end: Date
+          startYear: number
+          endYear: number
+        }
       | { type: "gap"; name: string; start: Date; end: Date; startYear: number; endYear: number }
     > = []
 
@@ -131,14 +140,28 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
 
   return (
     <div className="mb-3">
-      <p className="text-xs mb-2" style={{ color: "var(--ink)", opacity: 0.5, letterSpacing: "0.05em" }}>
+      <p
+        className="text-xs mb-2"
+        style={{ color: "var(--ink)", opacity: 0.5, letterSpacing: "0.05em" }}
+      >
         TIMELINE
       </p>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-medium" style={{ color: "var(--ink)", opacity: 0.6, minWidth: "2.5rem" }}>
+        <span
+          className="text-xs font-medium"
+          style={{ color: "var(--ink)", opacity: 0.6, minWidth: "2.5rem" }}
+        >
           {timeline.startYear}
         </span>
-        <div className="flex-1 flex h-6" style={{ borderRadius: "var(--radius-soft)", overflow: "hidden", border: "1px solid var(--grid)", background: "var(--paper)" }}>
+        <div
+          className="flex-1 flex h-6"
+          style={{
+            borderRadius: "var(--radius-soft)",
+            overflow: "hidden",
+            border: "1px solid var(--grid)",
+            background: "var(--paper)",
+          }}
+        >
           {timeline.segments.map((segment, idx) => {
             const isHovered = hoveredSegmentIdx === idx
 
@@ -149,8 +172,11 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
                   className="relative shrink-0 transition-all cursor-pointer"
                   style={{
                     width: `${segment.percentage}%`,
-                    background: isHovered ? "repeating-linear-gradient(90deg, transparent, transparent 4px, var(--grid) 4px, var(--grid) 8px)" : "transparent",
-                    borderRight: idx < timeline.segments.length - 1 ? "1px solid var(--grid)" : "none",
+                    background: isHovered
+                      ? "repeating-linear-gradient(90deg, transparent, transparent 4px, var(--grid) 4px, var(--grid) 8px)"
+                      : "transparent",
+                    borderRight:
+                      idx < timeline.segments.length - 1 ? "1px solid var(--grid)" : "none",
                   }}
                   title={`Career gap (${segment.startYear}–${segment.endYear})`}
                   onMouseEnter={() => setHoveredSegmentIdx(idx)}
@@ -166,9 +192,19 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
                 style={{
                   width: `${segment.percentage}%`,
                   background: segment.type === "work" ? "var(--accent)" : "var(--ink)",
-                  opacity: isHovered ? (segment.type === "work" ? 0.6 : 0.5) : segment.type === "work" ? 0.25 : 0.15,
-                  borderRight: idx < timeline.segments.length - 1 ? "1px solid var(--grid)" : "none",
-                  backgroundImage: segment.type === "education" ? "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 6px)" : "none",
+                  opacity: isHovered
+                    ? segment.type === "work"
+                      ? 0.6
+                      : 0.5
+                    : segment.type === "work"
+                      ? 0.25
+                      : 0.15,
+                  borderRight:
+                    idx < timeline.segments.length - 1 ? "1px solid var(--grid)" : "none",
+                  backgroundImage:
+                    segment.type === "education"
+                      ? "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 6px)"
+                      : "none",
                 }}
                 title={`${segment.name} (${segment.type}) (${segment.startYear}–${segment.endYear})`}
                 onMouseEnter={() => setHoveredSegmentIdx(idx)}
@@ -177,19 +213,27 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
             )
           })}
         </div>
-        <span className="text-xs font-medium" style={{ color: "var(--ink)", opacity: 0.6, minWidth: "2.5rem", textAlign: "right" }}>
+        <span
+          className="text-xs font-medium"
+          style={{ color: "var(--ink)", opacity: 0.6, minWidth: "2.5rem", textAlign: "right" }}
+        >
           {timeline.endYear}
         </span>
       </div>
-      <div className="text-xs flex flex-wrap items-center gap-x-2" style={{ color: "var(--ink)", opacity: 0.6, marginLeft: "calc(2.5rem + 0.5rem)" }}>
+      <div
+        className="text-xs flex flex-wrap items-center gap-x-2"
+        style={{ color: "var(--ink)", opacity: 0.6, marginLeft: "calc(2.5rem + 0.5rem)" }}
+      >
         {timeline.segments.map((segment, segIdx) => {
           const isHovered = hoveredSegmentIdx === segIdx
 
           if (segment.type === "gap") {
             // Find the gap's position in the non-gap segments to know which arrow to highlight
-            const prevNonGapIdx = timeline.segments.slice(0, segIdx).filter((s) => s.type !== "gap").length - 1
+            const prevNonGapIdx =
+              timeline.segments.slice(0, segIdx).filter((s) => s.type !== "gap").length - 1
             const nextNonGapIdx = prevNonGapIdx + 1
-            const hasNextItem = nextNonGapIdx < timeline.segments.filter((s) => s.type !== "gap").length
+            const hasNextItem =
+              nextNonGapIdx < timeline.segments.filter((s) => s.type !== "gap").length
 
             return hasNextItem ? (
               <span

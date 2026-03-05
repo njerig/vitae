@@ -51,9 +51,7 @@ export function useWorkingState() {
   }, [])
 
   const isSelected = useCallback((itemId: string): boolean => {
-    return stateRef.current.sections.some(section =>
-      section.item_ids.includes(itemId)
-    )
+    return stateRef.current.sections.some((section) => section.item_ids.includes(itemId))
   }, [])
 
   /** Persist the current (or a given) state to the backend. Call this explicitly. */
@@ -84,10 +82,10 @@ export function useWorkingState() {
 
   /** Update state locally only — no network request. */
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
-    setState(prev => {
+    setState((prev) => {
       const newState = { ...prev, sections: [...prev.sections] }
 
-      let section = newState.sections.find(s => s.item_type_id === itemTypeId)
+      let section = newState.sections.find((s) => s.item_type_id === itemTypeId)
 
       if (!section) {
         section = { item_type_id: itemTypeId, item_ids: [] }
@@ -101,7 +99,7 @@ export function useWorkingState() {
       const index = section.item_ids.indexOf(itemId)
       if (index > -1) {
         section.item_ids.splice(index, 1)
-        newState.sections = newState.sections.filter(s => s.item_ids.length > 0)
+        newState.sections = newState.sections.filter((s) => s.item_ids.length > 0)
       } else {
         section.item_ids.push(itemId)
       }
@@ -120,47 +118,59 @@ export function useWorkingState() {
   }, [])
 
   // Get override for a specific item
-  const getOverride = useCallback((itemId: string): OverrideData | undefined => {
-    return state.overrides?.[itemId]
-  }, [state])
+  const getOverride = useCallback(
+    (itemId: string): OverrideData | undefined => {
+      return state.overrides?.[itemId]
+    },
+    [state]
+  )
 
   // Save override for a specific item — persists immediately
-  const saveOverride = useCallback(async (itemId: string, override: OverrideData) => {
-    const newState: WorkingState = {
-      ...stateRef.current,
-      overrides: {
-        ...(stateRef.current.overrides || {}),
-        [itemId]: override,
-      },
-    }
-    setState(newState)
-    stateRef.current = newState
-    await syncToBackend(newState)
-  }, [syncToBackend])
+  const saveOverride = useCallback(
+    async (itemId: string, override: OverrideData) => {
+      const newState: WorkingState = {
+        ...stateRef.current,
+        overrides: {
+          ...(stateRef.current.overrides || {}),
+          [itemId]: override,
+        },
+      }
+      setState(newState)
+      stateRef.current = newState
+      await syncToBackend(newState)
+    },
+    [syncToBackend]
+  )
 
   // Clear override for a specific item (reset to canon original) — persists immediately
-  const clearOverride = useCallback(async (itemId: string) => {
-    const newOverrides = { ...(stateRef.current.overrides || {}) }
-    delete newOverrides[itemId]
-    const newState: WorkingState = {
-      ...stateRef.current,
-      overrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
-    }
-    setState(newState)
-    stateRef.current = newState
-    await syncToBackend(newState)
-  }, [syncToBackend])
+  const clearOverride = useCallback(
+    async (itemId: string) => {
+      const newOverrides = { ...(stateRef.current.overrides || {}) }
+      delete newOverrides[itemId]
+      const newState: WorkingState = {
+        ...stateRef.current,
+        overrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
+      }
+      setState(newState)
+      stateRef.current = newState
+      await syncToBackend(newState)
+    },
+    [syncToBackend]
+  )
 
   // Set the template and persist immediately
-  const setTemplate = useCallback(async (templateId: string) => {
-    const newState: WorkingState = {
-      ...stateRef.current,
-      template_id: templateId,
-    }
-    setState(newState)
-    stateRef.current = newState
-    await syncToBackend(newState)
-  }, [syncToBackend])
+  const setTemplate = useCallback(
+    async (templateId: string) => {
+      const newState: WorkingState = {
+        ...stateRef.current,
+        template_id: templateId,
+      }
+      setState(newState)
+      stateRef.current = newState
+      await syncToBackend(newState)
+    },
+    [syncToBackend]
+  )
 
   return {
     state,

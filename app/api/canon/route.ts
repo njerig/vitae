@@ -1,18 +1,18 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
 import {
   CreateCanonItemSchema,
   PatchCanonItemSchema,
   IdQuerySchema,
   ItemTypeQuerySchema,
   getContentSchema,
-} from "@/lib/schemas"
+} from "@/lib/shared/schemas"
 
 /**
  * GET /api/canon?item_type_id=<uuid>
  * Retrieves a list of canon items for the authenticated user.
- * 
+ *
  * @param request The incoming request containing an optional `item_type_id` search param.
  * @returns A JSON response containing an array of canon items or an error message.
  */
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/canon
  * Creates a new canon item for the authenticated user.
- * 
+ *
  * @param request The incoming request containing the item data
  * @returns A JSON response containing the newly created canon item or an error message.
  */
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 /**
  * PATCH /api/canon?id=<uuid>
  * Updates an existing canon item for the authenticated user by its ID.
- * 
+ *
  * @param request The incoming request containing the item's `id` as a search param and update fields in the body.
  * @returns A JSON response containing the updated canon item or an error message.
  */
@@ -224,7 +224,7 @@ export async function PATCH(request: NextRequest) {
 /**
  * DELETE /api/canon?id=<uuid>
  * Deletes a specific canon item for the authenticated user by its ID.
- * 
+ *
  * @param request The incoming request containing the item's `id` as a search param.
  * @returns A 204 No Content response on successful deletion, or an error message.
  */
@@ -248,10 +248,10 @@ export async function DELETE(request: NextRequest) {
 
   const { id } = idResult.data
 
-  const result = await pool.query(
-    `DELETE FROM canon_items WHERE id = $1 AND user_id = $2`,
-    [id, userId]
-  )
+  const result = await pool.query(`DELETE FROM canon_items WHERE id = $1 AND user_id = $2`, [
+    id,
+    userId,
+  ])
 
   if (result.rowCount === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })

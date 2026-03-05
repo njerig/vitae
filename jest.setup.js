@@ -1,12 +1,12 @@
 // Jest setup file - runs before each test file
-import '@testing-library/jest-dom'
-import { config } from 'dotenv'
-import { resolve } from 'path'
+import "@testing-library/jest-dom"
+import { config } from "dotenv"
+import { resolve } from "path"
 
 // Load environment variables from .env.local (preferred) or .env
 // These files should be in .gitignore, so secrets won't be committed
-config({ path: resolve(process.cwd(), '.env.local'), quiet: true })
-config({ path: resolve(process.cwd(), '.env'), quiet: true })
+config({ path: resolve(process.cwd(), ".env.local"), quiet: true })
+config({ path: resolve(process.cwd(), ".env"), quiet: true })
 
 // Fallback mock values for CI environments or when .env files don't exist
 process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -15,20 +15,20 @@ process.env.API_URL = process.env.API_URL
 process.env.DATABASE_URL = process.env.DATABASE_URL
 
 // Mock Next.js router
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter() {
     return {
       push: jest.fn(),
       replace: jest.fn(),
       prefetch: jest.fn(),
       back: jest.fn(),
-      pathname: '/',
+      pathname: "/",
       query: {},
-      asPath: '/',
+      asPath: "/",
     }
   },
   usePathname() {
-    return '/'
+    return "/"
   },
   useSearchParams() {
     return new URLSearchParams()
@@ -36,7 +36,7 @@ jest.mock('next/navigation', () => ({
 }))
 
 // Mock Clerk authentication
-jest.mock('@clerk/nextjs', () => ({
+jest.mock("@clerk/nextjs", () => ({
   useAuth: jest.fn(() => ({
     isLoaded: true,
     isSignedIn: false,
@@ -95,7 +95,7 @@ global.IntersectionObserver = class IntersectionObserver {
 //     originalError.call(console, ...args)
 //   }
 // })
-// 
+//
 // afterAll(() => {
 //   console.error = originalError
 // })

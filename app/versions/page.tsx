@@ -8,8 +8,8 @@ export default async function VersionsPage() {
 
   if (!userId) {
     return (
-      <div className='flex flex-col align-center items-center justify-center min-h-screen'>
-        <p className='text-gray-900 text-4xl'>Please sign in to view your saved resumes</p>
+      <div className="flex flex-col align-center items-center justify-center min-h-screen">
+        <p className="text-gray-900 text-4xl">Please sign in to view your saved resumes</p>
       </div>
     )
   }

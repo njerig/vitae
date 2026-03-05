@@ -17,13 +17,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Default item types created for new users
-export const DEFAULT_ITEM_TYPES = [
-  "Work Experience",
-  "Education",
-  "Project",
-  "Skill",
-  "Link",
-]
+export const DEFAULT_ITEM_TYPES = ["Work Experience", "Education", "Project", "Skill", "Link"]
 
 // Ensures user row exists and creates default item_types if new.
 export async function ensureUserWithDefaults(userId: string): Promise<void> {
@@ -32,10 +26,7 @@ export async function ensureUserWithDefaults(userId: string): Promise<void> {
     await client.query("BEGIN")
 
     // Insert user if they do not exist yet
-    await client.query(
-      `INSERT INTO users (id) VALUES ($1) ON CONFLICT (id) DO NOTHING`,
-      [userId]
-    )
+    await client.query(`INSERT INTO users (id) VALUES ($1) ON CONFLICT (id) DO NOTHING`, [userId])
 
     // Create default item_types if user is new
     for (const displayName of DEFAULT_ITEM_TYPES) {

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react"
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 
 type Section = {
   typeName: string
@@ -20,8 +20,6 @@ type WorkingState = {
   overrides?: Record<string, OverrideData>
 }
 
-
-
 export function useResumeSections(
   allItems: CanonItem[],
   itemTypes: ItemType[],
@@ -34,14 +32,14 @@ export function useResumeSections(
 
   const computedSections = useMemo<Section[]>(() => {
     return itemTypes
-      .map(type => ({
+      .map((type) => ({
         typeName: type.display_name,
         typeId: type.id,
         items: allItems
-          .filter(item => item.item_type_id === type.id)
-          .sort((a, b) => a.position - b.position)
+          .filter((item) => item.item_type_id === type.id)
+          .sort((a, b) => a.position - b.position),
       }))
-      .filter(section => section.items.length > 0)
+      .filter((section) => section.items.length > 0)
   }, [allItems, itemTypes])
 
   const baseSections = localSections ?? computedSections
@@ -51,9 +49,9 @@ export function useResumeSections(
   const sections = useMemo<Section[]>(() => {
     const overrides = workingState?.overrides
     if (!overrides || Object.keys(overrides).length === 0) return baseSections
-    return baseSections.map(section => ({
+    return baseSections.map((section) => ({
       ...section,
-      items: section.items.map(item => {
+      items: section.items.map((item) => {
         const override = overrides[item.id]
         if (!override) return item
         return {
@@ -67,47 +65,32 @@ export function useResumeSections(
     }))
   }, [baseSections, workingState?.overrides])
 
-
-
   // Compute the full state tree from workingState and canon exactly once when it first loads
   const lazyInitialSections = useMemo(() => {
-    if (
-      workingStateLoading ||
-      !workingState?.sections ||
-      computedSections.length === 0
-    ) {
+    if (workingStateLoading || !workingState?.sections || computedSections.length === 0) {
       return null
     }
 
-    const reorderedSections = computedSections.map(section => {
-      const saved = workingState.sections.find(
-        s => s.item_type_id === section.typeId
-      )
+    const reorderedSections = computedSections.map((section) => {
+      const saved = workingState.sections.find((s) => s.item_type_id === section.typeId)
 
       if (!saved) return section
 
       const orderedItems = saved.item_ids
-        .map(id => section.items.find(item => item.id === id))
+        .map((id) => section.items.find((item) => item.id === id))
         .filter(Boolean) as CanonItem[]
 
-      const missingItems = section.items.filter(
-        item => !saved.item_ids.includes(item.id)
-      )
+      const missingItems = section.items.filter((item) => !saved.item_ids.includes(item.id))
 
       return { ...section, items: [...orderedItems, ...missingItems] }
     })
 
     const orderedSections = workingState.sections
-      .map(saved =>
-        reorderedSections.find(s => s.typeId === saved.item_type_id)
-      )
+      .map((saved) => reorderedSections.find((s) => s.typeId === saved.item_type_id))
       .filter(Boolean) as Section[]
 
     const missingSections = reorderedSections.filter(
-      section =>
-        !workingState.sections.some(
-          s => s.item_type_id === section.typeId
-        )
+      (section) => !workingState.sections.some((s) => s.item_type_id === section.typeId)
     )
 
     return [...orderedSections, ...missingSections]
@@ -121,12 +104,12 @@ export function useResumeSections(
 
   const setSections = useCallback(
     (next: Section[]) => {
-      setLocalSections(prev => (prev === next ? prev : next))
+      setLocalSections((prev) => (prev === next ? prev : next))
       // Update locally — saving is manual now
       const newWorkingState: WorkingState = {
-        sections: next.map(section => ({
+        sections: next.map((section) => ({
           item_type_id: section.typeId,
-          item_ids: section.items.map(item => item.id)
+          item_ids: section.items.map((item) => item.id),
         })),
         ...(workingState?.overrides ? { overrides: workingState.overrides } : {}),
       }

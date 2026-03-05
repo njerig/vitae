@@ -1,4 +1,4 @@
-import type { CanonItem, ItemType } from "@/lib/types"
+import type { CanonItem, ItemType } from "@/lib/shared/types"
 import toast from "react-hot-toast"
 
 // Custom error class that carries both a readable message and the list of invalid field names
@@ -29,7 +29,6 @@ const FIELD_LABELS: Record<string, string> = {
 // Returns a success or error message from the API to the frontend
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-
     // read error from backend without crashing
     const data = await res.json().catch(() => null)
 
@@ -61,7 +60,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 /**
  * Retrieves a list of all available item types (e.g., "Work Experience", "Education").
- * 
+ *
  * @returns A promise resolving to an array of ItemType objects.
  */
 export async function listItemTypes(): Promise<ItemType[]> {
@@ -73,7 +72,7 @@ export async function listItemTypes(): Promise<ItemType[]> {
 
 /**
  * Creates a new item type.
- * 
+ *
  * @param input An object containing the display_name for the new item type.
  * @returns A promise resolving to the newly created ItemType.
  */
@@ -93,7 +92,7 @@ export async function createItemType(input: { display_name: string }): Promise<I
 /**
  * Retrieves canon items from the database.
  * If an itemTypeId is provided, filters the results to only include items of that type.
- * 
+ *
  * @param itemTypeId (Optional) The UUID of the item type to filter by.
  * @returns A promise resolving to an array of CanonItem objects.
  */
@@ -108,7 +107,7 @@ export async function listCanonItems<T = unknown>(itemTypeId?: string): Promise<
 
 /**
  * Creates a new canon item (like a new work experience entry) for the user.
- * 
+ *
  * @param input An object containing fields to create a canon item.
  * @returns A promise resolving to the newly created CanonItem.
  */
@@ -128,14 +127,14 @@ export async function createCanonItem<T = unknown>(input: {
 
 /**
  * Updates an existing canon item by applying a partial patch.
- * 
+ *
  * @param id The UUID of the canon item to update.
  * @param patch An object containing the fields to update.
  * @returns A promise resolving to the updated CanonItem.
  */
 export async function patchCanonItem<T = unknown>(
   id: string,
-  patch: { title?: string; position?: number; content?: T },
+  patch: { title?: string; position?: number; content?: T }
 ): Promise<CanonItem<T>> {
   const res = await fetch(`/api/canon?id=${encodeURIComponent(id)}`, {
     method: "PATCH",
@@ -147,7 +146,7 @@ export async function patchCanonItem<T = unknown>(
 
 /**
  * Deletes a canon item by its UUID.
- * 
+ *
  * @param id The UUID of the canon item to delete.
  */
 export async function deleteCanonItem(id: string): Promise<void> {
@@ -175,7 +174,7 @@ export type WorkingStateResponse = {
 
 /**
  * Retrieves the user's current working state (their active resume layout and overrides).
- * 
+ *
  * @returns A promise resolving to a WorkingStateResponse containing the state and its last updated timestamp.
  */
 export async function getWorkingState(): Promise<WorkingStateResponse> {
@@ -187,7 +186,7 @@ export async function getWorkingState(): Promise<WorkingStateResponse> {
 
 /**
  * Updates the user's current working state (saving their active resume layout and overrides).
- * 
+ *
  * @param state The entire new working state to save.
  * @returns A promise resolving to the updated WorkingStateResponse from the server.
  */

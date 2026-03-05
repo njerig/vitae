@@ -15,11 +15,21 @@ export function ProjectFormFields({ form, setForm, hasError }: Props) {
           hasError={hasError("title")}
           placeholder="My Awesome Project"
         />
-        <TextField label="URL" value={form.url ?? ""} onChange={update("url")} placeholder="https://github.com/..." />
+        <TextField
+          label="URL"
+          value={form.url ?? ""}
+          onChange={update("url")}
+          placeholder="https://github.com/..."
+        />
       </div>
 
       {/* Description */}
-      <TextField label="Description" value={form.description ?? ""} onChange={update("description")} placeholder="A brief description" />
+      <TextField
+        label="Description"
+        value={form.description ?? ""}
+        onChange={update("description")}
+        placeholder="A brief description"
+      />
 
       {/* Dates in row */}
       <div className="grid grid-cols-2 gap-3">
@@ -28,10 +38,20 @@ export function ProjectFormFields({ form, setForm, hasError }: Props) {
       </div>
 
       {/* Details */}
-      <TextareaField label="Bullet points" value={form.bullets ?? ""} onChange={update("bullets")} placeholder="Key features, technologies used" />
+      <TextareaField
+        label="Bullet points"
+        value={form.bullets ?? ""}
+        onChange={update("bullets")}
+        placeholder="Key features, technologies used"
+      />
 
       {/* Skills */}
-      <TagsField label="Technologies" value={form.skills ?? ""} onChange={update("skills")} placeholder="React, TypeScript, AWS" />
+      <TagsField
+        label="Technologies"
+        value={form.skills ?? ""}
+        onChange={update("skills")}
+        placeholder="React, TypeScript, AWS"
+      />
     </div>
   )
 }

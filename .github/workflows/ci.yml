@@ -2,35 +2,49 @@ name: CI
 
 on:
   push:
-    branches: ['*']
+    branches: ["*"]
   pull_request:
-    branches: ['*']
+    branches: ["*"]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
 
 jobs:
-  # ============================================
-  # Frontend Build & Test (Next.js + Jest)
-  # ============================================
-  frontend:
-    name: Frontend Build & Test
+  lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+      - name: Run Prettier Check
+        run: npm run format:check
 
+  typecheck_build_test:
+    name: Typecheck, Build, & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
       - name: Install dependencies
         run: npm ci
 
-      # Cache Next.js build output for faster subsequent builds
+      - name: Run TypeScript compiler
+        run: npx tsc
+
       - name: Cache Next.js build
         uses: actions/cache@v4
         with:
@@ -40,16 +54,9 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
             nextjs-${{ runner.os }}-
-      
-      - name: Run TypeScript compiler
-        run: npx tsc
-        
-      - name: Run ESLint
-        run: npm run lint
 
       - name: Build Next.js
         env:
-          # Frontend env vars from repository secrets
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}

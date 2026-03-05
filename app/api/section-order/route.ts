@@ -1,7 +1,7 @@
 // app/api/section-order/route.ts
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pool, ensureUserWithDefaults } from "@/lib/db"
+import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
 
 // GET /api/section-order - Get user's saved section order
 export async function GET() {
@@ -18,7 +18,7 @@ export async function GET() {
   )
 
   return NextResponse.json({
-    sectionOrder: rows[0]?.section_order || []
+    sectionOrder: rows[0]?.section_order || [],
   })
 }
 
@@ -35,10 +35,7 @@ export async function PATCH(request: NextRequest) {
   const { sectionOrder } = body
 
   if (!Array.isArray(sectionOrder)) {
-    return NextResponse.json(
-      { error: "sectionOrder must be an array" },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: "sectionOrder must be an array" }, { status: 400 })
   }
 
   // Upsert (insert or update)

@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import type { CanonItem } from "@/lib/types"
+import type { CanonItem } from "@/lib/shared/types"
 import type { OverrideData } from "@/lib/working-state/useWorkingState"
 import type { FormError } from "@/lib/canon/useCanon"
 import { getFieldsForType, type FieldConfig } from "@/lib/shared/fields"
-import { getContentSchema } from "@/lib/schemas"
+import { getContentSchema } from "@/lib/shared/schemas"
 import { WorkFormFields } from "@/lib/canon/components/forms/WorkForm"
 import { EducationFormFields } from "@/lib/canon/components/forms/EducationForm"
 import { ProjectFormFields } from "@/lib/canon/components/forms/ProjectForm"
@@ -25,16 +25,26 @@ type EditOverrideModalProps = {
   saving?: boolean
 }
 
-export function EditOverrideModal({ item, typeName, override, onSave, onReset, onClose, saving }: EditOverrideModalProps) {
+export function EditOverrideModal({
+  item,
+  typeName,
+  override,
+  onSave,
+  onReset,
+  onClose,
+  saving,
+}: EditOverrideModalProps) {
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
   const [error, setError] = useState<FormError>(null)
 
   // Build initial form values from current item content
   // If override content is provided, then fill the form values with override content
   const initialForm = useMemo(() => {
-    const content = (override?.content
-      ? { ...(item.content as Record<string, unknown>), ...override.content }
-      : (item.content ?? {})) as Record<string, unknown>
+    const content = (
+      override?.content
+        ? { ...(item.content as Record<string, unknown>), ...override.content }
+        : (item.content ?? {})
+    ) as Record<string, unknown>
     const initial: Record<string, string> = {}
 
     fields.forEach((field: FieldConfig) => {
@@ -102,7 +112,9 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
     }
 
     // Determine title
-    const titleField = fields.find((f: FieldConfig) => f.name === "title") || fields.find((f: FieldConfig) => f.required && f.type === "text")
+    const titleField =
+      fields.find((f: FieldConfig) => f.name === "title") ||
+      fields.find((f: FieldConfig) => f.required && f.type === "text")
     const title = titleField ? (form[titleField.name] ?? "") : undefined
 
     try {
@@ -148,14 +160,17 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-xl font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}>
+        <h3
+          className="text-xl font-semibold mb-1"
+          style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
+        >
           Edit for This Resume
         </h3>
         <p className="text-sm mb-4" style={{ color: "var(--ink-fade)" }}>
           Changes only affect this resume, not the original item.
         </p>
 
-      {/* Display errors */}
+        {/* Display errors */}
         {error && (
           <div
             className="mb-4 p-3 rounded-lg text-sm whitespace-pre-wrap"
@@ -168,7 +183,7 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
             {error.message}
           </div>
         )}
-         {/* Display the type of the item */}
+        {/* Display the type of the item */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: "var(--ink-fade)" }}>
@@ -202,7 +217,11 @@ export function EditOverrideModal({ item, typeName, override, onSave, onReset, o
               )}
             </button>
             {override && (
-              <button onClick={handleReset} disabled={saving} className="card-action-delete-negative">
+              <button
+                onClick={handleReset}
+                disabled={saving}
+                className="card-action-delete-negative"
+              >
                 Reset to Original
               </button>
             )}

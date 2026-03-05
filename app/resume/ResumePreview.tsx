@@ -64,7 +64,10 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumePre
 
       const viewBoxValue = svgElement.getAttribute("viewBox")
       const viewBoxParts = viewBoxValue
-        ? viewBoxValue.trim().split(/\s+/).map((v) => Number.parseFloat(v))
+        ? viewBoxValue
+            .trim()
+            .split(/\s+/)
+            .map((v) => Number.parseFloat(v))
         : []
       const docHeight = Number.isFinite(viewBoxParts[3]) ? viewBoxParts[3] : 792
 
@@ -168,7 +171,10 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumePre
 
   if (loading && !svg) {
     return (
-      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#e8e8e8" }}>
+      <div
+        className="flex items-center justify-center min-h-96"
+        style={{ backgroundColor: "#e8e8e8" }}
+      >
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-current mb-4"></div>
           <p style={{ color: "var(--ink-fade)" }}>Generating preview...</p>
@@ -179,10 +185,17 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumePre
 
   if (error && !svg) {
     return (
-      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#e8e8e8" }}>
+      <div
+        className="flex items-center justify-center min-h-96"
+        style={{ backgroundColor: "#e8e8e8" }}
+      >
         <div className="text-center">
-          <p style={{ color: "var(--ink)" }} className="mb-2">Preview failed</p>
-          <p style={{ color: "var(--ink-fade)" }} className="text-sm">{error}</p>
+          <p style={{ color: "var(--ink)" }} className="mb-2">
+            Preview failed
+          </p>
+          <p style={{ color: "var(--ink-fade)" }} className="text-sm">
+            {error}
+          </p>
         </div>
       </div>
     )
@@ -190,7 +203,10 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumePre
 
   if (!svg) {
     return (
-      <div className="flex items-center justify-center min-h-96" style={{ backgroundColor: "#e8e8e8" }}>
+      <div
+        className="flex items-center justify-center min-h-96"
+        style={{ backgroundColor: "#e8e8e8" }}
+      >
         <p style={{ color: "var(--ink-fade)" }}>Your resume preview will appear here</p>
       </div>
     )
@@ -208,7 +224,10 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumePre
           }}
         >
           <div className="font-medium mb-1">Preview update failed</div>
-          <div style={{ color: "var(--ink-fade)" }} className="whitespace-pre-wrap break-words text-xs">
+          <div
+            style={{ color: "var(--ink-fade)" }}
+            className="whitespace-pre-wrap break-words text-xs"
+          >
             {errorForExistingSvg}
           </div>
         </div>

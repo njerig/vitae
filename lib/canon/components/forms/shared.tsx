@@ -22,11 +22,19 @@ export const inputBase = "w-full px-3 py-2 bg-white rounded-lg text-gray-900 bor
 export const inputBorder = (hasError?: boolean) => (hasError ? "border-red-500" : "border-gray-300")
 
 // Text input field
-export function TextField({ label, required, value, onChange, hasError, placeholder }: FormFieldProps) {
+export function TextField({
+  label,
+  required,
+  value,
+  onChange,
+  hasError,
+  placeholder,
+}: FormFieldProps) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}{required && " *"}
+        {label}
+        {required && " *"}
       </label>
       <input
         type="text"
@@ -44,7 +52,8 @@ export function DateField({ label, required, value, onChange, hasError }: FormFi
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}{required && " *"}
+        {label}
+        {required && " *"}
       </label>
       <input
         type="date"
@@ -65,12 +74,12 @@ export function TextareaField({
   onChange,
   hasError,
   placeholder,
-}: FormFieldProps & { rows?: number; }) {
-
+}: FormFieldProps & { rows?: number }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}{required && " *"}
+        {label}
+        {required && " *"}
       </label>
       <textarea
         value={value}
@@ -84,11 +93,19 @@ export function TextareaField({
 }
 
 // Tags field
-export function TagsField({ label, required, value, onChange, hasError, placeholder }: FormFieldProps) {
+export function TagsField({
+  label,
+  required,
+  value,
+  onChange,
+  hasError,
+  placeholder,
+}: FormFieldProps) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}{required && " *"}
+        {label}
+        {required && " *"}
       </label>
       <input
         type="text"

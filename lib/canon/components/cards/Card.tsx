@@ -13,7 +13,17 @@ type CardProps = {
   onToggle?: () => void
 }
 
-export function Card({ icon, title, subtitle, meta, body, onEdit, onDelete, selected, onToggle }: CardProps) {
+export function Card({
+  icon,
+  title,
+  subtitle,
+  meta,
+  body,
+  onEdit,
+  onDelete,
+  selected,
+  onToggle,
+}: CardProps) {
   return (
     <div className="card">
       {/* Toggle checkbox */}

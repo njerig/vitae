@@ -32,36 +32,38 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang='en'>
-        <body className={`${inter.variable} ${geistMono.variable} ${crimsonPro.variable} antialiased`}>
+      <html lang="en">
+        <body
+          className={`${inter.variable} ${geistMono.variable} ${crimsonPro.variable} antialiased`}
+        >
           {/* Header component - Editorial design */}
-          <header className='absolute top-0 left-0 right-0 z-50 px-8 py-6 border-b'>
-            <div className='w-full flex justify-between items-center'>
+          <header className="absolute top-0 left-0 right-0 z-50 px-8 py-6 border-b">
+            <div className="w-full flex justify-between items-center">
               {/* Left side - Logo */}
-              <div className='flex items-center gap-6'>
-                <Link href='/' className='logo flex items-center'>
+              <div className="flex items-center gap-6">
+                <Link href="/" className="logo flex items-center">
                   <h2>Vitae</h2>
                 </Link>
               </div>
               {/* Right side buttons */}
-              <div className='flex items-center gap-4'>
+              <div className="flex items-center gap-4">
                 <SignedOut>
-                  <Link href='/auth/sign-in' className='flex items-center'>
-                    <button className='btn-secondary rounded-lg'>Sign In</button>
+                  <Link href="/auth/sign-in" className="flex items-center">
+                    <button className="btn-secondary rounded-lg">Sign In</button>
                   </Link>
-                  <Link href='/auth/sign-up' className='flex items-center'>
-                    <button className='btn-primary rounded-lg'>Sign Up</button>
+                  <Link href="/auth/sign-up" className="flex items-center">
+                    <button className="btn-primary rounded-lg">Sign Up</button>
                   </Link>
                 </SignedOut>
                 <SignedIn>
-                  <Link href='/home' className='flex items-center'>
-                    <button className='btn-nav'>Career History</button>
+                  <Link href="/home" className="flex items-center">
+                    <button className="btn-nav">Career History</button>
                   </Link>
-                  <Link href='/resume' className='flex items-center'>
-                    <button className='btn-nav'>Resume Builder</button>
+                  <Link href="/resume" className="flex items-center">
+                    <button className="btn-nav">Resume Builder</button>
                   </Link>
-                  <Link href='/versions' className='flex items-center'>
-                    <button className='btn-nav'>Version History</button>
+                  <Link href="/versions" className="flex items-center">
+                    <button className="btn-nav">Version History</button>
                   </Link>
                   <UserButton showName />
                 </SignedIn>
@@ -75,25 +77,25 @@ export default function RootLayout({
             toastOptions={{
               duration: 3000,
               style: {
-                background: 'var(--paper)',
-                color: 'var(--ink)',
-                border: '1px solid var(--grid)',
-                borderRadius: 'var(--radius-soft)',
-                fontFamily: 'var(--font-sans)',
+                background: "var(--paper)",
+                color: "var(--ink)",
+                border: "1px solid var(--grid)",
+                borderRadius: "var(--radius-soft)",
+                fontFamily: "var(--font-sans)",
               },
               success: {
                 iconTheme: {
-                  primary: '#008000',
-                  secondary: 'var(--paper)',
+                  primary: "#008000",
+                  secondary: "var(--paper)",
                 },
               },
               error: {
                 style: {
-                  border: '1px solid #dc2626',
+                  border: "1px solid #dc2626",
                 },
                 iconTheme: {
-                  primary: '#dc2626',
-                  secondary: 'var(--paper)',
+                  primary: "#dc2626",
+                  secondary: "var(--paper)",
                 },
               },
             }}
