@@ -115,6 +115,7 @@ export function useResumeBuilder(userName: string) {
     isDirty,
     isSelected,
     toggleItem,
+    updateStateLocally,
     syncToBackend,
     updatedAt,
     getOverride,

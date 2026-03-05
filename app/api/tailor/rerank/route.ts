@@ -89,7 +89,10 @@ Rules:
     const text = result.response.text()
 
     // Parse the JSON response — strip markdown fences if present
-    const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim() // use zod cleaning here
+    const cleaned = text
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim() // use zod cleaning here
     const parsed = JSON.parse(cleaned)
 
     // Validate structure
