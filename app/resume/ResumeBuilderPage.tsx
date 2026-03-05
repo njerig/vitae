@@ -1,24 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { useCanon } from "@/lib/canon/useCanon"
-import { useState, useMemo, useCallback, useEffect, useRef } from "react"
-import toast, { Toaster } from "react-hot-toast"
+import { Toaster } from "react-hot-toast"
 import { DragSection } from "../../lib/resume-builder/DragSection"
 import { Spinner } from "@/lib/shared/components/Spinner"
-import { PageHeader } from "@/lib/shared/components/PageHeader"
-import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { SaveResumeButton } from "@/lib/versions/components/save/SaveResumeButton"
 import { ChevronLeft, Download } from "lucide-react"
-import { ResumePreview } from "./ResumePreview"
+import { ResumeBuilderPreview } from "./ResumeBuilderPreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorButton"
-import { useDragState } from "@/lib/resume-builder/useDragState"
-import { useResumeSections } from "@/lib/resume-builder/useResumeSection"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
-import type { CanonItem, ItemType } from "@/lib/shared/types"
+import type { CanonItem } from "@/lib/shared/types"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
+import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
 
-export default function ResumeClient({
+export default function ResumeBuilderClient({
   userName,
   versionName,
   versionSavedAt,
@@ -30,112 +25,37 @@ export default function ResumeClient({
   versionSavedAt: string | null
   parentVersionId: string | null
 }) {
-  const { allItems, itemTypes, loading } = useCanon()
-  const [editingItem, setEditingItem] = useState<CanonItem<unknown> | null>(null)
-
   const {
-    state: workingState,
-    loading: workingStateLoading,
-    saving: workingStateSaving,
+    editingItem,
+    setEditingItem,
+    workingState,
+    workingStateSaving,
     isDirty,
     isSelected,
     toggleItem,
-    updateStateLocally,
     syncToBackend,
     updatedAt,
     getOverride,
     saveOverride,
     clearOverride,
     setTemplate,
-  } = useWorkingState()
-
-  // Get type name for a given item
-  const getTypeName = useCallback(
-    (typeId: string) => itemTypes.find((t) => t.id === typeId)?.display_name ?? "Unknown",
-    [itemTypes]
-  )
-
-  const { sections, setSections } = useResumeSections(
-    allItems,
-    itemTypes,
-    workingState,
-    workingStateLoading,
-    updateStateLocally
-  )
-
-  const filteredSections = useMemo(() => {
-    const selectedIds = new Set(workingState.sections.flatMap((s) => s.item_ids))
-    if (selectedIds.size === 0) return []
-    return sections
-      .map((section) => ({
-        ...section,
-        items: section.items.filter((item) => selectedIds.has(item.id)),
-      }))
-      .filter((section) => section.items.length > 0)
-  }, [sections, workingState.sections])
-
-  const previewProfile = useMemo(() => ({ name: userName }), [userName])
-
-  const saveItemPosition = useCallback(async (_itemId: string, _position: number) => {}, [])
-
-  const selectedTemplateId = workingState.template_id ?? "classic"
-
-  const [exportingPdf, setExportingPdf] = useState(false)
-  const handleExportPdf = useCallback(async () => {
-    setExportingPdf(true)
-    try {
-      const data = {
-        profile: previewProfile,
-        sections: filteredSections.length > 0 ? filteredSections : sections,
-      }
-      const res = await fetch("/api/typst/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, template_id: selectedTemplateId }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(typeof err.error === "string" ? err.error : "Export failed")
-      }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "resume.pdf"
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (e) {
-      console.error("PDF export error:", e)
-    } finally {
-      setExportingPdf(false)
-    }
-  }, [previewProfile, filteredSections, sections, selectedTemplateId])
-
-  const {
+    getTypeName,
+    sections,
+    setSections,
+    previewSections,
+    previewProfile,
+    selectedTemplateId,
+    exportingPdf,
+    handleExportPdf,
     draggedItem,
     setDraggedItem,
     draggedSection,
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-  } = useDragState(sections, saveItemPosition)
-
-  const savingToastId = useRef<string | null>(null)
-
-  useEffect(() => {
-    if (workingStateSaving) {
-      if (!savingToastId.current) {
-        savingToastId.current = toast.loading("Saving...", { position: "top-center" })
-      }
-    } else {
-      if (savingToastId.current) {
-        toast.dismiss(savingToastId.current)
-        savingToastId.current = null
-      }
-    }
-  }, [workingStateSaving])
-
-  const isLoading = loading || workingStateLoading
+    saveItemPosition,
+    isLoading,
+  } = useResumeBuilder(userName)
   if (isLoading) {
     return (
       <div className="page-container">
@@ -332,10 +252,10 @@ export default function ResumeClient({
             {/* Preview body */}
             <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
               <div className="rounded-b-2xl overflow-clip">
-                <ResumePreview
-                  sections={filteredSections.length > 0 ? filteredSections : sections}
+                <ResumeBuilderPreview
+                  sections={previewSections}
                   profile={previewProfile}
-                  selectedTemplate={workingState.template_id ?? "classic"}
+                  selectedTemplate={selectedTemplateId}
                 />
               </div>
             </div>

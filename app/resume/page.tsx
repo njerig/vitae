@@ -1,5 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server"
-import ResumeClient from "./resume-client"
+import ResumeBuilderClient from "./ResumeBuilderPage"
 
 export default async function ResumePage({
   searchParams,
@@ -23,7 +23,7 @@ export default async function ResumePage({
   }
 
   return (
-    <ResumeClient
+    <ResumeBuilderClient
       userName={userName}
       userId={userId}
       versionName={versionName}
