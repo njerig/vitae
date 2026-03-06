@@ -1,14 +1,15 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { PageHeader } from "@/lib/shared/components/PageHeader"
 import { Spinner } from "@/lib/shared/components/Spinner"
 import { RestoreConfirmModal } from "@/lib/versions/components/save/RestoreConfirmModal"
-import { ChevronRight, ChevronDown, GitBranch } from "lucide-react"
+import { ChevronRight, ChevronDown, GitBranch, GitCompare } from "lucide-react"
 import { useVersion } from "@/lib/versions/useVersion"
 import { VersionTree } from "@/lib/versions/components/tree/VersionTree"
 import { VersionCard } from "@/lib/versions/components/tree/VersionCard"
+import { DiffView } from "@/lib/versions/DiffView"
 
 interface VersionsClientProps {
   userName: string
@@ -32,6 +33,9 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
     showTreeGroups,
     toggleTreeGroup,
   } = useVersion()
+
+  // Controls visibility of the diff checker panel
+  const [showDiff, setShowDiff] = useState(false)
 
   useEffect(() => {
     fetchVersions()
@@ -73,15 +77,38 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
               title="Version History"
               subtitle="Manage your saved resume versions"
               actions={
-                <Link href="/resume">
-                  <button className="btn-primary rounded-lg flex items-center gap-2">
-                    Resume Builder
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  {/* Toggle diff checker panel */}
+                  {groups.length > 0 && (
+                    <button
+                      onClick={() => setShowDiff((v) => !v)}
+                      className={`btn-secondary rounded-lg flex items-center gap-2 ${showDiff ? "ring-2 ring-offset-1" : ""}`}
+                      style={{ fontSize: "0.8rem", padding: "0.8rem" }}
+                    >
+                      <GitCompare className="h-4 w-4" />
+                      Compare Versions
+                    </button>
+                  )}
+                  <Link href="/resume">
+                    <button className="btn-primary rounded-lg flex items-center gap-2">
+                      Resume Builder
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </Link>
+                </div>
               }
             />
           </div>
+
+          {/* Diff Checker - shown when user clicks the Diff Check button */}
+          {groups.length > 0 && showDiff && (
+            <div
+              className="bg-white rounded-2xl border shadow-sm p-8"
+              style={{ borderColor: "var(--grid)" }}
+            >
+              <DiffView groups={groups} />
+            </div>
+          )}
 
           {/* Empty State */}
           {groups.length === 0 ? (
