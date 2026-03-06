@@ -122,7 +122,7 @@ describe("buildResumeViewModel", () => {
       expect.arrayContaining([
         { text: "Website", href: "https://example.com" },
         { text: "LinkedIn", href: "https://linkedin.com/in/test" },
-        { text: "GitHub", href: undefined },
+        { text: "GitHub", href: "https://github.com/test" }, // bare domain auto-gets https:// prepended
         { text: "NoLabel", href: "https://example.com" },
       ])
     )

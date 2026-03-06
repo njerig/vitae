@@ -14,8 +14,15 @@ function asStringArray(v: unknown): string[] {
 }
 
 function normalizeHref(hrefRaw: string): string | undefined {
-  const href = hrefRaw.trim()
-  if (href.length > 0 && href.length <= 2048 && /^(https?:\/\/|mailto:|tel:)/.test(href)) {
+  let href = hrefRaw.trim()
+  if (!href) return undefined
+
+  // Auto-prepend https:// when users enter bare domains like "github.com/user/repo"
+  if (!/^(https?:\/\/|mailto:|tel:)/i.test(href)) {
+    href = "https://" + href
+  }
+
+  if (href.length <= 2048 && /^(https?:\/\/|mailto:|tel:)/i.test(href)) {
     return href
   }
   return undefined
@@ -53,34 +60,35 @@ export type ResumeViewModel = {
     title: string
     entries: Array<
       | {
-          kind: "school"
-          institution: string
-          location: string
-          dates: DateRange
-          degree: string
-          gpa: string
-          bullets: string[]
-        }
+        kind: "school"
+        institution: string
+        location: string
+        dates: DateRange
+        degree: string
+        gpa: string
+        bullets: string[]
+      }
       | {
-          kind: "work"
-          organization: string
-          location: string
-          dates: DateRange
-          position: string
-          skills: string[]
-          bullets: string[]
-        }
+        kind: "work"
+        organization: string
+        location: string
+        dates: DateRange
+        position: string
+        skills: string[]
+        bullets: string[]
+      }
       | {
-          kind: "project"
-          name: string
-          dates: DateRange
-          skills: string[]
-          bullets: string[]
-        }
+        kind: "project"
+        name: string
+        url?: string // optional clickable link shown next to the project name
+        dates: DateRange
+        skills: string[]
+        bullets: string[]
+      }
       | {
-          kind: "skills"
-          items: Array<{ label: string; values: string[] }>
-        }
+        kind: "skills"
+        items: Array<{ label: string; values: string[] }>
+      }
     >
   }>
 }
@@ -89,13 +97,13 @@ function normalizeProfile(input: unknown): ResumeViewModel["profile"] {
   const p = asRecord(input) ?? {}
   const links = Array.isArray(p.links)
     ? (p.links as unknown[]).flatMap((l) => {
-        const r = asRecord(l)
-        if (!r) return []
-        const text = asString(r.text).trim()
-        const href = asString(r.href)
-        if (!text) return []
-        return [{ text, href: normalizeHref(href) }]
-      })
+      const r = asRecord(l)
+      if (!r) return []
+      const text = asString(r.text).trim()
+      const href = asString(r.href)
+      if (!text) return []
+      return [{ text, href: normalizeHref(href) }]
+    })
     : []
 
   const name = asString(p.name).trim()
@@ -219,10 +227,12 @@ export function buildResumeViewModel(input: unknown): ResumeViewModel {
         const end = parseDateParts(content.end)
         const bullets = asStringArray(content.bullets)
         const skills = asStringArray(content.skills)
+        const url = normalizeHref(asString(content.url))
 
         entries.push({
           kind: "project",
           name: itemTitle,
+          url,
           dates: { start, end },
           skills,
           bullets,

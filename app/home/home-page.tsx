@@ -8,6 +8,7 @@ import { Timeline } from "@/lib/homepage/Timeline"
 import { Spinner } from "@/lib/shared/components/Spinner"
 import { PageHeader } from "@/lib/shared/components/PageHeader"
 import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
+import { ArchiveBin } from "@/lib/homepage/ArchiveBin"
 
 export default function HomeClient() {
   const {
@@ -25,6 +26,7 @@ export default function HomeClient() {
     isDeleting,
     formRef,
     getLastEditedDate,
+    refresh,
     startAdd,
     startEdit,
     cancel,
@@ -161,6 +163,9 @@ export default function HomeClient() {
 
             <CanonList items={items} itemTypes={itemTypes} onEdit={startEdit} onDelete={del} />
           </div>
+
+          {/* Archive Bin — shows soft-deleted items; auto-expires after 30 days */}
+          <ArchiveBin onItemRestored={refresh} />
         </div>
       </div>
     </div>

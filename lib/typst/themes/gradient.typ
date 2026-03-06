@@ -220,13 +220,15 @@
 /// -> block
 #let project(
   name: "",
+  url: none,
   dates: (start: none, end: none),
   skills: (),
   bullets: (),
 ) = {
+  show link: it => text(fill: rgb("#1a73e8"))[#it]
   grid(
     columns: (1fr, auto), gutter: 8pt, align: (left, right),
-    [#strong(name) | #if skills.len() > 0 { emph(skills.join(", ")) }],
+    [#strong(name) #if url != none [| #link(url)[#url]] #if skills.len() > 0 [| #emph(skills.join(", "))]],
     [#emph(date_range(dates))],
   )
   list(..bullets.map(b => [#b]))
@@ -280,6 +282,7 @@
         ] else if kind == "project" [
           #project(
             name: entry.at("name", default: ""),
+            url: entry.at("url", default: none),
             dates: entry.at("dates", default: (start: none, end: none)),
             skills: entry.at("skills", default: ()),
             bullets: entry.at("bullets", default: ()),

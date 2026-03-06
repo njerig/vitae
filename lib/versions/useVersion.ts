@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import toast from "react-hot-toast"
-import { VersionGroup } from "../shared/types"
+import type { ArchivedCanonItem, VersionGroup } from "../shared/types"
 import { deleteVersion, fetchVersion, restoreVersion } from "./api"
 
 export function useVersion() {
@@ -13,6 +13,9 @@ export function useVersion() {
   const [confirmRestore, setConfirmRestore] = useState<{ id: string; name: string } | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [showTreeGroups, setShowTreeGroups] = useState<Set<string>>(new Set())
+  // Archived items returned by the last successful restore — used to supplement
+  // the preview when a restored version references items the user has since deleted.
+  const [archivedItemsFromRestore, setArchivedItemsFromRestore] = useState<ArchivedCanonItem[]>([])
 
   // Toggles the visibility of a version group in the tree view
   const toggleTreeGroup = (groupId: string) => {
@@ -99,11 +102,23 @@ export function useVersion() {
     try {
       const response = await restoreVersion(id)
 
-      const data = response
+      // Stash any items that were deleted but are still in the snapshot.
+      // The resume preview will read from this list to fill in the gaps.
+      setArchivedItemsFromRestore(response.archived_items ?? [])
+
+      // Also persist to sessionStorage so ResumeBuilderPage (a different route)
+      // can pick them up after the router.push navigation below.
+      if (response.archived_items?.length) {
+        sessionStorage.setItem(
+          `archived_items_${response.version_id}`,
+          JSON.stringify(response.archived_items)
+        )
+      }
+
       const savedAt = new Date().toISOString()
-      // Pass the version_id and resume_group_id so that subsequent saves link to this group
+      // Pass the version_id so subsequent saves link to this group
       router.push(
-        `/resume?version=${encodeURIComponent(name)}&savedAt=${encodeURIComponent(savedAt)}&parentVersionId=${encodeURIComponent(data.version_id)}`
+        `/resume?version=${encodeURIComponent(name)}&savedAt=${encodeURIComponent(savedAt)}&parentVersionId=${encodeURIComponent(response.version_id)}`
       )
       toast.success(`"${name}" restored successfully`)
     } catch (error) {
@@ -133,5 +148,8 @@ export function useVersion() {
     handleRestoreConfirm,
     showTreeGroups,
     toggleTreeGroup,
+    // Items that were deleted but are still referenced in the last restored snapshot.
+    // Pass these to the resume builder preview so it can render them read-only.
+    archivedItemsFromRestore,
   }
 }

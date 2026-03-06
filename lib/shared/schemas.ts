@@ -185,3 +185,22 @@ export const VersionGroupSchema = z.object({
 })
 
 export const VersionGroupsArraySchema = z.array(VersionGroupSchema)
+
+// ─────────────────────────────────────────────────────────────
+// Archive Schemas
+// ─────────────────────────────────────────────────────────────
+
+// Matches a row from canon_archive (a soft-deleted canon item)
+export const ArchiveItemSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string(),
+  item_type_id: z.string().uuid(),
+  title: z.string(),
+  position: z.number().int(),
+  content: z.record(z.string(), z.unknown()),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+  deleted_at: z.string().or(z.date()),
+})
+
+export const ArchiveItemsArraySchema = z.array(ArchiveItemSchema)
