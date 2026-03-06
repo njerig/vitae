@@ -10,6 +10,9 @@ import { ChevronLeft, Download } from "lucide-react"
 import { ResumeBuilderPreview } from "./ResumeBuilderPreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorButton"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
+import { TailorModal } from "@/lib/tailor/components/TailorModal"
+import { TailorButton } from "@/lib/tailor/components/TailorButton"
+import { useTailorRerank } from "@/lib/tailor/useTailorRerank"
 import type { ArchivedCanonItem, CanonItem } from "@/lib/shared/types"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
 import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
@@ -46,6 +49,8 @@ export default function ResumeBuilderClient({
   }, [parentVersionId])
 
   const {
+    allItems,
+    itemTypes,
     editingItem,
     setEditingItem,
     workingState,
@@ -53,6 +58,7 @@ export default function ResumeBuilderClient({
     isDirty,
     isSelected,
     toggleItem,
+    updateStateLocally,
     syncToBackend,
     updatedAt,
     getOverride,
@@ -75,7 +81,7 @@ export default function ResumeBuilderClient({
     isDragging,
     saveItemPosition,
     isLoading,
-  } = useResumeBuilder(userName, archivedItems)
+  } = useResumeBuilder(userName)
   if (isLoading) {
     return (
       <div className="page-container">
@@ -143,23 +149,29 @@ export default function ResumeBuilderClient({
             </div>
             <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row items-center justify-center gap-2">
+                {/*Tailor Resume */}
+                <TailorButton onClick={() => setShowTailorModal(true)} />
+
+                {/* Save Resume */}
                 <SaveResumeButton
                   workingState={workingState}
                   parentVersionId={parentVersionId}
                   syncToBackend={syncToBackend}
                 />
+
+                {/* Export Resume */}
                 <button
                   type="button"
                   onClick={handleExportPdf}
                   disabled={exportingPdf}
-                  className="btn-secondary rounded-lg flex items-center gap-1.5"
+                  className="btn-secondary h-14 rounded-lg flex items-center justify-center gap-1.5 w-32"
                   style={{ padding: "0.8rem", fontSize: "0.8rem" }}
                   title="Download resume as PDF"
                 >
                   {exportingPdf ? (
                     <Spinner size={13} color="var(--ink)" />
                   ) : (
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-6 h-6" />
                   )}
                   Export PDF
                 </button>
@@ -293,6 +305,15 @@ export default function ResumeBuilderClient({
           onReset={clearOverride}
           onClose={() => setEditingItem(null)}
           saving={workingStateSaving}
+        />
+      )}
+
+      {/* Tailor Resume Modal */}
+      {showTailorModal && (
+        <TailorModal
+          onTailor={handleTailor}
+          onClose={() => setShowTailorModal(false)}
+          tailoring={tailoring}
         />
       )}
     </div>
