@@ -13,9 +13,14 @@ const REORDERED_COLORS = {
 export function ItemCard({
   item,
   status,
+  position,
+  otherPosition,
 }: {
   item: CanonItem
   status: "added" | "removed" | "reordered" | "unchanged"
+  // For reordered items: this side's position and the other side's position
+  position?: number
+  otherPosition?: number
 }) {
   const colors = status === "reordered" ? REORDERED_COLORS : COLORS[status as keyof typeof COLORS]
   const content = (item.content ?? {}) as Record<string, unknown>
@@ -65,7 +70,11 @@ export function ItemCard({
               marginLeft: "8px",
             }}
           >
-            {status === "reordered" ? "Moved" : status}
+            {status === "reordered" && position && otherPosition
+              ? `#${position} → #${otherPosition}`
+              : status === "reordered"
+                ? "Moved"
+                : status}
           </span>
         )}
       </div>

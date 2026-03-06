@@ -23,6 +23,9 @@ export type ItemDiff = {
   type: "added" | "removed" | "changed" | "reordered" | "unchanged"
   item: CanonItem
   changes?: FieldChange[]
+  // Position within the section (1-indexed), only set for reordered items
+  positionA?: number
+  positionB?: number
 }
 
 export type SectionDiff = {
@@ -30,6 +33,9 @@ export type SectionDiff = {
   item_type_id: string
   items: ItemDiff[]
   sectionStatus: "added" | "removed" | "reordered" | "changed" | "unchanged"
+  // Position in the section order (1-indexed), only set when section itself was reordered
+  sectionPositionA?: number
+  sectionPositionB?: number
 }
 
 export type ResumeDiff = {
@@ -66,6 +72,11 @@ export function diffResumes(
   const sectionDiffs: SectionDiff[] = []
   let hasChanges = false
 
+  // Check if the shared sections appear in a different order between A and B
+  const sharedSectionsInA = sectionsA.map((s) => s.item_type_id).filter((id) => sectionMapB.has(id))
+  const sharedSectionsInB = sectionsB.map((s) => s.item_type_id).filter((id) => sectionMapA.has(id))
+  const sectionOrderChanged = sharedSectionsInA.join(",") !== sharedSectionsInB.join(",")
+
   for (const typeId of allTypeIds) {
     const secA = sectionMapA.get(typeId)
     const secB = sectionMapB.get(typeId)
@@ -73,6 +84,12 @@ export function diffResumes(
 
     const idsA = secA?.item_ids ?? []
     const idsB = secB?.item_ids ?? []
+
+    // Determine if this section itself was reordered relative to other sections
+    const secPosA = sharedSectionsInA.indexOf(typeId)
+    const secPosB = sharedSectionsInB.indexOf(typeId)
+    const thisSectionReordered =
+      sectionOrderChanged && secPosA !== -1 && secPosB !== -1 && secPosA !== secPosB
 
     // Section only exists in B - all items are new
     if (idsA.length === 0 && idsB.length > 0) {
@@ -139,19 +156,39 @@ export function diffResumes(
         const posB = sharedInB.indexOf(itemId)
         if (orderChanged && posA !== posB) {
           hasChanges = true
-          itemDiffs.push({ type: "reordered", item: iA })
+          itemDiffs.push({ type: "reordered", item: iA, positionA: posA + 1, positionB: posB + 1 })
         } else {
           itemDiffs.push({ type: "unchanged", item: iA })
         }
       }
     }
 
-    const sectionStatus = itemDiffs.some((d) => d.type === "added" || d.type === "removed")
+    const itemChangeStatus = itemDiffs.some((d) => d.type === "added" || d.type === "removed")
       ? "changed"
       : itemDiffs.some((d) => d.type === "reordered")
         ? "reordered"
         : "unchanged"
-    sectionDiffs.push({ display_name, item_type_id: typeId, sectionStatus, items: itemDiffs })
+
+    // Section is reordered if it moved position AND has no other changes
+    const sectionStatus =
+      thisSectionReordered && itemChangeStatus === "unchanged"
+        ? "reordered"
+        : itemChangeStatus !== "unchanged"
+          ? itemChangeStatus
+          : thisSectionReordered
+            ? "reordered"
+            : "unchanged"
+
+    if (thisSectionReordered) hasChanges = true
+
+    sectionDiffs.push({
+      display_name,
+      item_type_id: typeId,
+      sectionStatus,
+      items: itemDiffs,
+      sectionPositionA: thisSectionReordered ? secPosA + 1 : undefined,
+      sectionPositionB: thisSectionReordered ? secPosB + 1 : undefined,
+    })
   }
 
   return { sections: sectionDiffs, hasChanges }

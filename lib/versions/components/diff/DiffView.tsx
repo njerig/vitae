@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef, useCallback, useState } from "react"
 import type { VersionGroup } from "@/lib/shared/types"
 import { useDiff } from "./UseDiff"
 import { VersionSelector } from "./VersionSelector"
@@ -18,6 +19,63 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
     error,
     sameVersionSelected,
   } = useDiff(groups)
+
+  // Filter bar state
+  type FilterMode = "all" | "changed"
+  const [filterMode, setFilterMode] = useState<FilterMode>("all")
+
+  // Per-section collapsed state, keyed by item_type_id
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
+
+  const toggleSection = useCallback((typeId: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [typeId]: !prev[typeId] }))
+  }, [])
+
+  // Refs for scroll sync
+  const leftColRef = useRef<HTMLDivElement>(null)
+  const rightColRef = useRef<HTMLDivElement>(null)
+  const isSyncingLeft = useRef(false)
+  const isSyncingRight = useRef(false)
+
+  const handleLeftScroll = useCallback(() => {
+    if (isSyncingLeft.current) return
+    isSyncingRight.current = true
+    if (rightColRef.current && leftColRef.current) {
+      rightColRef.current.scrollTop = leftColRef.current.scrollTop
+    }
+    requestAnimationFrame(() => {
+      isSyncingRight.current = false
+    })
+  }, [])
+
+  const handleRightScroll = useCallback(() => {
+    if (isSyncingRight.current) return
+    isSyncingLeft.current = true
+    if (leftColRef.current && rightColRef.current) {
+      leftColRef.current.scrollTop = rightColRef.current.scrollTop
+    }
+    requestAnimationFrame(() => {
+      isSyncingLeft.current = false
+    })
+  }, [])
+
+  const allItems = diff?.sections.flatMap((s) => s.items) ?? []
+  const removedCount = allItems.filter((i) => i.type === "removed").length
+  const addedCount = allItems.filter((i) => i.type === "added").length
+  const reorderedCount =
+    allItems.filter((i) => i.type === "reordered").length +
+    (diff?.sections.filter(
+      (s) => s.sectionStatus === "reordered" && s.items.every((i) => i.type === "unchanged")
+    ).length ?? 0)
+
+  const visibleSections =
+    diff?.sections.filter((s) => filterMode === "all" || s.sectionStatus !== "unchanged") ?? []
+
+  // Determine collapsed state for a section (default: unchanged=collapsed, else expanded)
+  const isCollapsed = (typeId: string, sectionStatus: string) => {
+    if (typeId in collapsedSections) return collapsedSections[typeId]
+    return sectionStatus === "unchanged"
+  }
 
   return (
     <div>
@@ -47,7 +105,7 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
         </p>
       </div>
 
-      {/* Version A and B selectors */}
+      {/* Version selectors */}
       <div
         style={{
           display: "flex",
@@ -83,7 +141,6 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
         />
       </div>
 
-      {/* Validation warning for identical selections */}
       {sameVersionSelected && (
         <p
           style={{
@@ -96,15 +153,11 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
           Please select two different versions to compare.
         </p>
       )}
-
-      {/* Fetch error message */}
       {error && (
         <p style={{ color: "#7c1212", fontSize: "0.85rem", marginBottom: "16px" }}>
           Error: {error}
         </p>
       )}
-
-      {/* Loading indicator */}
       {isLoading && (
         <p
           style={{ color: "var(--ink-fade)", fontSize: "0.85rem", fontFamily: "var(--font-sans)" }}
@@ -113,7 +166,6 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
         </p>
       )}
 
-      {/* Prompt user to make selections */}
       {!isLoading && !sameVersionSelected && !diff && (
         <div
           style={{
@@ -131,7 +183,6 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
         </div>
       )}
 
-      {/* Identical versions result */}
       {diff && !diff.hasChanges && (
         <div
           style={{
@@ -149,10 +200,44 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
         </div>
       )}
 
-      {/* Side-by-side diff view */}
       {diff && diff.hasChanges && (
         <div>
-          {/* Column headers showing version names and removed/added counts */}
+          {/* Filter toggle */}
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "4px",
+                background: "var(--surface, #faf9f7)",
+                border: "1px solid var(--grid)",
+                borderRadius: "8px",
+                padding: "3px",
+              }}
+            >
+              {(["all", "changed"] as FilterMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setFilterMode(mode)}
+                  style={{
+                    padding: "4px 12px",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    fontFamily: "var(--font-sans)",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    background: filterMode === mode ? "var(--ink)" : "transparent",
+                    color: filterMode === mode ? "white" : "var(--ink-fade)",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {mode === "all" ? "All Sections" : "Changes Only"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Column headers */}
           <div
             style={{
               display: "grid",
@@ -161,7 +246,6 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
               marginBottom: "16px",
             }}
           >
-            {/* Version A header */}
             <div
               style={{
                 padding: "10px 14px",
@@ -183,12 +267,19 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
               >
                 {versionAName || "Version A"}
               </span>
-              <span style={{ fontSize: "0.72rem", color: "#7c1212", opacity: 0.8 }}>
-                {diff.sections.flatMap((s) => s.items).filter((i) => i.type === "removed").length}{" "}
-                removed
-              </span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {removedCount > 0 && (
+                  <span style={{ fontSize: "0.72rem", color: "#7c1212", opacity: 0.8 }}>
+                    {removedCount} removed
+                  </span>
+                )}
+                {reorderedCount > 0 && removedCount === 0 && (
+                  <span style={{ fontSize: "0.72rem", color: "#7c5c12", opacity: 0.8 }}>
+                    {reorderedCount} moved
+                  </span>
+                )}
+              </div>
             </div>
-            {/* Version B header */}
             <div
               style={{
                 padding: "10px 14px",
@@ -210,17 +301,54 @@ export function DiffView({ groups }: { groups: VersionGroup[] }) {
               >
                 {versionBName || "Version B"}
               </span>
-              <span style={{ fontSize: "0.72rem", color: "#7c3d12", opacity: 0.8 }}>
-                {diff.sections.flatMap((s) => s.items).filter((i) => i.type === "added").length}{" "}
-                added
-              </span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {addedCount > 0 && (
+                  <span style={{ fontSize: "0.72rem", color: "#7c3d12", opacity: 0.8 }}>
+                    {addedCount} added
+                  </span>
+                )}
+                {reorderedCount > 0 && addedCount === 0 && (
+                  <span style={{ fontSize: "0.72rem", color: "#7c5c12", opacity: 0.8 }}>
+                    {reorderedCount} moved
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Per-section side-by-side rows */}
-          {diff.sections.map((section) => (
-            <SectionRow key={section.item_type_id} section={section} />
-          ))}
+          {/* Scroll-synced columns */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+            <div
+              ref={leftColRef}
+              onScroll={handleLeftScroll}
+              style={{ overflowY: "auto", maxHeight: "65vh", paddingRight: "4px" }}
+            >
+              {visibleSections.map((section) => (
+                <SectionRow
+                  key={section.item_type_id}
+                  section={section}
+                  side="left"
+                  collapsed={isCollapsed(section.item_type_id, section.sectionStatus)}
+                  onToggle={() => toggleSection(section.item_type_id)}
+                />
+              ))}
+            </div>
+            <div
+              ref={rightColRef}
+              onScroll={handleRightScroll}
+              style={{ overflowY: "auto", maxHeight: "65vh", paddingLeft: "4px" }}
+            >
+              {visibleSections.map((section) => (
+                <SectionRow
+                  key={section.item_type_id}
+                  section={section}
+                  side="right"
+                  collapsed={isCollapsed(section.item_type_id, section.sectionStatus)}
+                  onToggle={() => toggleSection(section.item_type_id)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
