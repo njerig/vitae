@@ -11,7 +11,12 @@ import { VersionTree } from "@/lib/versions/components/tree/VersionTree"
 import { VersionCard } from "@/lib/versions/components/tree/VersionCard"
 import { DiffView } from "@/lib/versions/DiffView"
 
-export default function VersionsClient() {
+interface VersionsClientProps {
+  userName: string
+  userId: string
+}
+
+export default function VersionsClient({ userName }: VersionsClientProps) {
   const {
     groups,
     loading,
@@ -34,7 +39,6 @@ export default function VersionsClient() {
 
   useEffect(() => {
     fetchVersions()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (loading) {
