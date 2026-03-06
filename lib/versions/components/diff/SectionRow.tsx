@@ -10,9 +10,13 @@ export function SectionRow({ section }: { section: SectionDiff }) {
   const [collapsed, setCollapsed] = useState(section.sectionStatus === "unchanged")
   const changedCount = section.items.filter((i) => i.type !== "unchanged").length
 
-  // Removed items show only on the left (A), added only on the right (B), unchanged on both
-  const leftItems = section.items.filter((i) => i.type === "removed" || i.type === "unchanged")
-  const rightItems = section.items.filter((i) => i.type === "added" || i.type === "unchanged")
+  // Removed items show only on the left (A), added only on the right (B), unchanged/reordered on both
+  const leftItems = section.items.filter(
+    (i) => i.type === "removed" || i.type === "unchanged" || i.type === "reordered"
+  )
+  const rightItems = section.items.filter(
+    (i) => i.type === "added" || i.type === "unchanged" || i.type === "reordered"
+  )
 
   // Pair up left and right items row by row, filling gaps with null for placeholders
   const maxRows = Math.max(leftItems.length, rightItems.length)
@@ -81,6 +85,21 @@ export function SectionRow({ section }: { section: SectionDiff }) {
             Removed Section
           </span>
         )}
+        {section.sectionStatus === "reordered" && (
+          <span
+            style={{
+              fontSize: "0.68rem",
+              background: "#faefd0",
+              color: "#7c5c12",
+              border: "1px solid #c9b580",
+              borderRadius: "999px",
+              padding: "1px 8px",
+              fontWeight: 700,
+            }}
+          >
+            Reordered
+          </span>
+        )}
         {changedCount > 0 && section.sectionStatus === "changed" && (
           <span
             style={{
@@ -110,7 +129,13 @@ export function SectionRow({ section }: { section: SectionDiff }) {
               {pair.left ? (
                 <ItemCard
                   item={pair.left.item}
-                  status={pair.left.type === "unchanged" ? "unchanged" : "removed"}
+                  status={
+                    pair.left.type === "unchanged"
+                      ? "unchanged"
+                      : pair.left.type === "reordered"
+                        ? "reordered"
+                        : "removed"
+                  }
                 />
               ) : (
                 <EmptyItemCard label="Not in this version" />
@@ -119,7 +144,13 @@ export function SectionRow({ section }: { section: SectionDiff }) {
               {pair.right ? (
                 <ItemCard
                   item={pair.right.item}
-                  status={pair.right.type === "unchanged" ? "unchanged" : "added"}
+                  status={
+                    pair.right.type === "unchanged"
+                      ? "unchanged"
+                      : pair.right.type === "reordered"
+                        ? "reordered"
+                        : "added"
+                  }
                 />
               ) : (
                 <EmptyItemCard label="Not in this version" />

@@ -20,7 +20,7 @@ export type FieldChange = {
 }
 
 export type ItemDiff = {
-  type: "added" | "removed" | "changed" | "unchanged"
+  type: "added" | "removed" | "changed" | "reordered" | "unchanged"
   item: CanonItem
   changes?: FieldChange[]
 }
@@ -29,7 +29,7 @@ export type SectionDiff = {
   display_name: string
   item_type_id: string
   items: ItemDiff[]
-  sectionStatus: "added" | "removed" | "changed" | "unchanged"
+  sectionStatus: "added" | "removed" | "reordered" | "changed" | "unchanged"
 }
 
 export type ResumeDiff = {
@@ -104,11 +104,16 @@ export function diffResumes(
       continue
     }
 
-    // Section exists in both - diff items by ID
+    // Section exists in both - diff items by ID and order
     const setA = new Set(idsA)
     const setB = new Set(idsB)
     const allIds = new Set([...idsA, ...idsB])
     const itemDiffs: ItemDiff[] = []
+
+    // Check if the shared items appear in a different order between A and B
+    const sharedInA = idsA.filter((id) => setB.has(id))
+    const sharedInB = idsB.filter((id) => setA.has(id))
+    const orderChanged = sharedInA.join(",") !== sharedInB.join(",")
 
     for (const itemId of allIds) {
       const iA = itemMap.get(itemId)
@@ -129,12 +134,23 @@ export function diffResumes(
           itemDiffs.push({ type: "removed", item: iA })
         }
       } else if (inA && inB && iA) {
-        // Item in both - unchanged (snapshots store IDs only, no content delta)
-        itemDiffs.push({ type: "unchanged", item: iA })
+        // Item in both - check if its position changed relative to other shared items
+        const posA = sharedInA.indexOf(itemId)
+        const posB = sharedInB.indexOf(itemId)
+        if (orderChanged && posA !== posB) {
+          hasChanges = true
+          itemDiffs.push({ type: "reordered", item: iA })
+        } else {
+          itemDiffs.push({ type: "unchanged", item: iA })
+        }
       }
     }
 
-    const sectionStatus = itemDiffs.some((d) => d.type !== "unchanged") ? "changed" : "unchanged"
+    const sectionStatus = itemDiffs.some((d) => d.type === "added" || d.type === "removed")
+      ? "changed"
+      : itemDiffs.some((d) => d.type === "reordered")
+        ? "reordered"
+        : "unchanged"
     sectionDiffs.push({ display_name, item_type_id: typeId, sectionStatus, items: itemDiffs })
   }
 

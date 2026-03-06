@@ -1,15 +1,23 @@
 import type { CanonItem } from "@/lib/shared/types"
 import { COLORS, FIELD_LABELS } from "./constants"
 
+// Extend colors to include reordered state
+const REORDERED_COLORS = {
+  bg: "#fdfaf0",
+  border: "#c9b580",
+  text: "#7c5c12",
+  badge: "#faefd0",
+}
+
 // Renders a single item card for one side of the diff
 export function ItemCard({
   item,
   status,
 }: {
   item: CanonItem
-  status: "added" | "removed" | "unchanged"
+  status: "added" | "removed" | "reordered" | "unchanged"
 }) {
-  const colors = COLORS[status]
+  const colors = status === "reordered" ? REORDERED_COLORS : COLORS[status as keyof typeof COLORS]
   const content = (item.content ?? {}) as Record<string, unknown>
 
   return (
@@ -57,7 +65,7 @@ export function ItemCard({
               marginLeft: "8px",
             }}
           >
-            {status}
+            {status === "reordered" ? "Moved" : status}
           </span>
         )}
       </div>
