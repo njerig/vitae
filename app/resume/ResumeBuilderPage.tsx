@@ -79,7 +79,13 @@ export default function ResumeBuilderClient({
     isDragging,
     saveItemPosition,
     isLoading,
-  } = useResumeBuilder(userName)
+  } = useResumeBuilder(userName, archivedItems)
+
+  // Tailor modal state and handler
+  const { showTailorModal, setShowTailorModal, tailoring, handleTailor } = useTailorRerank(
+    sections,
+    setSections
+  )
   if (isLoading) {
     return (
       <div className="page-container">
