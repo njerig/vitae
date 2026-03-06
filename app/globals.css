@@ -209,21 +209,22 @@ header {
 .btn-secondary {
   font-family: var(--font-sans);
   padding: 0.75rem 2rem;
-  background: var(--ink);
-  color: var(--paper);
+  background: white;
+  color: var(--ink-fade);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--grid);
   border-radius: var(--radius-soft) !important;
   transition: all 200ms;
   cursor: pointer;
 }
 
 .btn-secondary:hover {
-  background: transparent;
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 
 /* Navigation buttons - subtle until hover */

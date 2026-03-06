@@ -1,4 +1,5 @@
 import type { ArchivedCanonItem, VersionGroup } from "@/lib/shared/types"
+import type { ResumeSnapshot } from "./diffResumes"
 
 // Custom error class that carries both a readable message and the list of invalid field names
 export class ValidationError extends Error {
@@ -11,16 +12,15 @@ export class ValidationError extends Error {
   }
 }
 
-// Human-readable labels for field names
+// Human-readable labels for field names used in validation error messages
 const FIELD_LABELS: Record<string, string> = {
   group_name: "Resume Name",
   name: "Version Note",
 }
 
-// Returns a success or error message from the API to the frontend
+// Parses API responses and throws structured errors for validation failures or HTTP errors
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    // read error from backend without crashing
     const data = await res.json().catch(() => null)
 
     // Extract readable error from Zod issues if present
@@ -35,7 +35,6 @@ async function handleResponse<T>(res: Response): Promise<T> {
       throw new ValidationError(messages.join("\n"), fields)
     }
 
-    // catch any other errors that didn't come from zod
     const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
     throw new Error(errorMessage)
   }
@@ -66,6 +65,7 @@ export async function deleteVersion(id: string): Promise<Response> {
   })
   return handleResponse(res)
 }
+
 /**
  * Restores a specific version, making its layout the active working state.
  * Also returns any archived items referenced by the snapshot so the preview
@@ -83,6 +83,7 @@ export async function restoreVersion(
   })
   return handleResponse(res)
 }
+
 /**
  * Saves the current working state as a new resume version.
  *
@@ -108,4 +109,25 @@ export async function saveVersion(
     }),
   })
   return handleResponse(res)
+}
+
+/**
+ * Fetches the raw snapshot for a specific version, used for diff comparisons.
+ * Does not modify working state — read-only.
+ *
+ * @param id The unique identifier of the version to fetch.
+ * @returns A promise that resolves to the version's ResumeSnapshot.
+ */
+export async function fetchVersionSnapshot(id: string): Promise<ResumeSnapshot> {
+  const res = await fetch(`/api/versions/${id}/snapshot`, {
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
+    throw new Error(errorMessage)
+  }
+
+  return res.json()
 }
