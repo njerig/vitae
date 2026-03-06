@@ -39,6 +39,7 @@ export default function ResumeBuilderClient({
     const raw = sessionStorage.getItem(key)
     if (raw) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setArchivedItems(JSON.parse(raw) as ArchivedCanonItem[])
       } catch {
         // Malformed entry is not critical — just ignore it
@@ -81,7 +82,15 @@ export default function ResumeBuilderClient({
     isDragging,
     saveItemPosition,
     isLoading,
-  } = useResumeBuilder(userName)
+  } = useResumeBuilder(userName, archivedItems)
+
+  // Tailor modal state and handler
+  const { showTailorModal, setShowTailorModal, tailoring, handleTailor } = useTailorRerank(
+    sections,
+    setSections,
+    workingState,
+    updateStateLocally
+  )
   if (isLoading) {
     return (
       <div className="page-container">
