@@ -95,7 +95,7 @@ Rules:
     const cleaned = text
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
-      .trim() // use zod cleaning here
+      .trim()
     const parsed = JSON.parse(cleaned)
 
     // Validate structure
