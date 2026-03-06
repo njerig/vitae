@@ -71,9 +71,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     // (including archived ones). Sections with no resolvable items are dropped.
     return workingState.sections
       .map((s) => {
-        const items = s.item_ids
-          .map((id) => itemById.get(id))
-          .filter(Boolean) as CanonItem[]
+        const items = s.item_ids.map((id) => itemById.get(id)).filter(Boolean) as CanonItem[]
         return {
           typeName: typeNameById.get(s.item_type_id) ?? "Unknown",
           typeId: s.item_type_id,
@@ -83,11 +81,10 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
       .filter((section) => section.items.length > 0)
   }, [allItemsWithArchived, itemTypes, workingState.sections])
 
-
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
   const selectedTemplateId = workingState.template_id ?? "classic"
 
-  const saveItemPosition = useCallback(async () => { }, [])
+  const saveItemPosition = useCallback(async () => {}, [])
 
   const [exportingPdf, setExportingPdf] = useState(false)
   const handleExportPdf = useCallback(async () => {

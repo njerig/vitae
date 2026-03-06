@@ -278,4 +278,3 @@ export async function DELETE(request: NextRequest) {
 
   return new NextResponse(null, { status: 204 })
 }
-

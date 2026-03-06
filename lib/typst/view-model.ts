@@ -60,35 +60,35 @@ export type ResumeViewModel = {
     title: string
     entries: Array<
       | {
-        kind: "school"
-        institution: string
-        location: string
-        dates: DateRange
-        degree: string
-        gpa: string
-        bullets: string[]
-      }
+          kind: "school"
+          institution: string
+          location: string
+          dates: DateRange
+          degree: string
+          gpa: string
+          bullets: string[]
+        }
       | {
-        kind: "work"
-        organization: string
-        location: string
-        dates: DateRange
-        position: string
-        skills: string[]
-        bullets: string[]
-      }
+          kind: "work"
+          organization: string
+          location: string
+          dates: DateRange
+          position: string
+          skills: string[]
+          bullets: string[]
+        }
       | {
-        kind: "project"
-        name: string
-        url?: string // optional clickable link shown next to the project name
-        dates: DateRange
-        skills: string[]
-        bullets: string[]
-      }
+          kind: "project"
+          name: string
+          url?: string // optional clickable link shown next to the project name
+          dates: DateRange
+          skills: string[]
+          bullets: string[]
+        }
       | {
-        kind: "skills"
-        items: Array<{ label: string; values: string[] }>
-      }
+          kind: "skills"
+          items: Array<{ label: string; values: string[] }>
+        }
     >
   }>
 }
@@ -97,13 +97,13 @@ function normalizeProfile(input: unknown): ResumeViewModel["profile"] {
   const p = asRecord(input) ?? {}
   const links = Array.isArray(p.links)
     ? (p.links as unknown[]).flatMap((l) => {
-      const r = asRecord(l)
-      if (!r) return []
-      const text = asString(r.text).trim()
-      const href = asString(r.href)
-      if (!text) return []
-      return [{ text, href: normalizeHref(href) }]
-    })
+        const r = asRecord(l)
+        if (!r) return []
+        const text = asString(r.text).trim()
+        const href = asString(r.href)
+        if (!text) return []
+        return [{ text, href: normalizeHref(href) }]
+      })
     : []
 
   const name = asString(p.name).trim()
