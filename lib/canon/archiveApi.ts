@@ -3,13 +3,13 @@ import toast from "react-hot-toast"
 
 // Returns a readable error or throws for the caller to handle
 async function handleResponse<T>(res: Response): Promise<T> {
-    if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
-        toast.error(errorMessage)
-        throw new Error(errorMessage)
-    }
-    return res.json()
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const errorMessage = data?.error || `HTTP ${res.status}: ${res.statusText}`
+    toast.error(errorMessage)
+    throw new Error(errorMessage)
+  }
+  return res.json()
 }
 
 /**
@@ -20,8 +20,8 @@ async function handleResponse<T>(res: Response): Promise<T> {
  * @returns A promise resolving to an array of ArchivedCanonItem objects.
  */
 export async function listArchivedItems(): Promise<ArchivedCanonItem[]> {
-    const res = await fetch(`/api/archive`, { cache: "no-store" })
-    return handleResponse<ArchivedCanonItem[]>(res)
+  const res = await fetch(`/api/archive`, { cache: "no-store" })
+  return handleResponse<ArchivedCanonItem[]>(res)
 }
 
 /**
@@ -32,10 +32,10 @@ export async function listArchivedItems(): Promise<ArchivedCanonItem[]> {
  * @returns A promise resolving to the restored CanonItem.
  */
 export async function restoreArchivedItem(id: string): Promise<CanonItem> {
-    const res = await fetch(`/api/archive?id=${encodeURIComponent(id)}`, {
-        method: "POST",
-    })
-    return handleResponse<CanonItem>(res)
+  const res = await fetch(`/api/archive?id=${encodeURIComponent(id)}`, {
+    method: "POST",
+  })
+  return handleResponse<CanonItem>(res)
 }
 
 /**
@@ -45,9 +45,9 @@ export async function restoreArchivedItem(id: string): Promise<CanonItem> {
  * @param id The UUID of the archived item to permanently delete.
  */
 export async function permanentlyDeleteArchivedItem(id: string): Promise<void> {
-    const res = await fetch(`/api/archive?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-    })
-    if (res.status === 204) return
-    await handleResponse(res)
+  const res = await fetch(`/api/archive?id=${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  })
+  if (res.status === 204) return
+  await handleResponse(res)
 }
