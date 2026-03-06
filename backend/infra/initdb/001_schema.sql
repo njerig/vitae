@@ -56,3 +56,36 @@ CREATE TABLE IF NOT EXISTS versions (
 CREATE INDEX IF NOT EXISTS versions_user_idx ON versions(user_id);
 CREATE INDEX IF NOT EXISTS versions_user_created_idx ON versions(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS versions_group_idx ON versions(resume_group_id);
+
+-- ─────────────────────────────────────────────────────────────
+-- Archive (soft-deleted canon items)
+-- ─────────────────────────────────────────────────────────────
+-- When a user deletes a canon item it is moved here instead of being
+-- permanently removed. Old version snapshots still reference these UUIDs,
+-- so the resume preview can resolve them even after deletion.
+-- Rows are lazily pruned after 30 days on the next archive API request.
+
+CREATE TABLE IF NOT EXISTS canon_archive (
+  -- Keep the original UUID so version snapshots can resolve this item.
+  id            UUID PRIMARY KEY,
+
+  -- Cascade-delete when the user account is removed.
+  user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+  -- No FK to item_types — the type may have been deleted as well.
+  item_type_id  UUID NOT NULL,
+
+  title         TEXT NOT NULL DEFAULT '',
+  position      INT  NOT NULL DEFAULT 0,
+  content       JSONB NOT NULL DEFAULT '{}'::jsonb,
+
+  -- Preserve original timestamps for display purposes.
+  created_at    TIMESTAMPTZ NOT NULL,
+  updated_at    TIMESTAMPTZ NOT NULL,
+
+  -- When the item was archived (used to calculate expiry).
+  deleted_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS canon_archive_user_idx    ON canon_archive(user_id);
+CREATE INDEX IF NOT EXISTS canon_archive_deleted_idx ON canon_archive(deleted_at);

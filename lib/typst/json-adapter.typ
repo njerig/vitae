@@ -9,7 +9,7 @@
 /// Entry: one of
 ///   Work: (kind: "work", position: str, organization: str, location: str, dates: (start: datetime, end: datetime | none), skills: str[], bullets: str[])
 ///   School: (kind: "school", institution: str, location: str, dates: (start: datetime, end: datetime | none), degree: str, gpa: str, bullets: str[])
-///   Project: (kind: "project", name: str, dates: (start: datetime, end: datetime | none), skills: str[], bullets: str[])
+///   Project: (kind: "project", name: str, url: str | none, dates: (start: datetime, end: datetime | none), skills: str[], bullets: str[])
 ///   Skills: (kind: "skills", items: (label: str, values: str[])[])
 
 /// == Theme API
@@ -115,6 +115,7 @@
   (
     kind: "project",
     name: safe-at(entry, "name", default: ""),
+    url: safe-at(entry, "url", default: none),
     dates: parse-dates(safe-at(entry, "dates", default: none)),
     skills: safe-at(entry, "skills", default: ()),
     bullets: safe-at(entry, "bullets", default: ()),

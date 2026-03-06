@@ -50,8 +50,11 @@ export function useCanon() {
 
       setItemTypes(uniqueTypes)
 
-      // Fetch items (all or filtered by type)
-      const rows = await listCanonItems(selectedTypeId ?? undefined)
+      // Always fetch ALL items regardless of the active type filter.
+      // The client-side `filteredItems` memo handles tab filtering.
+      // Fetching only the selected type here would zero-out all other
+      // types in stats.byType because the raw `items` state would be a subset.
+      const rows = await listCanonItems()
       setItems(rows)
     } catch (e: unknown) {
       if (e instanceof ValidationError) {
@@ -63,7 +66,7 @@ export function useCanon() {
     } finally {
       setLoading(false)
     }
-  }, [selectedTypeId])
+  }, []) // no dependency on selectedTypeId — filtering is done client-side
 
   useEffect(() => {
     void refresh()

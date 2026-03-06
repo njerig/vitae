@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Toaster } from "react-hot-toast"
 import { DragSection } from "../../lib/resume-builder/DragSection"
@@ -9,7 +10,7 @@ import { ChevronLeft, Download } from "lucide-react"
 import { ResumeBuilderPreview } from "./ResumeBuilderPreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorButton"
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
-import type { CanonItem } from "@/lib/shared/types"
+import type { ArchivedCanonItem, CanonItem } from "@/lib/shared/types"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
 import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
 
@@ -25,6 +26,25 @@ export default function ResumeBuilderClient({
   versionSavedAt: string | null
   parentVersionId: string | null
 }) {
+  // When the user restores an old version, archived items that were deleted
+  // but referenced by the snapshot are stored in sessionStorage by useVersion.
+  // Read them here so the preview can render them without polluting the canon list.
+  const [archivedItems, setArchivedItems] = useState<ArchivedCanonItem[]>([])
+  useEffect(() => {
+    if (!parentVersionId) return
+    const key = `archived_items_${parentVersionId}`
+    const raw = sessionStorage.getItem(key)
+    if (raw) {
+      try {
+        setArchivedItems(JSON.parse(raw) as ArchivedCanonItem[])
+      } catch {
+        // Malformed entry is not critical — just ignore it
+      }
+      // Clean up so it doesn't linger across subsequent navigations
+      sessionStorage.removeItem(key)
+    }
+  }, [parentVersionId])
+
   const {
     editingItem,
     setEditingItem,
@@ -55,7 +75,7 @@ export default function ResumeBuilderClient({
     isDragging,
     saveItemPosition,
     isLoading,
-  } = useResumeBuilder(userName)
+  } = useResumeBuilder(userName, archivedItems)
   if (isLoading) {
     return (
       <div className="page-container">

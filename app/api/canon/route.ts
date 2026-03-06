@@ -223,7 +223,14 @@ export async function PATCH(request: NextRequest) {
 
 /**
  * DELETE /api/canon?id=<uuid>
- * Deletes a specific canon item for the authenticated user by its ID.
+ * Soft-deletes a canon item by moving it to the archive table.
+ *
+ * The item is NOT permanently removed from the database. Instead it is
+ * inserted into canon_archive (preserving its original UUID and content)
+ * so that old version snapshots can still resolve it during a restore/preview.
+ *
+ * The archive row is automatically pruned after 30 days on the next
+ * request to GET /api/archive (lazy expiry — no cron job needed).
  *
  * @param request The incoming request containing the item's `id` as a search param.
  * @returns A 204 No Content response on successful deletion, or an error message.
@@ -248,14 +255,27 @@ export async function DELETE(request: NextRequest) {
 
   const { id } = idResult.data
 
-  const result = await pool.query(`DELETE FROM canon_items WHERE id = $1 AND user_id = $2`, [
-    id,
-    userId,
-  ])
+  //Copy the item into the archive table before deleting it.
+  //SELECT from canon_items and INSERT into canon_archive in one statement
+  //there is no window where the item exists in neither table.
+  const archiveResult = await pool.query(
+    `INSERT INTO canon_archive
+       (id, user_id, item_type_id, title, position, content, created_at, updated_at, deleted_at)
+     SELECT id, user_id, item_type_id, title, position, content, created_at, updated_at, now()
+       FROM canon_items
+      WHERE id = $1 AND user_id = $2
+     ON CONFLICT (id) DO NOTHING`,
+    [id, userId]
+  )
 
-  if (result.rowCount === 0) {
+  if (archiveResult.rowCount === 0) {
+    // Nothing was archived meaning item either doesn't exist or belongs to another user
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
+  // Step 2: Remove the item from the live canon table.
+  await pool.query(`DELETE FROM canon_items WHERE id = $1 AND user_id = $2`, [id, userId])
+
   return new NextResponse(null, { status: 204 })
 }
+

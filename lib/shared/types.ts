@@ -63,6 +63,14 @@ export type CanonItem<TContent = unknown> = {
   updated_at: string
 }
 
+// A canon item that has been soft-deleted and moved to the archive.
+// Identical to CanonItem but carries a deleted_at timestamp.
+// These are returned by the restore route so old version previews
+// can still render items that the user has since deleted.
+export type ArchivedCanonItem<TContent = unknown> = CanonItem<TContent> & {
+  deleted_at: string
+}
+
 // ─────────────────────────────────────────────────────────────
 // Versions
 // ─────────────────────────────────────────────────────────────

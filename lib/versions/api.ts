@@ -1,4 +1,4 @@
-import type { VersionGroup } from "@/lib/shared/types"
+import type { ArchivedCanonItem, VersionGroup } from "@/lib/shared/types"
 
 // Custom error class that carries both a readable message and the list of invalid field names
 export class ValidationError extends Error {
@@ -68,11 +68,16 @@ export async function deleteVersion(id: string): Promise<Response> {
 }
 /**
  * Restores a specific version, making its layout the active working state.
+ * Also returns any archived items referenced by the snapshot so the preview
+ * can render them without adding them back to the user's live canon list.
  *
  * @param id The unique identifier of the version to restore.
- * @returns A promise resolving to an object containing the restored version's ID.
+ * @returns A promise resolving to an object containing the restored version's ID
+ *          and any archived items referenced by the snapshot.
  */
-export async function restoreVersion(id: string): Promise<{ version_id: string }> {
+export async function restoreVersion(
+  id: string
+): Promise<{ version_id: string; archived_items: ArchivedCanonItem[] }> {
   const res = await fetch(`/api/versions/${id}/restore`, {
     method: "POST",
   })
