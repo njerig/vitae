@@ -1,9 +1,9 @@
 "use client"
 
 import type { VersionGroup } from "@/lib/shared/types"
-import { useDiff } from "./components/diff/UseDiff"
-import { VersionSelector } from "./components/diff/VersionSelector"
-import { SectionRow } from "./components/diff/SectionRow"
+import { useDiff } from "./UseDiff"
+import { VersionSelector } from "./VersionSelector"
+import { SectionRow } from "./SectionRow"
 
 export function DiffView({ groups }: { groups: VersionGroup[] }) {
   const {

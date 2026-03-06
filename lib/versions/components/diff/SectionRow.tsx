@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { SectionDiff } from "../../diffResumes"
+import type { SectionDiff } from "./diffResumes"
 import { ItemCard, EmptyItemCard } from "./ItemCard"
 
 // Renders a collapsible side-by-side row for a single section across both versions

@@ -9,7 +9,7 @@ import { ChevronRight, ChevronDown, GitBranch, GitCompare } from "lucide-react"
 import { useVersion } from "@/lib/versions/useVersion"
 import { VersionTree } from "@/lib/versions/components/tree/VersionTree"
 import { VersionCard } from "@/lib/versions/components/tree/VersionCard"
-import { DiffView } from "@/lib/versions/DiffView"
+import { DiffView } from "@/lib/versions/components/diff/DiffView"
 
 interface VersionsClientProps {
   userName: string
