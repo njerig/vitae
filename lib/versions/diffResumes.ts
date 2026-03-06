@@ -37,41 +37,6 @@ export type ResumeDiff = {
   hasChanges: boolean
 }
 
-// Flattens an item's content fields into key -> string pairs for comparison
-function flattenContent(item: CanonItem): Record<string, string> {
-  const c = (item.content ?? {}) as Record<string, unknown>
-  const result: Record<string, string> = { title: item.title ?? "" }
-
-  for (const [key, val] of Object.entries(c)) {
-    if (Array.isArray(val)) {
-      // Join arrays (e.g. bullets, skills) into a single comparable string
-      result[key] = val.join(" | ")
-    } else if (val === null || val === undefined) {
-      result[key] = ""
-    } else {
-      result[key] = String(val)
-    }
-  }
-
-  return result
-}
-
-// Compares two items field-by-field and returns only the fields that differ
-function diffItem(before: CanonItem, after: CanonItem): FieldChange[] {
-  const flatBefore = flattenContent(before)
-  const flatAfter = flattenContent(after)
-  const allKeys = new Set([...Object.keys(flatBefore), ...Object.keys(flatAfter)])
-  const changes: FieldChange[] = []
-
-  for (const key of allKeys) {
-    const b = flatBefore[key] ?? ""
-    const a = flatAfter[key] ?? ""
-    if (b !== a) changes.push({ field: key, before: b, after: a })
-  }
-
-  return changes
-}
-
 /**
  * Compares two resume snapshots and returns a structured diff.
  * Since snapshots only store item IDs, full item content is resolved via allItems.
