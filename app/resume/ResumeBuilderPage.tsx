@@ -80,7 +80,6 @@ export default function ResumeBuilderClient({
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-    saveItemPosition,
     isLoading,
   } = useResumeBuilder(userName, archivedItems)
 
@@ -227,7 +226,6 @@ export default function ResumeBuilderClient({
                     setDraggedSection={setDraggedSection}
                     draggedItem={draggedItem}
                     setDraggedItem={setDraggedItem}
-                    saveItemPosition={saveItemPosition}
                     formatDate={formatDate}
                     handleItemDragEnd={handleItemDragEnd}
                     isSelected={isSelected}
