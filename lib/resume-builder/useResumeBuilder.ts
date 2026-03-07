@@ -84,8 +84,6 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
   const selectedTemplateId = workingState.template_id ?? "classic"
 
-  const saveItemPosition = useCallback(async () => {}, [])
-
   const [exportingPdf, setExportingPdf] = useState(false)
   const handleExportPdf = useCallback(async () => {
     setExportingPdf(true)
@@ -115,7 +113,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-  } = useDragState(sections, saveItemPosition)
+  } = useDragState(sections)
 
   const savingToastId = useRef<string | null>(null)
 
@@ -164,7 +162,6 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-    saveItemPosition,
     isLoading,
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { GripVertical } from "./GripVertical"
 import { Pencil } from "lucide-react"
 import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
@@ -12,7 +12,6 @@ interface DragItemProps {
   setSections: (sections: any[]) => void
   draggedItem: { sectionIndex: number; itemIndex: number } | null
   setDraggedItem: (item: { sectionIndex: number; itemIndex: number } | null) => void
-  saveItemPosition: (itemId: string, index: number) => void
   formatDate: (date: string) => string
   handleItemDragEnd: (e: React.DragEvent) => void
   isSelected: (id: string) => boolean | undefined
@@ -30,7 +29,6 @@ export function DragItem({
   setSections,
   draggedItem,
   setDraggedItem,
-  saveItemPosition,
   formatDate,
   handleItemDragEnd,
   isSelected,
@@ -40,19 +38,9 @@ export function DragItem({
 }: DragItemProps) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
+  // showing the visual indicator
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
 
-  // Ref-based drag state so dragover handler always sees current values without
-  // causing re-renders on every mousemove
-  const draggedItemRef = useRef(draggedItem)
-  useEffect(() => {
-    draggedItemRef.current = draggedItem
-  }, [draggedItem])
-
-  // Throttle: only reorder once we've moved to a clearly different half
-  const lastMoveRef = useRef<{ fromIndex: number; toIndex: number } | null>(null)
-
-  // Clear indicator on any global drag end / drop
   useEffect(() => {
     const clear = () => setDropPosition(null)
     window.addEventListener("dragend", clear)
@@ -70,22 +58,24 @@ export function DragItem({
   const validatePosition = (position: number, max: number) =>
     position >= 1 && position <= max && !isNaN(position)
 
-  const moveItem = (fromIndex: number, toIndex: number) => {
+  // Perform the actual move — only ever called on drop or manual input.
+  // setSections updates workingState via useResumeSections, so the new order
+  // is captured automatically when the user clicks Save Resume.
+  const applyMove = (fromSectionIndex: number, fromItemIndex: number, toItemIndex: number) => {
+    if (fromItemIndex === toItemIndex) return
     const newSections = sections.map((s: any, i: number) =>
-      i === sectionIndex ? { ...s, items: [...s.items] } : s
+      i === fromSectionIndex ? { ...s, items: [...s.items] } : s
     )
-    const [removed] = newSections[sectionIndex].items.splice(fromIndex, 1)
-    newSections[sectionIndex].items.splice(toIndex, 0, removed)
-    return newSections
+    const items = newSections[fromSectionIndex].items
+    const [removed] = items.splice(fromItemIndex, 1)
+    items.splice(toItemIndex, 0, removed)
+    setSections(newSections)
   }
 
   const handleItemPositionChange = (newPosition: number) => {
     if (!validatePosition(newPosition, section.items.length)) return
-    const targetIndex = newPosition - 1
-    const newSections = moveItem(itemIndex, targetIndex)
-    setSections(newSections)
+    applyMove(sectionIndex, itemIndex, newPosition - 1)
     setEditingKey(null)
-    saveItemPosition(item.id, targetIndex)
   }
 
   const handlePositionFocus = (key: string, currentValue: number) => {
@@ -98,46 +88,59 @@ export function DragItem({
     setEditingPosition("")
   }
 
+  const getDropHalf = (e: React.DragEvent): "above" | "below" => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    return e.clientY < rect.top + rect.height / 2 ? "above" : "below"
+  }
+
   const handleItemDragOver = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    // Ignore if this is a section drag
     if (e.dataTransfer.types.includes("application/drag-type-section")) return
 
-    const current = draggedItemRef.current
-    if (!current || current.sectionIndex !== sectionIndex) {
+    const source = draggedItem
+    if (!source || source.sectionIndex !== sectionIndex || source.itemIndex === itemIndex) {
       setDropPosition(null)
       return
     }
 
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const isAbove = e.clientY < rect.top + rect.height / 2
-    const newDropPos = isAbove ? "above" : "below"
-    setDropPosition(current.itemIndex === itemIndex ? null : newDropPos)
-
-    // Only call setSections when the target slot actually changes — prevents
-    // the 60fps state-thrashing that made dragging feel broken
-    if (current.itemIndex !== itemIndex) {
-      const last = lastMoveRef.current
-      if (last?.fromIndex === current.itemIndex && last?.toIndex === itemIndex) return
-      lastMoveRef.current = { fromIndex: current.itemIndex, toIndex: itemIndex }
-      const newSections = moveItem(current.itemIndex, itemIndex)
-      setSections(newSections)
-      setDraggedItem({ sectionIndex, itemIndex })
-    }
+    setDropPosition(getDropHalf(e))
   }
 
   const handleItemDragLeave = (e: React.DragEvent) => {
-    // Only clear if we're truly leaving this element (not entering a child)
     if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
       setDropPosition(null)
     }
   }
 
+  // THE KEY CHANGE: reorder happens here on drop, not during dragover
+  const handleItemDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDropPosition(null)
+
+    const source = draggedItem
+    if (!source || source.sectionIndex !== sectionIndex || source.itemIndex === itemIndex) {
+      setDraggedItem(null)
+      return
+    }
+
+    const half = getDropHalf(e)
+    // Calculate the correct insertion index
+    let toIndex = itemIndex
+    if (half === "below") {
+      toIndex = source.itemIndex < itemIndex ? itemIndex : itemIndex + 1
+    } else {
+      toIndex = source.itemIndex > itemIndex ? itemIndex : itemIndex - 1
+    }
+
+    applyMove(source.sectionIndex, source.itemIndex, toIndex)
+    setDraggedItem(null)
+  }
+
   const handleLocalDragEnd = (e: React.DragEvent) => {
     setDropPosition(null)
-    lastMoveRef.current = null
     handleItemDragEnd(e)
   }
 
@@ -156,7 +159,6 @@ export function DragItem({
     const titleField = getTitleField(sectionName)
     const subtitleField = getSubtitleField(sectionName)
 
-    // Default extraction using the central fields configuration
     result.title = String(content[titleField] || item.title || "")
     if (subtitleField && content[subtitleField]) {
       result.subtitle = String(content[subtitleField])
@@ -172,7 +174,6 @@ export function DragItem({
     } else if (sectionName === "Education") {
       if (!result.title) result.title = String(content.school || "")
       if (!result.subtitle && content.field) result.subtitle = String(content.field)
-
       result.location = String(content.location || "")
       const startDate = content.start || content.start_date || content.startDate
       const endDate = content.end || content.end_date || content.endDate || content.graduation_date
@@ -185,7 +186,6 @@ export function DragItem({
     } else if (sectionName === "Project") {
       if (!result.subtitle && (content.org || content.company))
         result.subtitle = String(content.org || content.company)
-
       const startDate = content.start || content.start_date
       const endDate = content.end || content.end_date
       if (startDate) {
@@ -194,35 +194,20 @@ export function DragItem({
         result.dateString = `${formattedStart} → ${formattedEnd}`
       }
       result.bullets = Array.isArray(content.bullets) ? (content.bullets as string[]) : []
-
-      // Prevent overlapping description with subtitle if they're identical over configuration
       if (result.subtitle !== content.description) {
         result.description = String(content.description || "")
         if (result.bullets.length === 0 && result.description) {
           result.bullets = [result.description]
         }
       }
-
       result.skills = Array.isArray(content.skills) ? (content.skills as string[]) : []
       result.technologies = result.skills
     } else if (sectionName === "Skill") {
       if (Array.isArray(content.skills)) {
         result.skills = content.skills as string[]
       } else if (typeof content.skills === "string") {
-        result.skills = content.skills.split(",").map((s: string) => s.trim())
-      } else if (Array.isArray(content.items)) {
-        result.skills = content.items as string[]
+        result.skills = (content.skills as string).split(",").map((s: string) => s.trim())
       }
-      result.subtitle = result.skills.join(", ")
-    } else if (sectionName === "Link") {
-      // Subtitle handled by getSubtitleField mapped to "url"
-    } else {
-      result.description = String(content.description || "")
-      if (!result.subtitle && content.subtitle) result.subtitle = String(content.subtitle)
-    }
-
-    if (!result.title) {
-      result.title = sectionName === "Skill" ? "Skill" : "Untitled"
     }
 
     return result
@@ -235,11 +220,7 @@ export function DragItem({
       data-item-draggable="true"
       onDragOver={handleItemDragOver}
       onDragLeave={handleItemDragLeave}
-      onDrop={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setDropPosition(null)
-      }}
+      onDrop={handleItemDrop}
       className="relative"
     >
       {/* Drop indicator — above */}
@@ -260,11 +241,9 @@ export function DragItem({
         draggable
         onDragStart={(e) => {
           e.stopPropagation()
-          // Tag this drag as an item drag so section dragover can ignore it
           e.dataTransfer.setData("application/drag-type-item", "true")
           e.dataTransfer.effectAllowed = "move"
           setDraggedItem({ sectionIndex, itemIndex })
-          lastMoveRef.current = null
         }}
         onDragEnd={handleLocalDragEnd}
         className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 ${
