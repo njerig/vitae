@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { GeminiConfigurationError, geminiConfigured, generateGeminiText } from "@/lib/ai/gemini"
 import { mapTailoringAxesToPromptParams, TailoringAxesSchema } from "@/lib/tailor/options"
-import { buildTailoringPrompt } from "@/lib/tailor/prompt"
+import { buildRewritePrompt } from "@/lib/tailor/prompts/buildRewritePrompt"
 
 const TailorOptionsRequestSchema = z.object({
   base_text: z.string().trim().min(1, "base_text is required"),
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
 
   const params = mapTailoringAxesToPromptParams(parsedBody.axes)
-  const prompt = buildTailoringPrompt({
+  const prompt = buildRewritePrompt({
     baseText: parsedBody.base_text,
     jobDescription: parsedBody.job_description,
     axes: parsedBody.axes,
