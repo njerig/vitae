@@ -1,18 +1,18 @@
 import type { TailoringAxes, TailoringPromptParams } from "@/lib/tailor/options"
 
-type TailoringPromptInput = {
+type RewritePromptInput = {
   baseText: string
   jobDescription?: string
   axes: TailoringAxes
   params: TailoringPromptParams
 }
 
-export function buildTailoringPrompt({
+export function buildRewritePrompt({
   baseText,
   jobDescription,
   axes,
   params,
-}: TailoringPromptInput): string {
+}: RewritePromptInput): string {
   return `You are a resume tailoring assistant.
 
 Rewrite the provided resume text according to the requested tailoring controls.
