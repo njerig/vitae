@@ -3,7 +3,7 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { GeminiConfigurationError, generateGeminiJson, isGeminiConfigured } from "@/lib/ai/gemini"
+import { GeminiConfigurationError, generateGeminiJson, geminiConfigured } from "@/lib/ai/gemini"
 
 type SectionPayload = {
   item_type_id: string
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  if (!isGeminiConfigured()) {
+  if (!geminiConfigured()) {
     return NextResponse.json({ error: "AI service not configured" }, { status: 503 })
   }
 
