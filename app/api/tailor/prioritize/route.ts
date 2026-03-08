@@ -1,10 +1,10 @@
-// app/api/tailor/selection/route.ts
-// AI-powered resume tailoring endpoint — selects and orders canon items for a job description
+// app/api/tailor/prioritize/route.ts
+// AI-powered resume tailoring endpoint — prioritizes canon items for a job description
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
 import { GeminiConfigurationError, generateGeminiJson, geminiConfigured } from "@/lib/ai/gemini"
-import { buildSelectionPrompt } from "@/lib/tailor/prompts/buildSelectionPrompt"
+import { buildPrioritizationPrompt } from "@/lib/tailor/prompts/buildPrioritizationPrompt"
 
 type SectionPayload = {
   item_type_id: string
@@ -17,7 +17,7 @@ type RequestBody = {
   sections: SectionPayload[]
 }
 
-type SelectionResponse = {
+type PrioritizationResponse = {
   sections: {
     item_type_id: string
     item_ids: string[]
@@ -25,10 +25,10 @@ type SelectionResponse = {
 }
 
 /**
- * POST /api/tailor/selection
+ * POST /api/tailor/prioritize
  * Accepts a job description and the user's current resume sections,
  * asks Gemini to prioritize relevant sections/items, and returns
- * the optimized section selection/order.
+ * the optimized section ordering.
  */
 export async function POST(request: NextRequest) {
   const { userId } = await auth()
@@ -50,13 +50,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const prompt = buildSelectionPrompt({
+  const prompt = buildPrioritizationPrompt({
     jobDescription: job_description,
     sections,
   })
 
   try {
-    const parsed = await generateGeminiJson<SelectionResponse>(prompt, {
+    const parsed = await generateGeminiJson<PrioritizationResponse>(prompt, {
       model: "gemini-2.5-flash-lite",
     })
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid AI response format" }, { status: 502 })
     }
 
-    console.error("Tailor selection error:", error)
+    console.error("Tailor prioritization error:", error)
     return NextResponse.json({ error: "AI processing failed" }, { status: 502 })
   }
 }
