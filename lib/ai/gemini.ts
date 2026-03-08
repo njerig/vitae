@@ -12,6 +12,13 @@ export class GeminiConfigurationError extends Error {
   }
 }
 
+export class GeminiAbortError extends Error {
+  constructor(message = "Generation cancelled") {
+    super(message)
+    this.name = "GeminiAbortError"
+  }
+}
+
 function getGeminiApiKey(): string {
   const apiKey = process.env[GEMINI_API_KEY_ENV]?.trim()
   if (!apiKey) {
@@ -58,4 +65,27 @@ export async function generateGeminiJson<T>(
 ): Promise<T> {
   const text = await generateGeminiText(prompt, options)
   return parseGeminiJson<T>(text)
+}
+
+export async function* streamGeminiText(
+  prompt: string,
+  options?: { model?: string; signal?: AbortSignal }
+): AsyncGenerator<string, void, unknown> {
+  if (options?.signal?.aborted) {
+    throw new GeminiAbortError()
+  }
+
+  const model = getGeminiModel(options?.model)
+  const result = await model.generateContentStream(prompt)
+
+  for await (const chunk of result.stream) {
+    if (options?.signal?.aborted) {
+      throw new GeminiAbortError()
+    }
+
+    const text = chunk.text()
+    if (text) {
+      yield text
+    }
+  }
 }
