@@ -3,9 +3,7 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { GoogleGenerativeAI } from "@google/generative-ai"
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "")
+import { GeminiConfigurationError, generateGeminiJson, isGeminiConfigured } from "@/lib/ai/gemini"
 
 type SectionPayload = {
   item_type_id: string
@@ -16,6 +14,13 @@ type SectionPayload = {
 type RequestBody = {
   job_description: string
   sections: SectionPayload[]
+}
+
+type RerankResponse = {
+  sections: {
+    item_type_id: string
+    item_ids: string[]
+  }[]
 }
 
 /**
@@ -30,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     return NextResponse.json({ error: "AI service not configured" }, { status: 503 })
   }
 
@@ -87,16 +92,9 @@ Rules:
 - Omit items that are not relevant.`
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
-
-    // Parse the JSON response — strip markdown fences if present
-    const cleaned = text
-      .replace(/```json\n?/g, "")
-      .replace(/```\n?/g, "")
-      .trim()
-    const parsed = JSON.parse(cleaned)
+    const parsed = await generateGeminiJson<RerankResponse>(prompt, {
+      model: "gemini-2.5-flash-lite",
+    })
 
     // Validate structure
     if (!parsed.sections || !Array.isArray(parsed.sections)) {
@@ -116,6 +114,14 @@ Rules:
 
     return NextResponse.json({ sections: sanitizedSections })
   } catch (error) {
+    if (error instanceof GeminiConfigurationError) {
+      return NextResponse.json({ error: "AI service not configured" }, { status: 503 })
+    }
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Invalid AI response format" }, { status: 502 })
+    }
+
     console.error("Tailor rerank error:", error)
     return NextResponse.json({ error: "AI processing failed" }, { status: 502 })
   }
