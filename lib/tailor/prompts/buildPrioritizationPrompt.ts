@@ -4,12 +4,15 @@ type SectionPayload = {
   items: { id: string; title: string; content: Record<string, unknown> }[]
 }
 
-type SelectionPromptInput = {
+type PrioritizationPromptInput = {
   jobDescription: string
   sections: SectionPayload[]
 }
 
-export function buildSelectionPrompt({ jobDescription, sections }: SelectionPromptInput): string {
+export function buildPrioritizationPrompt({
+  jobDescription,
+  sections,
+}: PrioritizationPromptInput): string {
   const sectionDescriptions = sections
     .map((section) => {
       const itemList = section.items

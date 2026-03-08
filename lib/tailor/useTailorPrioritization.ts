@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import toast from "react-hot-toast"
-import { tailorSelection } from "@/lib/tailor/api"
+import { tailorPrioritize } from "@/lib/tailor/api"
 import type { CanonItem } from "@/lib/shared/types"
 
 type Section = {
@@ -17,7 +17,7 @@ type WorkingState = {
   template_id?: string
 }
 
-export function useTailorSelection(
+export function useTailorPrioritization(
   sections: Section[],
   setSections: (next: Section[]) => void,
   workingState: WorkingState,
@@ -40,7 +40,7 @@ export function useTailorSelection(
           })),
         }))
 
-        const result = await tailorSelection(jobDescription, sectionPayloads)
+        const result = await tailorPrioritize(jobDescription, sectionPayloads)
 
         const aiSectionIds: { item_type_id: string; item_ids: string[] }[] = []
         const displaySections = result.sections
