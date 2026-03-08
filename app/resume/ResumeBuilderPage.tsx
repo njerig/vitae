@@ -12,7 +12,7 @@ import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorBut
 import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
 import { TailorModal } from "@/lib/tailor/components/TailorModal"
 import { TailorButton } from "@/lib/tailor/components/TailorButton"
-import { useTailorRerank } from "@/lib/tailor/useTailorRerank"
+import { useTailorSelection } from "@/lib/tailor/useTailorSelection"
 import type { ArchivedCanonItem, CanonItem } from "@/lib/shared/types"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
 import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
@@ -85,7 +85,7 @@ export default function ResumeBuilderClient({
   } = useResumeBuilder(userName, archivedItems)
 
   // Tailor modal state and handler
-  const { showTailorModal, setShowTailorModal, tailoring, handleTailor } = useTailorRerank(
+  const { showTailorModal, setShowTailorModal, tailoring, handleTailor } = useTailorSelection(
     sections,
     setSections,
     workingState,

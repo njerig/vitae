@@ -5,7 +5,7 @@ import { GeminiConfigurationError, geminiConfigured, generateGeminiText } from "
 import { mapTailoringAxesToPromptParams, TailoringAxesSchema } from "@/lib/tailor/options"
 import { buildRewritePrompt } from "@/lib/tailor/prompts/buildRewritePrompt"
 
-const TailorOptionsRequestSchema = z.object({
+const TailorRewriteRequestSchema = z.object({
   base_text: z.string().trim().min(1, "base_text is required"),
   job_description: z.string().optional().default(""),
   axes: TailoringAxesSchema,
@@ -21,10 +21,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "AI service not configured" }, { status: 503 })
   }
 
-  let parsedBody: z.infer<typeof TailorOptionsRequestSchema>
+  let parsedBody: z.infer<typeof TailorRewriteRequestSchema>
   try {
     const body = await request.json()
-    parsedBody = TailorOptionsRequestSchema.parse(body)
+    parsedBody = TailorRewriteRequestSchema.parse(body)
   } catch {
     return NextResponse.json(
       { error: "base_text, axes(industry/tone/technicalDepth/length) are required" },
@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
   })
 
   try {
-    const tailoredText = await generateGeminiText(prompt, { model: "gemini-2.5-flash-lite" })
+    const text = await generateGeminiText(prompt, { model: "gemini-2.5-flash-lite" })
     return NextResponse.json({
-      text: tailoredText,
+      text,
       axes: parsedBody.axes,
       params,
     })
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "AI service not configured" }, { status: 503 })
     }
 
-    console.error("Tailor options error:", error)
+    console.error("Tailor rewrite error:", error)
     return NextResponse.json({ error: "AI processing failed" }, { status: 502 })
   }
 }

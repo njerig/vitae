@@ -1,6 +1,6 @@
 /**
  * Client-side API wrapper for the resume tailoring feature.
- * Sends job description and current resume sections to the rerank endpoint.
+ * Sends job description and current resume sections to the selection endpoint.
  */
 
 type SectionPayload = {
@@ -13,7 +13,7 @@ type SectionPayload = {
   }[]
 }
 
-type TailorResponse = {
+type TailorSelectionResponse = {
   sections: {
     item_type_id: string
     item_ids: string[]
@@ -22,16 +22,16 @@ type TailorResponse = {
 
 /**
  * Sends the job description and current resume sections to the tailor API
- * for AI-powered reranking/filtering.
+ * for AI-powered selection/prioritization.
  * @param jobDescription - The pasted job description text
  * @param sections - Current resume sections with item details
- * @returns Reranked sections matching WorkingState.sections shape
+ * @returns Selected/prioritized sections matching WorkingState.sections shape
  */
-export async function tailorResume(
+export async function tailorSelection(
   jobDescription: string,
   sections: SectionPayload[]
-): Promise<TailorResponse> {
-  const res = await fetch("/api/tailor/rerank", {
+): Promise<TailorSelectionResponse> {
+  const res = await fetch("/api/tailor/selection", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ job_description: jobDescription, sections }),

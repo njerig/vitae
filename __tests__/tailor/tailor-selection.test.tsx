@@ -1,6 +1,5 @@
-import { tailorResume } from "@/lib/tailor/api"
+import { tailorSelection } from "@/lib/tailor/api"
 
-// Mock global fetch
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
@@ -76,13 +75,12 @@ const mockJobDescription =
   "Looking for a Software Engineer with experience in Python, AWS, and AI/ML. " +
   "Must have a CS degree and experience building production APIs."
 
-
-describe("tailorResume API wrapper", () => {
+describe("tailorSelection API wrapper", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it("sends the correct payload to /api/tailor/rerank", async () => {
+  it("sends the correct payload to /api/tailor/selection", async () => {
     const expectedResponse = {
       sections: [
         { item_type_id: "work-type-id", item_ids: ["work-1"] },
@@ -96,11 +94,10 @@ describe("tailorResume API wrapper", () => {
       json: async () => expectedResponse,
     })
 
-    await tailorResume(mockJobDescription, mockSections)
+    await tailorSelection(mockJobDescription, mockSections)
 
-    // Verify fetch was called with correct URL and method
     expect(mockFetch).toHaveBeenCalledTimes(1)
-    expect(mockFetch).toHaveBeenCalledWith("/api/tailor/rerank", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/tailor/selection", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -124,17 +121,14 @@ describe("tailorResume API wrapper", () => {
       json: async () => apiResponse,
     })
 
-    const result = await tailorResume(mockJobDescription, mockSections)
+    const result = await tailorSelection(mockJobDescription, mockSections)
 
-    // Should match the response shape
     expect(result.sections).toHaveLength(3)
     expect(result.sections[0]).toEqual({
       item_type_id: "work-type-id",
       item_ids: ["work-1"],
     })
-    // Irrelevant item (work-2: Barista) should be omitted
     expect(result.sections[0].item_ids).not.toContain("work-2")
-    // Irrelevant project (Recipe Blog) should be omitted
     expect(result.sections[1].item_ids).not.toContain("proj-2")
   })
 
@@ -144,7 +138,7 @@ describe("tailorResume API wrapper", () => {
       json: async () => ({ error: "AI service not configured" }),
     })
 
-    await expect(tailorResume(mockJobDescription, mockSections)).rejects.toThrow(
+    await expect(tailorSelection(mockJobDescription, mockSections)).rejects.toThrow(
       "AI service not configured"
     )
   })
@@ -155,7 +149,7 @@ describe("tailorResume API wrapper", () => {
       json: async () => ({}),
     })
 
-    await expect(tailorResume(mockJobDescription, mockSections)).rejects.toThrow(
+    await expect(tailorSelection(mockJobDescription, mockSections)).rejects.toThrow(
       "Tailoring failed"
     )
   })
@@ -163,7 +157,7 @@ describe("tailorResume API wrapper", () => {
   it("throws on network failure", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"))
 
-    await expect(tailorResume(mockJobDescription, mockSections)).rejects.toThrow("Network error")
+    await expect(tailorSelection(mockJobDescription, mockSections)).rejects.toThrow("Network error")
   })
 
   it("handles response where json parsing fails on error", async () => {
@@ -174,7 +168,7 @@ describe("tailorResume API wrapper", () => {
       },
     })
 
-    await expect(tailorResume(mockJobDescription, mockSections)).rejects.toThrow(
+    await expect(tailorSelection(mockJobDescription, mockSections)).rejects.toThrow(
       "Tailoring failed"
     )
   })
