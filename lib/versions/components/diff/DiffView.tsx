@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useState } from "react"
 import type { VersionGroup } from "@/lib/shared/types"
-import { useDiff } from "./UseDiff"
+import { useDiff } from "../../useDiff"
 import { VersionSelector } from "./VersionSelector"
 import { SectionRow } from "./SectionRow"
 

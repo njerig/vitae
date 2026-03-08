@@ -609,7 +609,7 @@ describe("Override Integration Flow", () => {
 
   it("renders edit buttons for each DragItem", async () => {
     // We test by importing DragItem directly
-    const { DragItem } = require("@/lib/resume-builder/DragItem")
+    const { DragItem } = require("@/lib/resume-builder/components/drag/DragItem")
 
     const item = makeWorkItem()
     const mockFn = jest.fn()
@@ -640,7 +640,7 @@ describe("Override Integration Flow", () => {
   })
 
   it("shows override indicator dot when item has override", async () => {
-    const { DragItem } = require("@/lib/resume-builder/DragItem")
+    const { DragItem } = require("@/lib/resume-builder/components/drag/DragItem")
 
     const item = makeWorkItem()
     const mockFn = jest.fn()
@@ -673,7 +673,7 @@ describe("Override Integration Flow", () => {
   })
 
   it("calls onEditOverride when edit button is clicked", async () => {
-    const { DragItem } = require("@/lib/resume-builder/DragItem")
+    const { DragItem } = require("@/lib/resume-builder/components/drag/DragItem")
 
     const item = makeWorkItem()
     const onEditOverride = jest.fn()
