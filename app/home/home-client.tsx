@@ -4,11 +4,11 @@ import Link from "next/link"
 import { useCanon } from "@/lib/canon/useCanon"
 import { CanonForm } from "@/lib/canon/components/CanonForm"
 import { CanonList } from "@/lib/canon/components/CanonList"
-import { Timeline } from "@/lib/homepage/Timeline"
+import { Timeline } from "@/lib/home/Timeline"
 import { Spinner } from "@/lib/shared/components/Spinner"
 import { PageHeader } from "@/lib/shared/components/PageHeader"
-import { DeleteItemModal } from "@/lib/homepage/DeleteItemModal"
-import { ArchiveBin } from "@/lib/homepage/ArchiveBin"
+import { DeleteItemModal } from "@/lib/canon/components/archive/DeleteItemModal"
+import { ArchiveBin } from "@/lib/canon/components/archive/ArchiveBin"
 
 export default function HomeClient() {
   const {

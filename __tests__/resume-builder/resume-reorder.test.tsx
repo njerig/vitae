@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react"
 import { act } from "@testing-library/react"
-import ResumeBuilderPage from "@/app/resume/ResumeBuilderPage"
+import ResumeBuilderPage from "@/app/resume/resume-client"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { useCanon } from "@/lib/canon/useCanon"
 import type { CanonItem, ItemType } from "@/lib/shared/types"

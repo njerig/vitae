@@ -1,6 +1,6 @@
 "use client"
 
-import type { SectionDiff } from "./diffResumes"
+import type { SectionDiff } from "../../diffResumes"
 import { ItemCard, EmptyItemCard } from "./ItemCard"
 
 type SectionRowProps = {

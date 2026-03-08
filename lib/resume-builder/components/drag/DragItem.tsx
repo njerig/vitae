@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
-import { GripVertical } from "./GripVertical"
 import { Pencil } from "lucide-react"
 import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
+import { GripVertical } from "./GripVertical"
 
 interface DragItemProps {
   item: any
