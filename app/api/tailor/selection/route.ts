@@ -1,5 +1,5 @@
-// app/api/tailor/rerank/route.ts
-// AI-powered resume tailoring endpoint — reranks canon items for a job description
+// app/api/tailor/selection/route.ts
+// AI-powered resume tailoring endpoint — selects and orders canon items for a job description
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
@@ -17,7 +17,7 @@ type RequestBody = {
   sections: SectionPayload[]
 }
 
-type RerankResponse = {
+type SelectionResponse = {
   sections: {
     item_type_id: string
     item_ids: string[]
@@ -25,10 +25,10 @@ type RerankResponse = {
 }
 
 /**
- * POST /api/tailor/rerank
+ * POST /api/tailor/selection
  * Accepts a job description and the user's current resume sections,
- * asks Gemini to rerank/filter items for relevance, and returns
- * the optimized section ordering.
+ * asks Gemini to prioritize relevant sections/items, and returns
+ * the optimized section selection/order.
  */
 export async function POST(request: NextRequest) {
   const { userId } = await auth()
@@ -56,19 +56,16 @@ export async function POST(request: NextRequest) {
   })
 
   try {
-    const parsed = await generateGeminiJson<RerankResponse>(prompt, {
+    const parsed = await generateGeminiJson<SelectionResponse>(prompt, {
       model: "gemini-2.5-flash-lite",
     })
 
-    // Validate structure
     if (!parsed.sections || !Array.isArray(parsed.sections)) {
       return NextResponse.json({ error: "Invalid AI response format" }, { status: 502 })
     }
 
-    // Collect all valid item IDs from input for validation
     const validIds = new Set(sections.flatMap((s) => s.items.map((i) => i.id)))
 
-    // Filter out any hallucinated IDs
     const sanitizedSections = parsed.sections
       .map((s: { item_type_id: string; item_ids: string[] }) => ({
         item_type_id: s.item_type_id,
@@ -86,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid AI response format" }, { status: 502 })
     }
 
-    console.error("Tailor rerank error:", error)
+    console.error("Tailor selection error:", error)
     return NextResponse.json({ error: "AI processing failed" }, { status: 502 })
   }
 }
