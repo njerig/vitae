@@ -53,6 +53,14 @@ jest.mock("@clerk/nextjs", () => ({
   ClerkProvider: ({ children }) => <div>{children}</div>,
 }))
 
+// Mock Clerk server authentication
+jest.mock("@clerk/nextjs/server", () => ({
+  auth: jest.fn(() => ({
+    userId: null,
+  })),
+  currentUser: jest.fn(() => Promise.resolve({ fullName: "Test User", username: "testuser" })),
+}))
+
 // Mock window.matchMedia
 if (typeof window !== "undefined") {
   Object.defineProperty(window, "matchMedia", {
