@@ -1,4 +1,4 @@
-// Jest setup file - runs before each test file
+// A Jest setup file that runs before each test file
 import "@testing-library/jest-dom"
 import { config } from "dotenv"
 import { resolve } from "path"
@@ -53,7 +53,7 @@ jest.mock("@clerk/nextjs", () => ({
   ClerkProvider: ({ children }) => <div>{children}</div>,
 }))
 
-// Mock window.matchMedia (for responsive components)
+// Mock window.matchMedia
 if (typeof window !== "undefined") {
   Object.defineProperty(window, "matchMedia", {
     writable: true,
@@ -70,7 +70,7 @@ if (typeof window !== "undefined") {
   })
 }
 
-// Mock IntersectionObserver (if you use it)
+// Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
