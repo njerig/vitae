@@ -6,7 +6,7 @@ import {
   listArchivedItems,
   restoreArchivedItem,
   permanentlyDeleteArchivedItem,
-} from "@/lib/canon/archiveApi"
+} from "@/lib/canon/api"
 import { Spinner } from "@/lib/shared/components/Spinner"
 import toast from "react-hot-toast"
 

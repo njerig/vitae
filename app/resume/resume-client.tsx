@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Toaster } from "react-hot-toast"
-import { DragSection } from "../../lib/resume-builder/DragSection"
+import { DragSection } from "../../lib/resume-builder/components/drag/DragSection"
 import { Spinner } from "@/lib/shared/components/Spinner"
 import { SaveResumeButton } from "@/lib/versions/components/save/SaveResumeButton"
 import { ChevronLeft, Download } from "lucide-react"
-import { ResumeBuilderPreview } from "./ResumeBuilderPreview"
-import { TemplateSelectorButton } from "@/lib/resume-builder/TemplateSelectorButton"
-import { EditOverrideModal } from "@/lib/resume-builder/edit/EditOverrideModal"
+import { ResumeBuilderPreview } from "../../lib/resume-builder/components/ResumeBuilderPreview"
+import { TemplateSelectorButton } from "@/lib/resume-builder/components/TemplateSelectorButton"
+import { EditOverrideModal } from "@/lib/resume-builder/components/edit/EditOverrideModal"
 import { TailorModal } from "@/lib/tailor/components/TailorModal"
 import { TailorButton } from "@/lib/tailor/components/TailorButton"
 import { useTailorPrioritization } from "@/lib/tailor/useTailorPrioritization"
@@ -80,7 +80,6 @@ export default function ResumeBuilderClient({
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-    saveItemPosition,
     isLoading,
   } = useResumeBuilder(userName, archivedItems)
 
@@ -227,7 +226,6 @@ export default function ResumeBuilderClient({
                     setDraggedSection={setDraggedSection}
                     draggedItem={draggedItem}
                     setDraggedItem={setDraggedItem}
-                    saveItemPosition={saveItemPosition}
                     formatDate={formatDate}
                     handleItemDragEnd={handleItemDragEnd}
                     isSelected={isSelected}

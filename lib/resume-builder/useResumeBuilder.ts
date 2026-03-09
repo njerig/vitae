@@ -71,7 +71,24 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     // (including archived ones). Sections with no resolvable items are dropped.
     return workingState.sections
       .map((s) => {
-        const items = s.item_ids.map((id) => itemById.get(id)).filter(Boolean) as CanonItem[]
+        const items = s.item_ids
+          .map((id) => {
+            const item = itemById.get(id)
+            if (!item) return null
+
+            const override = workingState.overrides?.[id]
+            if (!override) return item
+
+            return {
+              ...item,
+              title: override.title ?? item.title,
+              content: override.content
+                ? { ...(item.content as Record<string, unknown>), ...override.content }
+                : item.content,
+            }
+          })
+          .filter(Boolean) as CanonItem[]
+
         return {
           typeName: typeNameById.get(s.item_type_id) ?? "Unknown",
           typeId: s.item_type_id,
@@ -79,12 +96,10 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
         }
       })
       .filter((section) => section.items.length > 0)
-  }, [allItemsWithArchived, itemTypes, workingState.sections])
+  }, [allItemsWithArchived, itemTypes, workingState.sections, workingState.overrides])
 
   const previewProfile = useMemo(() => ({ name: userName }), [userName])
   const selectedTemplateId = workingState.template_id ?? "classic"
-
-  const saveItemPosition = useCallback(async () => {}, [])
 
   const [exportingPdf, setExportingPdf] = useState(false)
   const handleExportPdf = useCallback(async () => {
@@ -115,7 +130,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-  } = useDragState(sections, saveItemPosition)
+  } = useDragState(sections)
 
   const savingToastId = useRef<string | null>(null)
 
@@ -164,7 +179,6 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     setDraggedSection,
     handleItemDragEnd,
     isDragging,
-    saveItemPosition,
     isLoading,
   }
 }

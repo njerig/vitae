@@ -11,7 +11,6 @@ export function DragSection({
   setDraggedSection,
   draggedItem,
   setDraggedItem,
-  saveItemPosition,
   formatDate,
   handleItemDragEnd,
   isSelected,
@@ -21,18 +20,15 @@ export function DragSection({
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
+  // visual indicator — no setSections during dragover
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
 
-  // Ref so dragover always reads current draggedSection without re-registering listener
+  // Stable ref so dragover can read the current dragged section index
   const draggedSectionRef = useRef(draggedSection)
   useEffect(() => {
     draggedSectionRef.current = draggedSection
   }, [draggedSection])
 
-  // Throttle: skip setSections calls when target slot hasn't changed
-  const lastMoveRef = useRef<{ from: number; to: number } | null>(null)
-
-  // Clear indicator on any global drag end / drop
   useEffect(() => {
     const clear = () => setDropPosition(null)
     window.addEventListener("dragend", clear)
@@ -46,18 +42,17 @@ export function DragSection({
   const validatePosition = (position: number, max: number) =>
     position >= 1 && position <= max && !isNaN(position)
 
-  const moveSection = (fromIndex: number, toIndex: number) => {
+  const applyMove = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
     const newSections = [...sections]
     const [removed] = newSections.splice(fromIndex, 1)
     newSections.splice(toIndex, 0, removed)
-    return newSections
+    setSections(newSections)
   }
 
   const handleSectionPositionChange = (newPosition: number) => {
     if (!validatePosition(newPosition, sections.length)) return
-    const targetIndex = newPosition - 1
-    const newSections = moveSection(sectionIndex, targetIndex)
-    setSections(newSections)
+    applyMove(sectionIndex, newPosition - 1)
     setEditingKey(null)
   }
 
@@ -71,44 +66,62 @@ export function DragSection({
     setEditingPosition("")
   }
 
+  const getDropHalf = (e: React.DragEvent): "above" | "below" => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    return e.clientY < rect.top + rect.height / 2 ? "above" : "below"
+  }
+
   const handleSectionDragOver = (e: React.DragEvent) => {
     e.preventDefault()
 
-    // If this is an item drag, let it bubble down to DragItem — don't interfere
+    // If this is an item drag, let it fall through to DragItem — don't interfere
     if (e.dataTransfer.types.includes("application/drag-type-item")) return
 
     const current = draggedSectionRef.current
-    if (current === null || current === undefined) return
-    if (current === sectionIndex) {
+    if (current === null || current === undefined || current === sectionIndex) {
       setDropPosition(null)
       return
     }
 
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const pos = e.clientY < rect.top + rect.height / 2 ? "above" : "below"
-    setDropPosition(pos)
-
-    // Only call setSections when the target slot actually changes
-    const last = lastMoveRef.current
-    if (last?.from === current && last?.to === sectionIndex) return
-    lastMoveRef.current = { from: current, to: sectionIndex }
-
-    const newSections = moveSection(current, sectionIndex)
-    setSections(newSections)
-    setDraggedSection(sectionIndex)
+    // Only show the indicator — no setSections call here
+    setDropPosition(getDropHalf(e))
   }
 
   const handleSectionDragLeave = (e: React.DragEvent) => {
-    // Only clear if we're truly leaving this section element (not entering a child)
     if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
       setDropPosition(null)
     }
   }
 
+  // THE KEY CHANGE: reorder happens here on drop, not during dragover
+  const handleSectionDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDropPosition(null)
+
+    // If it's an item drag bubbling up, ignore it
+    if (e.dataTransfer.types.includes("application/drag-type-item")) return
+
+    const fromIndex = draggedSectionRef.current
+    if (fromIndex === null || fromIndex === undefined || fromIndex === sectionIndex) {
+      setDraggedSection(null)
+      return
+    }
+
+    const half = getDropHalf(e)
+    let toIndex = sectionIndex
+    if (half === "below") {
+      toIndex = fromIndex < sectionIndex ? sectionIndex : sectionIndex + 1
+    } else {
+      toIndex = fromIndex > sectionIndex ? sectionIndex : sectionIndex - 1
+    }
+
+    applyMove(fromIndex, toIndex)
+    setDraggedSection(null)
+  }
+
   const handleSectionDragEnd = () => {
     setDraggedSection(null)
     setDropPosition(null)
-    lastMoveRef.current = null
   }
 
   const isSectionDragging = draggedSection === sectionIndex
@@ -118,10 +131,7 @@ export function DragSection({
       className="relative"
       onDragOver={handleSectionDragOver}
       onDragLeave={handleSectionDragLeave}
-      onDrop={(e) => {
-        e.preventDefault()
-        setDropPosition(null)
-      }}
+      onDrop={handleSectionDrop}
     >
       {/* Drop indicator — above */}
       {dropPosition === "above" && (
@@ -150,7 +160,6 @@ export function DragSection({
         <div
           draggable
           onDragStart={(e) => {
-            // Don't start a section drag if the user clicked inside an item
             if ((e.target as HTMLElement).closest("[data-item-draggable]")) {
               e.preventDefault()
               return
@@ -158,7 +167,6 @@ export function DragSection({
             e.dataTransfer.setData("application/drag-type-section", "true")
             e.dataTransfer.effectAllowed = "move"
             setDraggedSection(sectionIndex)
-            lastMoveRef.current = null
           }}
           onDragEnd={handleSectionDragEnd}
           className="p-6 border-b flex items-center gap-3 rounded-t-2xl cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors select-none"
@@ -227,7 +235,6 @@ export function DragSection({
               setSections={setSections}
               draggedItem={draggedItem}
               setDraggedItem={setDraggedItem}
-              saveItemPosition={saveItemPosition}
               formatDate={formatDate}
               handleItemDragEnd={handleItemDragEnd}
               isSelected={isSelected}

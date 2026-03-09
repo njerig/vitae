@@ -1,5 +1,5 @@
 import type { CanonItem } from "@/lib/shared/types"
-import { COLORS, FIELD_LABELS } from "./constants"
+import { COLORS, FIELD_LABELS } from "../../constants"
 
 // Extend colors to include reordered state
 const REORDERED_COLORS = {

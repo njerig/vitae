@@ -1,6 +1,6 @@
 // __tests__/resume-builder/version-display.test.tsx
 import { render, screen, waitFor } from '@testing-library/react'
-import ResumeBuilderPage from '@/app/resume/ResumeBuilderPage'
+import ResumeBuilderPage from '@/app/resume/resume-client'
 import { useCanon } from '@/lib/canon/useCanon'
 import { useWorkingState } from '@/lib/working-state/useWorkingState'
 

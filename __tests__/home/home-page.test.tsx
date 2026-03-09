@@ -1,6 +1,6 @@
 // __tests__/home/home-page.test.tsx
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
-import HomeClient from '@/app/home/home-page'
+import HomeClient from '@/app/home/home-client'
 import { useCanon } from "@/lib/canon/useCanon"
 
 import { mockWorkItem1, mockWorkItem2, mockStats, mockItemTypes } from '../utils/mockData'

@@ -1,5 +1,5 @@
 import { render, screen, act } from "@testing-library/react"
-import { ResumeBuilderPreview } from "@/app/resume/ResumeBuilderPreview"
+import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumeBuilderPreview"
 
 async function flushMicrotasks() {
   // Flush a couple microtask turns for state updates.

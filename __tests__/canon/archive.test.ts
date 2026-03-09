@@ -10,7 +10,7 @@ import {
     listArchivedItems,
     restoreArchivedItem,
     permanentlyDeleteArchivedItem,
-} from "@/lib/canon/archiveApi"
+} from "@/lib/canon/api"
 import toast from "react-hot-toast"
 
 // Mock react-hot-toast

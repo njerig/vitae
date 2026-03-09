@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server"
-import Home from "./home-page"
+import Home from "./home-client"
 
 export default async function Page() {
   const { userId } = await auth()

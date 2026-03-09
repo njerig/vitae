@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react"
 import { act } from "@testing-library/react"
-import ResumeBuilderPage from "@/app/resume/ResumeBuilderPage"
+import ResumeBuilderPage from "@/app/resume/resume-client"
 import { useWorkingState } from "@/lib/working-state/useWorkingState"
 import { useCanon } from "@/lib/canon/useCanon"
 import type { CanonItem, ItemType } from "@/lib/shared/types"
@@ -11,7 +11,7 @@ jest.mock("next/link", () => {
   return ({ children, href }: any) => <a href={href}>{children}</a>
 })
 
-jest.mock("@/app/resume/ResumeBuilderPreview", () => ({
+jest.mock("@/lib/resume-builder/components/ResumeBuilderPreview", () => ({
   ResumeBuilderPreview: ({ sections, profile }: any) => (
     <div data-testid="resume-preview">
       <div>Preview for {profile.name}</div>

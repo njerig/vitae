@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useEffect, useCallback } from "react"
 import { diffResumes, ResumeSnapshot, ResumeDiff } from "./diffResumes"
-import { fetchVersionSnapshot } from "../../api"
 import type { CanonItem, ItemType, VersionGroup } from "@/lib/shared/types"
+import { fetchVersionSnapshot } from "./api"
 
 // Fetches all canon items for the current user
 async function fetchAllItems(): Promise<CanonItem[]> {
