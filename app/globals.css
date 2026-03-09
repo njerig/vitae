@@ -50,22 +50,27 @@ h1 {
   font-size: 3rem;
   font-weight: 600;
 }
+
 h2 {
   font-size: 2.25rem;
   font-weight: 600;
 }
+
 h3 {
   font-size: 1.5rem;
   font-weight: 600;
 }
+
 h4 {
   font-size: 1.25rem;
   font-weight: 600;
 }
+
 h5 {
   font-size: 1.125rem;
   font-weight: 600;
 }
+
 h6 {
   font-size: 1rem;
   font-weight: 600;
@@ -209,8 +214,8 @@ header {
 .btn-secondary {
   font-family: var(--font-sans);
   padding: 0.75rem 2rem;
-  background: white;
-  color: var(--ink-fade);
+  background: var(--ink);
+  color: var(--paper);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -222,8 +227,8 @@ header {
 }
 
 .btn-secondary:hover {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   border-color: var(--ink);
 }
 
@@ -427,6 +432,7 @@ header {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -437,6 +443,7 @@ header {
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
