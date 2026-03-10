@@ -23,6 +23,12 @@ jest.mock("react-hot-toast", () => ({
 jest.mock("lucide-react", () => ({
   Pencil: (props: any) => <svg data-testid="pencil-icon" {...props} />,
   ChevronLeft: (props: any) => <svg data-testid="chevron-left" {...props} />,
+  Sparkles: (props: any) => <svg data-testid="sparkles-icon" {...props} />,
+}))
+
+// Mock TailorItemModal so it does not affect DragItem tests
+jest.mock("@/lib/tailor/components/TailorItemModal", () => ({
+  TailorItemModal: () => null,
 }))
 
 // Mock Spinner
@@ -488,8 +494,8 @@ describe("EditOverrideModal", () => {
 
   it("shows validation errors for empty Education required fields", async () => {
     const item = makeEducationItem()
-    // Override with empty institution (required field)
-    ;(item.content as any).institution = ""
+      // Override with empty institution (required field)
+      ; (item.content as any).institution = ""
     render(
       <EditOverrideModal
         item={item}
@@ -511,8 +517,8 @@ describe("EditOverrideModal", () => {
 
   it("shows validation errors for empty Link required fields", async () => {
     const item = makeLinkItem()
-    ;(item.content as any).label = ""
-    ;(item.content as any).url = ""
+      ; (item.content as any).label = ""
+      ; (item.content as any).url = ""
     render(
       <EditOverrideModal
         item={item}
@@ -534,8 +540,8 @@ describe("EditOverrideModal", () => {
 
   it("shows validation errors for empty Skill required fields", async () => {
     const item = makeSkillItem()
-    ;(item.content as any).category = ""
-    ;(item.content as any).skills = []
+      ; (item.content as any).category = ""
+      ; (item.content as any).skills = []
     render(
       <EditOverrideModal
         item={item}
@@ -557,7 +563,7 @@ describe("EditOverrideModal", () => {
 
   it("shows validation errors for empty Project required fields", async () => {
     const item = makeProjectItem()
-    ;(item.content as any).title = ""
+      ; (item.content as any).title = ""
     render(
       <EditOverrideModal
         item={item}
@@ -603,8 +609,8 @@ describe("Override Integration Flow", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.spyOn(console, "log").mockImplementation(() => {})
-    jest.spyOn(console, "error").mockImplementation(() => {})
+    jest.spyOn(console, "log").mockImplementation(() => { })
+    jest.spyOn(console, "error").mockImplementation(() => { })
   })
 
   it("renders edit buttons for each DragItem", async () => {
