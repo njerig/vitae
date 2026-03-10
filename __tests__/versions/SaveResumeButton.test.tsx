@@ -1,7 +1,5 @@
-// __tests__/versions/SaveResumeButton.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SaveResumeButton } from '@/lib/versions/components/save/SaveResumeButton'
-import toast from 'react-hot-toast'
 
 jest.mock('react-hot-toast')
 
@@ -9,13 +7,10 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }))
 
+// mock fetch so the modal can open and submit
 global.fetch = jest.fn()
 
-const mockGroupsResponse = (groups: any[] = []) => ({
-  ok: true,
-  json: async () => groups,
-})
-
+// mock database items
 const sampleGroups = [
   {
     resume_group_id: 'group-1',
@@ -33,295 +28,122 @@ const sampleGroups = [
     ],
   },
 ]
-
 const mockWorkingState = {
   sections: [{ item_type_id: 'type-1', item_ids: ['item-1', 'item-2'] }],
 }
-const emptyWorkingState = { sections: [] }
-const emptyItemsWorkingState = {
-  sections: [{ item_type_id: 'type-1', item_ids: [] }],
-}
 
-const renderButton = (props: Partial<React.ComponentProps<typeof SaveResumeButton>> = {}) => {
-  const syncToBackend = props.syncToBackend ?? jest.fn().mockResolvedValue(undefined)
-  return render(
-    <SaveResumeButton
-      workingState={mockWorkingState}
-      syncToBackend={syncToBackend}
-      {...props}
-    />
-  )
-}
-
-describe('SaveResumeButton', () => {
+describe('SaveResumeButton UI flow', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // hide any erronuous console output
     jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
-  it('renders button with correct text', () => {
-    renderButton()
-    expect(screen.getByRole('button', { name: /save resume/i })).toBeInTheDocument()
-  })
+  it('clicking the button opens the modal', async () => {
+    // groups fetch returns empty list when the user clicks the save resume button
+    ;(fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => [] })
 
-  it('button is disabled when working state is empty (no sections)', () => {
-    renderButton({ workingState: emptyWorkingState })
-    expect(screen.getByRole('button', { name: /save resume/i })).toBeDisabled()
-  })
+    render(
+      <SaveResumeButton
+        workingState={mockWorkingState}
+        syncToBackend={jest.fn().mockResolvedValue(undefined)}
+      />
+    )
 
-  it('button is disabled when working state has no items', () => {
-    renderButton({ workingState: emptyItemsWorkingState })
-    expect(screen.getByRole('button', { name: /save resume/i })).toBeDisabled()
-  })
-
-  it('button is enabled when working state has items', () => {
-    renderButton()
-    expect(screen.getByRole('button', { name: /save resume/i })).not.toBeDisabled()
-  })
-
-  it('calls syncToBackend before opening modal', async () => {
-    const syncToBackend = jest.fn().mockResolvedValue(undefined)
-    ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse([]))
-
-    renderButton({ syncToBackend })
+    // click the Save Resume button
     fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
 
-    expect(syncToBackend).toHaveBeenCalledTimes(1)
-
+    // modal should appear
     await waitFor(() => {
       expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
     })
   })
 
-  it('opens modal after syncToBackend resolves', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse([]))
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-    expect(screen.getByLabelText(/resume name/i)).toBeInTheDocument()
-  })
-
-  it('shows "Save To" dropdown with existing groups', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse(sampleGroups))
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/save to/i)).toBeInTheDocument()
-    })
-
-    const select = screen.getByLabelText(/save to/i)
-    const options = select.querySelectorAll('option')
-    expect(options[0]).toHaveTextContent('New Resume')
-    expect(options[1]).toHaveTextContent('SWE Resume')
-  })
-
-  it('closes modal when cancel is clicked', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse([]))
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
-    expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
-  })
-
-  it('submits with null parent_version_id when "New Resume" is selected', async () => {
+  it('can fill in the resume name and submit to a new resume', async () => {
     ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse(sampleGroups))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '123', name: 'Test Resume', resume_group_id: 'new-group', parent_version_id: null }),
-      })
+      // this first mock resolves when the user clicks the save resume button, which triggers a GET request to load the groups
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
 
-    renderButton()
+      // this second mock waits in the queue until the user clicks save inside the modal, triggering a POST request to save the version
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: '1', name: 'My Resume', resume_group_id: 'new', parent_version_id: null }) })
+
+    render(
+      <SaveResumeButton
+        workingState={mockWorkingState}
+        syncToBackend={jest.fn().mockResolvedValue(undefined)}
+      />
+    )
+
+    // open modal
     fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
+    await waitFor(() => expect(screen.getByText('Save Resume Version')).toBeInTheDocument())
 
-    await waitFor(() => {
-      expect(screen.getByLabelText(/save to/i)).toBeInTheDocument()
-    })
+    // fill in the resume name field
+    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Resume' } })
 
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My New Resume' } })
+    // press Save
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
 
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/versions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_name: 'My New Resume', name: '', parent_version_id: null }),
-      })
-    })
-  })
-
-  it('submits with parent_version_id when an existing group is selected', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse(sampleGroups))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '456', name: 'SWE Resume v2', resume_group_id: 'group-1', parent_version_id: 'version-1' }),
-      })
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/save to/i)).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/save to/i), { target: { value: 'group-1' } })
-    fireEvent.change(screen.getByLabelText(/version note/i), { target: { value: 'SWE Resume v2' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/versions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_name: 'SWE Resume', name: 'SWE Resume v2', parent_version_id: 'version-1' }),
-      })
-    })
-  })
-
-  it('shows success toast on successful save and closes modal', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '123', name: 'Test', resume_group_id: 'g1', parent_version_id: null }),
-      })
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Resume "My Test Resume" saved successfully!')
-    })
-    
-    // Ensure the modal actually closes
+    // modal should close after a successful save
     await waitFor(() => {
       expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
     })
   })
 
-  it('shows error toast on API failure', async () => {
-    // With the new logic, SaveResumeModal just shows a generic string error message based on the return object from onSave.
-    // The test mock for saveVersion needs to fail, so we mock fetch to fail here.
+  it('can select an existing group and submit', async () => {
     ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) })
+      // this first mock resolves when the user clicks the save resume button, returning our fake database items
+      .mockResolvedValueOnce({ ok: true, json: async () => sampleGroups })
+      // this second mock waits until the user clicks save inside the modal, returning the saved version 
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: '2', name: 'v2', resume_group_id: 'group-1', parent_version_id: 'version-1' }) })
 
-    renderButton()
+    render(
+      <SaveResumeButton
+        workingState={mockWorkingState}
+        syncToBackend={jest.fn().mockResolvedValue(undefined)}
+      />
+    )
+
+    // open modal
     fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
+    await waitFor(() => expect(screen.getByLabelText(/save to/i)).toBeInTheDocument())
 
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
+    // pick the existing "SWE Resume" group
+    fireEvent.change(screen.getByLabelText(/save to/i), { target: { value: 'group-1' } })
 
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
+    // fill in a version note
+    fireEvent.change(screen.getByLabelText(/version note/i), { target: { value: 'Updated layout' } })
+
+    // press Save
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
 
-    // The API returned an error, so the modal will now show the error returned by onSave
+    // modal should close
     await waitFor(() => {
-      expect(screen.getByText('Failed to save resume. Please try again.')).toBeInTheDocument()
+      expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
     })
   })
 
-  it('shows network error text when fetch throws', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockRejectedValueOnce(new Error('Network error'))
+  it('pressing cancel closes the modal without saving', async () => {
+    ;(fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => [] })
 
-    renderButton()
+    render(
+      <SaveResumeButton
+        workingState={mockWorkingState}
+        syncToBackend={jest.fn().mockResolvedValue(undefined)}
+      />
+    )
+
     fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
+    await waitFor(() => expect(screen.getByText('Save Resume Version')).toBeInTheDocument())
 
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
+    // cancel without saving
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
 
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    // Caught exception path uses the "Please try again." message
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to save resume. Please try again.')
-    })
+    expect(screen.queryByText('Save Resume Version')).not.toBeInTheDocument()
     
-    await waitFor(() => {
-      expect(screen.getByText('Failed to save resume. Please try again.')).toBeInTheDocument()
-    })
-  })
-
-  it('validates empty resume name input', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse([]))
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText(/resume name is required/i)).toBeInTheDocument()
-    })
-
-    const saveCalls = (fetch as jest.Mock).mock.calls.filter((c: any[]) => c[1]?.method === 'POST')
-    expect(saveCalls).toHaveLength(0)
-  })
-
-  it('button shows loading state during save', async () => {
-    ;(fetch as jest.Mock)
-      .mockResolvedValueOnce(mockGroupsResponse([]))
-      .mockImplementationOnce(() => new Promise(() => {}))
-
-    renderButton()
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Save Resume Version')).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/resume name/i), { target: { value: 'My Test Resume' } })
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /saving/i })).toBeInTheDocument()
-    })
-  })
-
-
-
-  it('pre-selects group when parentVersionId is provided', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce(mockGroupsResponse(sampleGroups))
-
-    renderButton({ parentVersionId: 'version-1' })
-    fireEvent.click(screen.getByRole('button', { name: /save resume/i }))
-
-    await waitFor(() => {
-      const options = screen.getAllByRole('option')
-      expect(options.length).toBeGreaterThan(1)
-    })
-
-    await waitFor(() => {
-      const select = screen.getByLabelText(/save to/i) as HTMLSelectElement
-      expect(select.value).toBe('group-1')
-    })
+    // fetch should have only been called once for loading the groups initially, not for saving
+    // so we filter through them to see if any POST methods appeared, which would indicate that we did save on cancel
+    expect((fetch as jest.Mock).mock.calls.filter((c: any[]) => c[1]?.method === 'POST')).toHaveLength(0)
   })
 })

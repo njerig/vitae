@@ -1,11 +1,9 @@
 const nextJest = require("next/jest")
 
 const createJestConfig = nextJest({
-  // Provide the path to your Next.js app
   dir: "./",
 })
 
-// Custom Jest config for Vitae project
 const customJestConfig = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testEnvironment: "jest-environment-jsdom",
