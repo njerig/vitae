@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
-import { Pencil } from "lucide-react"
+import { Pencil, Sparkles } from "lucide-react"
 import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
 import { GripVertical } from "./GripVertical"
+import { TailorItemModal } from "@/lib/tailor/components/TailorItemModal"
+import toast from "react-hot-toast"
 
 interface DragItemProps {
   item: any
@@ -17,6 +19,7 @@ interface DragItemProps {
   isSelected: (id: string) => boolean | undefined
   toggleItem: (id: string, typeId: string) => void
   onEditOverride?: (item: any) => void
+  onSaveOverride?: (itemId: string, override: { title?: string; content?: Record<string, unknown> }) => Promise<void>
   hasOverride?: boolean
 }
 
@@ -34,12 +37,14 @@ export function DragItem({
   isSelected,
   toggleItem,
   onEditOverride,
+  onSaveOverride,
   hasOverride,
 }: DragItemProps) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
-  // showing the visual indicator
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
+  const [showTailorModal, setShowTailorModal] = useState(false)
+  const [tailorSaving, setTailorSaving] = useState(false)
 
   useEffect(() => {
     const clear = () => setDropPosition(null)
@@ -58,9 +63,6 @@ export function DragItem({
   const validatePosition = (position: number, max: number) =>
     position >= 1 && position <= max && !isNaN(position)
 
-  // Perform the actual move — only ever called on drop or manual input.
-  // setSections updates workingState via useResumeSections, so the new order
-  // is captured automatically when the user clicks Save Resume.
   const applyMove = (fromSectionIndex: number, fromItemIndex: number, toItemIndex: number) => {
     if (fromItemIndex === toItemIndex) return
     const newSections = sections.map((s: any, i: number) =>
@@ -114,7 +116,6 @@ export function DragItem({
     }
   }
 
-  // THE KEY CHANGE: reorder happens here on drop, not during dragover
   const handleItemDrop = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -127,7 +128,6 @@ export function DragItem({
     }
 
     const half = getDropHalf(e)
-    // Calculate the correct insertion index
     let toIndex = itemIndex
     if (half === "below") {
       toIndex = source.itemIndex < itemIndex ? itemIndex : itemIndex + 1
@@ -142,6 +142,30 @@ export function DragItem({
   const handleLocalDragEnd = (e: React.DragEvent) => {
     setDropPosition(null)
     handleItemDragEnd(e)
+  }
+
+  // Handle accepting the AI suggestion — saves as an override
+  const handleAcceptSuggestion = async (suggestion: { bullets: string[]; skills: string[] }) => {
+    if (!onSaveOverride) {
+      toast.error("Override saving is not available")
+      return
+    }
+    setTailorSaving(true)
+    try {
+      const existingContent = (item.content ?? {}) as Record<string, unknown>
+      const updatedContent = {
+        ...existingContent,
+        bullets: suggestion.bullets,
+        ...(suggestion.skills.length > 0 ? { skills: suggestion.skills } : {}),
+      }
+      await onSaveOverride(item.id, { content: updatedContent })
+      toast.success("AI suggestion saved as override")
+      setShowTailorModal(false)
+    } catch {
+      toast.error("Failed to save suggestion")
+    } finally {
+      setTailorSaving(false)
+    }
   }
 
   const extractItemContent = (sectionName: string, content: Record<string, unknown>, item: any) => {
@@ -246,9 +270,8 @@ export function DragItem({
           setDraggedItem({ sectionIndex, itemIndex })
         }}
         onDragEnd={handleLocalDragEnd}
-        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 ${
-          isItemDragging ? "opacity-40 scale-[0.98]" : "opacity-100"
-        }`}
+        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 ${isItemDragging ? "opacity-40 scale-[0.98]" : "opacity-100"
+          }`}
         style={{
           borderColor: isItemDragging ? "var(--accent)" : "var(--grid)",
           backgroundColor: "var(--paper)",
@@ -339,6 +362,28 @@ export function DragItem({
         </div>
 
         <div className="flex items-center gap-2 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
+          {/* ✨ AI Tailor button — per item */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowTailorModal(true)
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onDragStart={(e) => e.preventDefault()}
+            draggable={false}
+            className="relative p-1.5 rounded-md border transition-colors cursor-pointer"
+            style={{
+              borderColor: "var(--grid)",
+              color: "var(--ink-light)",
+              backgroundColor: "var(--paper)",
+            }}
+            aria-label="AI tailor this item"
+            title="AI tailor this item for a specific role"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Edit override button */}
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -366,6 +411,7 @@ export function DragItem({
               />
             )}
           </button>
+
           <label className="text-xs" style={{ color: "var(--ink-light)" }}>
             #
           </label>
@@ -414,6 +460,17 @@ export function DragItem({
           />
           <div className="flex-1 h-0.5 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
+      )}
+
+      {/* Per-item AI Tailor Modal */}
+      {showTailorModal && (
+        <TailorItemModal
+          item={item}
+          typeName={section.typeName}
+          onAccept={handleAcceptSuggestion}
+          onClose={() => setShowTailorModal(false)}
+          saving={tailorSaving}
+        />
       )}
     </div>
   )
