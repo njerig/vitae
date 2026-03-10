@@ -16,14 +16,13 @@ export function DragSection({
   isSelected,
   toggleItem,
   onEditOverride,
+  onSaveOverride,
   getOverride,
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
-  // visual indicator — no setSections during dragover
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
 
-  // Stable ref so dragover can read the current dragged section index
   const draggedSectionRef = useRef(draggedSection)
   useEffect(() => {
     draggedSectionRef.current = draggedSection
@@ -73,17 +72,12 @@ export function DragSection({
 
   const handleSectionDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-
-    // If this is an item drag, let it fall through to DragItem — don't interfere
     if (e.dataTransfer.types.includes("application/drag-type-item")) return
-
     const current = draggedSectionRef.current
     if (current === null || current === undefined || current === sectionIndex) {
       setDropPosition(null)
       return
     }
-
-    // Only show the indicator — no setSections call here
     setDropPosition(getDropHalf(e))
   }
 
@@ -93,20 +87,15 @@ export function DragSection({
     }
   }
 
-  // THE KEY CHANGE: reorder happens here on drop, not during dragover
   const handleSectionDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setDropPosition(null)
-
-    // If it's an item drag bubbling up, ignore it
     if (e.dataTransfer.types.includes("application/drag-type-item")) return
-
     const fromIndex = draggedSectionRef.current
     if (fromIndex === null || fromIndex === undefined || fromIndex === sectionIndex) {
       setDraggedSection(null)
       return
     }
-
     const half = getDropHalf(e)
     let toIndex = sectionIndex
     if (half === "below") {
@@ -114,7 +103,6 @@ export function DragSection({
     } else {
       toIndex = fromIndex > sectionIndex ? sectionIndex : sectionIndex - 1
     }
-
     applyMove(fromIndex, toIndex)
     setDraggedSection(null)
   }
@@ -133,30 +121,24 @@ export function DragSection({
       onDragLeave={handleSectionDragLeave}
       onDrop={handleSectionDrop}
     >
-      {/* Drop indicator — above */}
       {dropPosition === "above" && (
         <div
           className="absolute left-0 right-0 z-20 pointer-events-none flex items-center gap-1"
           style={{ top: "-6px" }}
         >
-          <div
-            className="w-3 h-3 rounded-full shrink-0"
-            style={{ backgroundColor: "var(--accent)" }}
-          />
+          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
           <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
       )}
 
       <div
-        className={`rounded-2xl border shadow-sm transition-all duration-150 ${
-          isSectionDragging ? "opacity-40 scale-[0.99]" : "opacity-100"
-        }`}
+        className={`rounded-2xl border shadow-sm transition-all duration-150 ${isSectionDragging ? "opacity-40 scale-[0.99]" : "opacity-100"
+          }`}
         style={{
           borderColor: isSectionDragging ? "var(--accent)" : "var(--grid)",
           backgroundColor: "var(--paper-dark)",
         }}
       >
-        {/* Section header — the only draggable surface for section reorder */}
         <div
           draggable
           onDragStart={(e) => {
@@ -175,7 +157,6 @@ export function DragSection({
           <div className="shrink-0">
             <GripVertical className="w-5 h-5" style={{ color: "var(--ink-light)" }} />
           </div>
-
           <div className="flex-1">
             <h3
               className="text-xl font-semibold"
@@ -187,7 +168,6 @@ export function DragSection({
               {section.items.length} item{section.items.length !== 1 ? "s" : ""}
             </p>
           </div>
-
           <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
             <label className="text-xs" style={{ color: "var(--ink-light)" }}>
               Section order:
@@ -240,22 +220,19 @@ export function DragSection({
               isSelected={isSelected}
               toggleItem={toggleItem}
               onEditOverride={onEditOverride}
+              onSaveOverride={onSaveOverride}
               hasOverride={!!getOverride?.(item.id)}
             />
           ))}
         </div>
       </div>
 
-      {/* Drop indicator — below */}
       {dropPosition === "below" && (
         <div
           className="absolute left-0 right-0 z-20 pointer-events-none flex items-center gap-1"
           style={{ bottom: "-6px" }}
         >
-          <div
-            className="w-3 h-3 rounded-full shrink-0"
-            style={{ backgroundColor: "var(--accent)" }}
-          />
+          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
           <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
         </div>
       )}
