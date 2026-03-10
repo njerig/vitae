@@ -108,7 +108,8 @@ export function useWorkingState() {
       setIsDirty(true)
       return newState
     })
-  }, [])
+    setTimeout(() => syncToBackend(), 0)
+  }, [syncToBackend])
 
   /** Update state locally (used for drag reorder) — no network request. */
   const updateStateLocally = useCallback((newState: WorkingState) => {
