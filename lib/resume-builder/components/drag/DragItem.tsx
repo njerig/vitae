@@ -249,9 +249,8 @@ export function DragItem({
           setDraggedItem({ sectionIndex, itemIndex })
         }}
         onDragEnd={handleLocalDragEnd}
-        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 ${
-          isItemDragging ? "opacity-40 scale-[0.98]" : "opacity-100"
-        }`}
+        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 ${isItemDragging ? "opacity-40 scale-[0.98]" : "opacity-100"
+          }`}
         style={{
           borderColor: isItemDragging ? "var(--accent)" : "var(--grid)",
           backgroundColor: "var(--paper)",
