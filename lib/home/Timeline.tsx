@@ -36,7 +36,10 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
               end: normalizedEnd,
             }
           })
-          .filter((j): j is { id: string; type: "work"; name: string; start: Date; end: Date } => j !== null)
+          .filter(
+            (j): j is { id: string; type: "work"; name: string; start: Date; end: Date } =>
+              j !== null
+          )
       : []
 
     const eduItems = eduType
@@ -61,7 +64,8 @@ export function Timeline({ items, itemTypes }: TimelineProps) {
             }
           })
           .filter(
-            (j): j is { id: string; type: "education"; name: string; start: Date; end: Date } => j !== null
+            (j): j is { id: string; type: "education"; name: string; start: Date; end: Date } =>
+              j !== null
           )
       : []
 

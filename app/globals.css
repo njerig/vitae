@@ -406,11 +406,13 @@ header {
   appearance: none;
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(to right,
-      var(--accent) 0%,
-      var(--accent) 50%,
-      var(--paper-dark) 50%,
-      var(--paper-dark) 100%);
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) 50%,
+    var(--paper-dark) 50%,
+    var(--paper-dark) 100%
+  );
   border: 1px solid var(--grid);
   accent-color: var(--accent);
 }
