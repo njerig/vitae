@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { GripVertical } from "./GripVertical"
 import { DragItem } from "./DragItem"
+import { Sparkles } from "lucide-react"
 
 export function DragSection({
   section,
@@ -16,7 +17,9 @@ export function DragSection({
   isSelected,
   toggleItem,
   onEditOverride,
+  onTailorSection,
   getOverride,
+  itemActionMode,
 }: any) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -189,6 +192,25 @@ export function DragSection({
           </div>
 
           <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
+            {itemActionMode === "ai" && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onTailorSection?.(section)
+                }}
+                className="p-1.5 rounded-md border cursor-pointer"
+                style={{
+                  borderColor: "var(--grid)",
+                  color: "var(--ink-light)",
+                  backgroundColor: "var(--paper)",
+                }}
+                title="Tailor this section with AI"
+                aria-label="Tailor this section with AI"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+              </button>
+            )}
             <label className="text-xs" style={{ color: "var(--ink-light)" }}>
               Section order:
             </label>
@@ -241,6 +263,7 @@ export function DragSection({
               toggleItem={toggleItem}
               onEditOverride={onEditOverride}
               hasOverride={!!getOverride?.(item.id)}
+              itemActionMode={itemActionMode}
             />
           ))}
         </div>

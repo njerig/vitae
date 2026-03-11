@@ -216,12 +216,12 @@ header {
   padding: 0.75rem 2rem;
   background: var(--ink);
   color: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-soft) !important;
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border: 2px solid var(--grid);
-  border-radius: var(--radius-soft) !important;
   transition: all 200ms;
   cursor: pointer;
 }
@@ -398,6 +398,60 @@ header {
 .tab-button-active:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+/* Tailoring controls */
+.tailor-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+      var(--accent) 0%,
+      var(--accent) 50%,
+      var(--paper-dark) 50%,
+      var(--paper-dark) 100%);
+  border: 1px solid var(--grid);
+  accent-color: var(--accent);
+}
+
+.tailor-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--paper-dark);
+}
+
+.tailor-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  margin-top: -4px;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.tailor-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--paper-dark);
+  border: 1px solid var(--grid);
+}
+
+.tailor-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.tailor-slider:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* Modal styles */

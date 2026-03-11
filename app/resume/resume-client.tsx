@@ -2,21 +2,115 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Toaster } from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import { DragSection } from "../../lib/resume-builder/components/drag/DragSection"
 import { Spinner } from "@/lib/shared/components/Spinner"
+import { SegmentedSwitch } from "@/lib/shared/components/SegmentedSwitch"
 import { SaveResumeButton } from "@/lib/versions/components/save/SaveResumeButton"
 import { ChevronLeft, Download } from "lucide-react"
-import { ResumeBuilderPreview } from "../../lib/resume-builder/components/ResumeBuilderPreview"
+import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumeBuilderPreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/components/TemplateSelectorButton"
 import { EditOverrideModal } from "@/lib/resume-builder/components/edit/EditOverrideModal"
-import { TailorModal } from "@/lib/tailor/components/TailorModal"
-import { TailorButton } from "@/lib/tailor/components/TailorButton"
+import { TailoringStudioCard } from "@/lib/tailor/components/TailoringStudioCard"
+import { AIItemTailorModal } from "@/lib/tailor/components/AIItemTailorModal"
 import { useTailorPrioritization } from "@/lib/tailor/useTailorPrioritization"
 import type { ArchivedCanonItem, CanonItem } from "@/lib/shared/types"
+import type { TailoringAxes } from "@/lib/tailor/options"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
 import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
 
+// -- Types ---------------------------------------------------------------------
+
+type AITargetItem = {
+  id: string
+  type_name: string
+  title: string
+  content: Record<string, unknown>
+}
+
+type AITarget = {
+  title: string
+  subtitle?: string
+  items: AITargetItem[]
+}
+
+type ItemTweaksOverride = {
+  item_id: string
+  content?: { bullets?: string[] }
+}
+
+type OverrideRecord = Record<string, { title?: string; content?: Record<string, unknown> }>
+
+type TailoringContextSavePayload = {
+  contextType: "job_description" | "audience"
+  contextText: string
+  contextTexts: {
+    job_description: string
+    audience: string
+  }
+  axes: TailoringAxes
+}
+
+// -- Helpers -------------------------------------------------------------------
+
+/**
+ * Reads archived canon items restored for a specific parent version.
+ *
+ * @param versionId - Parent version ID used as the storage key suffix.
+ * @returns Archived items when available; otherwise null.
+ */
+function readArchivedItemsFromSession(versionId: string): ArchivedCanonItem[] | null {
+  const key = `archived_items_${versionId}`
+  const raw = sessionStorage.getItem(key)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as ArchivedCanonItem[]
+  } catch {
+    return null
+  } finally {
+    sessionStorage.removeItem(key)
+  }
+}
+
+/**
+ * Merges AI bullet overrides into an existing override dictionary.
+ *
+ * @param currentOverrides - Existing persisted override map.
+ * @param incomingOverrides - New bullet overrides from the AI modal.
+ * @returns A merged override map preserving prior title/content fields.
+ */
+function mergeItemOverrides(
+  currentOverrides: OverrideRecord | undefined,
+  incomingOverrides: ItemTweaksOverride[]
+): OverrideRecord {
+  const nextOverrides: OverrideRecord = { ...(currentOverrides || {}) }
+  for (const override of incomingOverrides) {
+    const current = nextOverrides[override.item_id]
+    nextOverrides[override.item_id] = {
+      ...(current?.title ? { title: current.title } : {}),
+      ...(current?.content || override.content
+        ? {
+            content: {
+              ...(current?.content || {}),
+              ...(override.content || {}),
+            },
+          }
+        : {}),
+    }
+  }
+  return nextOverrides
+}
+
+/**
+ * Resume builder page client component.
+ *
+ * @param props - Resume page shell metadata.
+ * @param props.userName - Current user's display name.
+ * @param props.versionName - Active version label, if any.
+ * @param props.versionSavedAt - Active version save timestamp.
+ * @param props.parentVersionId - Parent version ID used during restore.
+ * @returns Resume builder page UI.
+ */
 export default function ResumeBuilderClient({
   userName,
   versionName,
@@ -29,29 +123,34 @@ export default function ResumeBuilderClient({
   versionSavedAt: string | null
   parentVersionId: string | null
 }) {
+  // -- Local State -------------------------------------------------------------
+
   // When the user restores an old version, archived items that were deleted
   // but referenced by the snapshot are stored in sessionStorage by useVersion.
   // Read them here so the preview can render them without polluting the canon list.
   const [archivedItems, setArchivedItems] = useState<ArchivedCanonItem[]>([])
+  const [editMode, setEditMode] = useState<"manual" | "ai">("manual")
+  const [manualDirty, setManualDirty] = useState(false)
+  const [aiDirty, setAiDirty] = useState(false)
+  const [aiResetSignal, setAiResetSignal] = useState(0)
+  const [aiStudioExpanded, setAiStudioExpanded] = useState(false)
+  const [pendingTransition, setPendingTransition] = useState<null | (() => void)>(null)
+  const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false)
+  const [aiTarget, setAiTarget] = useState<AITarget | null>(null)
+
+  // -- Effects -----------------------------------------------------------------
+
   useEffect(() => {
     if (!parentVersionId) return
-    const key = `archived_items_${parentVersionId}`
-    const raw = sessionStorage.getItem(key)
-    if (raw) {
-      try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setArchivedItems(JSON.parse(raw) as ArchivedCanonItem[])
-      } catch {
-        // Malformed entry is not critical — just ignore it
-      }
-      // Clean up so it doesn't linger across subsequent navigations
-      sessionStorage.removeItem(key)
-    }
+    const restoredItems = readArchivedItemsFromSession(parentVersionId)
+    if (!restoredItems) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setArchivedItems(restoredItems)
   }, [parentVersionId])
 
+  // -- Data Hooks --------------------------------------------------------------
+
   const {
-    allItems,
-    itemTypes,
     editingItem,
     setEditingItem,
     workingState,
@@ -66,6 +165,7 @@ export default function ResumeBuilderClient({
     saveOverride,
     clearOverride,
     setTemplate,
+    setTailoringContext,
     getTypeName,
     sections,
     setSections,
@@ -83,13 +183,117 @@ export default function ResumeBuilderClient({
     isLoading,
   } = useResumeBuilder(userName, archivedItems)
 
-  // Tailor modal state and handler
-  const { showTailorModal, setShowTailorModal, tailoring, handleTailor } = useTailorPrioritization(
+  const { tailoring, handleTailor } = useTailorPrioritization(
     sections,
     setSections,
     workingState,
     updateStateLocally
   )
+
+  const savedTailoringContext = workingState.tailoring_context
+
+  // -- Event Handlers ----------------------------------------------------------
+
+  /**
+   * Persists global tailoring context and slider values.
+   *
+   * @param payload - Context values from Tailoring Studio.
+   * @returns Promise that resolves when state is persisted.
+   */
+  const handleSaveTailoringContext = async (payload: TailoringContextSavePayload) => {
+    await setTailoringContext(
+      {
+        context_type: payload.contextType,
+        context_text: payload.contextText,
+        context_text_by_type: payload.contextTexts,
+        axes: payload.axes,
+      },
+      { persist: true }
+    )
+  }
+
+  /**
+   * Applies AI-generated bullet overrides to working state and persists them.
+   *
+   * @param overrides - Item-level bullet overrides generated by AI.
+   * @returns Promise that resolves after local and backend state updates.
+   */
+  const applyAiItemTweaks = async (overrides: ItemTweaksOverride[]) => {
+    if (overrides.length === 0) return
+
+    const nextState = {
+      ...workingState,
+      overrides: mergeItemOverrides(workingState.overrides, overrides),
+    }
+    updateStateLocally(nextState)
+    await syncToBackend(nextState)
+  }
+
+  // -- Transition Guards -------------------------------------------------------
+
+  /**
+   * Guards mode/modal transitions when there are unapplied edits.
+   *
+   * @param nextAction - Action to run after guard passes.
+   * @param discardCurrentContext - Action to clear local unsaved edits when discarding.
+   * @returns Void.
+   */
+  const requestTransition = (nextAction: () => void, discardCurrentContext: () => void) => {
+    const hasUnappliedChanges = editMode === "manual" ? manualDirty : aiDirty
+    if (!hasUnappliedChanges) {
+      nextAction()
+      return
+    }
+    setPendingTransition(() => () => {
+      discardCurrentContext()
+      nextAction()
+    })
+    setShowUnsavedPrompt(true)
+  }
+
+  /**
+   * Requests switching between manual and AI modes with unsaved-change protection.
+   *
+   * @param targetMode - Requested editing mode.
+   * @returns Void.
+   */
+  const requestModeChange = (targetMode: "manual" | "ai") => {
+    if (targetMode === editMode) return
+    requestTransition(
+      () => {
+        setEditMode(targetMode)
+        if (targetMode === "ai") setAiStudioExpanded(false)
+      },
+      () => {
+        if (editMode === "manual") {
+          setEditingItem(null)
+          setManualDirty(false)
+        } else {
+          setAiDirty(false)
+          setAiResetSignal((n) => n + 1)
+          setAiStudioExpanded(false)
+        }
+      }
+    )
+  }
+
+  /**
+   * Requests closing the manual edit modal with unsaved-change protection.
+   *
+   * @returns Void.
+   */
+  const requestManualClose = () => {
+    requestTransition(
+      () => setEditingItem(null),
+      () => {
+        setEditingItem(null)
+        setManualDirty(false)
+      }
+    )
+  }
+
+  // -- Render ------------------------------------------------------------------
+
   if (isLoading) {
     return (
       <div className="page-container">
@@ -158,7 +362,17 @@ export default function ResumeBuilderClient({
             <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row items-center justify-center gap-2">
                 {/*Tailor Resume */}
-                <TailorButton onClick={() => setShowTailorModal(true)} />
+                <SegmentedSwitch
+                  value={editMode}
+                  onChange={(next) => requestModeChange(next)}
+                  options={[
+                    { value: "manual", label: "Manual" },
+                    { value: "ai", label: "AI Tailor" },
+                  ]}
+                  variant="primary"
+                  size="sm"
+                  ariaLabel="Resume editing mode"
+                />
 
                 {/* Save Resume */}
                 <SaveResumeButton
@@ -202,6 +416,22 @@ export default function ResumeBuilderClient({
               </div>
             )}
 
+            {editMode === "ai" && (
+              <TailoringStudioCard
+                initialContextType={savedTailoringContext?.context_type}
+                initialContextText={savedTailoringContext?.context_text}
+                initialContextTexts={savedTailoringContext?.context_text_by_type}
+                initialAxes={savedTailoringContext?.axes}
+                onSaveContext={handleSaveTailoringContext}
+                onTailor={handleTailor}
+                tailoring={tailoring}
+                expanded={aiStudioExpanded}
+                onExpandedChange={setAiStudioExpanded}
+                onDirtyChange={setAiDirty}
+                resetSignal={aiResetSignal}
+              />
+            )}
+
             {sections.length === 0 ? (
               <div
                 className="bg-white rounded-2xl border p-12 text-center shadow-sm"
@@ -230,8 +460,53 @@ export default function ResumeBuilderClient({
                     handleItemDragEnd={handleItemDragEnd}
                     isSelected={isSelected}
                     toggleItem={toggleItem}
-                    onEditOverride={(item: CanonItem<unknown>) => setEditingItem(item)}
+                    onEditOverride={(item: CanonItem<unknown>) => {
+                      if (editMode === "manual") {
+                        setEditingItem(item)
+                        return
+                      }
+                      if (!isSelected(item.id)) {
+                        toast("Select this item first to include it in AI tailoring.")
+                        return
+                      }
+                      setAiTarget({
+                        title: item.title || "Untitled item",
+                        subtitle: section.typeName,
+                        items: [
+                          {
+                            id: item.id,
+                            type_name: section.typeName,
+                            title: item.title || "Untitled item",
+                            content: (item.content ?? {}) as Record<string, unknown>,
+                          },
+                        ],
+                      })
+                    }}
+                    onTailorSection={(sectionToTailor: {
+                      typeName: string
+                      items: CanonItem[]
+                    }) => {
+                      if (editMode !== "ai") return
+                      const selectedItems = sectionToTailor.items.filter((item) =>
+                        isSelected(item.id)
+                      )
+                      if (selectedItems.length === 0) {
+                        toast("Select at least one item in this section before AI tailoring.")
+                        return
+                      }
+                      setAiTarget({
+                        title: sectionToTailor.typeName,
+                        subtitle: `${selectedItems.length} selected item(s)`,
+                        items: selectedItems.map((item) => ({
+                          id: item.id,
+                          type_name: sectionToTailor.typeName,
+                          title: item.title || "Untitled item",
+                          content: (item.content ?? {}) as Record<string, unknown>,
+                        })),
+                      })
+                    }}
                     getOverride={getOverride}
+                    itemActionMode={editMode}
                   />
                 ))}
               </div>
@@ -310,17 +585,57 @@ export default function ResumeBuilderClient({
           override={getOverride(editingItem.id)}
           onSave={saveOverride}
           onReset={clearOverride}
-          onClose={() => setEditingItem(null)}
+          onClose={requestManualClose}
           saving={workingStateSaving}
+          onDirtyChange={setManualDirty}
         />
       )}
 
-      {/* Tailor Resume Modal */}
-      {showTailorModal && (
-        <TailorModal
-          onTailor={handleTailor}
-          onClose={() => setShowTailorModal(false)}
-          tailoring={tailoring}
+      {showUnsavedPrompt && (
+        <div className="modal-overlay">
+          <div className="modal" style={{ maxWidth: "420px" }}>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--ink)" }}>
+              Unapplied changes
+            </h3>
+            <p className="text-sm mb-5" style={{ color: "var(--ink-fade)" }}>
+              You have unapplied changes. Stay to keep editing, or discard to continue.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setShowUnsavedPrompt(false)
+                  setPendingTransition(null)
+                }}
+              >
+                Stay
+              </button>
+              <button
+                type="button"
+                className="card-action-delete-negative"
+                onClick={() => {
+                  const next = pendingTransition
+                  setShowUnsavedPrompt(false)
+                  setPendingTransition(null)
+                  next?.()
+                }}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {aiTarget && (
+        <AIItemTailorModal
+          title={aiTarget.title}
+          subtitle={aiTarget.subtitle}
+          context={savedTailoringContext}
+          items={aiTarget.items}
+          onApply={applyAiItemTweaks}
+          onClose={() => setAiTarget(null)}
         />
       )}
     </div>

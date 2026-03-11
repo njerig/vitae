@@ -3,7 +3,9 @@
  * Sends job description and current resume sections to the prioritize endpoint.
  */
 
-type SectionPayload = {
+import type { TailoringAxes } from "@/lib/tailor/options"
+
+export type SectionPayload = {
   item_type_id: string
   type_name: string
   items: {
@@ -17,6 +19,49 @@ type TailorPrioritizationResponse = {
   sections: {
     item_type_id: string
     item_ids: string[]
+  }[]
+}
+
+export type TailorComposePayload = {
+  context_type: "job_description" | "audience"
+  context_text: string
+  axes: TailoringAxes
+  sections: SectionPayload[]
+}
+
+export type TailorComposeResponse = {
+  sections: {
+    item_type_id: string
+    item_ids: string[]
+  }[]
+  overrides: {
+    item_id: string
+    title?: string
+    content?: Record<string, unknown>
+  }[]
+  axes: TailoringAxes
+  context_type: "job_description" | "audience"
+  context_text: string
+}
+
+export type TailorTweakItemPayload = {
+  context_type: "job_description" | "audience"
+  context_text: string
+  axes: TailoringAxes
+  items: {
+    id: string
+    type_name: string
+    title: string
+    content: Record<string, unknown>
+  }[]
+}
+
+export type TailorTweakItemResponse = {
+  overrides: {
+    item_id: string
+    content?: {
+      bullets?: string[]
+    }
   }[]
 }
 
@@ -40,6 +85,46 @@ export async function tailorPrioritize(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(typeof err.error === "string" ? err.error : "Tailoring failed")
+  }
+
+  return res.json()
+}
+
+export async function tailorCompose(
+  payload: TailorComposePayload,
+  signal?: AbortSignal
+): Promise<TailorComposeResponse> {
+  const res = await fetch("/api/tailor/compose", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    signal,
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(typeof err.error === "string" ? err.error : "Tailoring compose failed")
+  }
+
+  return res.json()
+}
+
+export async function tailorTweakItem(
+  payload: TailorTweakItemPayload,
+  signal?: AbortSignal
+): Promise<TailorTweakItemResponse> {
+  const res = await fetch("/api/tailor/tweak-item", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    signal,
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(typeof err.error === "string" ? err.error : "Tailoring tweak-item failed")
   }
 
   return res.json()
