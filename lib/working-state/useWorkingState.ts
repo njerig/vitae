@@ -17,6 +17,20 @@ type WorkingState = {
   sections: SectionState[]
   overrides?: Record<string, OverrideData>
   template_id?: string
+  tailoring_context?: {
+    context_type: "job_description" | "audience"
+    context_text: string
+    context_text_by_type?: {
+      job_description?: string
+      audience?: string
+    }
+    axes?: {
+      industry: number
+      tone: number
+      technicalDepth: number
+      length: number
+    }
+  }
 }
 
 export function useWorkingState() {
@@ -172,6 +186,27 @@ export function useWorkingState() {
     [syncToBackend]
   )
 
+  // Save global AI tailoring context (optionally persist immediately)
+  const setTailoringContext = useCallback(
+    async (
+      context: NonNullable<WorkingState["tailoring_context"]>,
+      options?: { persist?: boolean }
+    ) => {
+      const newState: WorkingState = {
+        ...stateRef.current,
+        tailoring_context: context,
+      }
+      setState(newState)
+      stateRef.current = newState
+      if (options?.persist) {
+        await syncToBackend(newState)
+      } else {
+        setIsDirty(true)
+      }
+    },
+    [syncToBackend]
+  )
+
   return {
     state,
     loading,
@@ -187,5 +222,6 @@ export function useWorkingState() {
     saveOverride,
     clearOverride,
     setTemplate,
+    setTailoringContext,
   }
 }

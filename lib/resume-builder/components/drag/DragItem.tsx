@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
-import { Pencil } from "lucide-react"
-import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
 import { GripVertical } from "./GripVertical"
+import { Pencil, Sparkles } from "lucide-react"
+import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
 
 interface DragItemProps {
   item: any
@@ -18,6 +18,7 @@ interface DragItemProps {
   toggleItem: (id: string, typeId: string) => void
   onEditOverride?: (item: any) => void
   hasOverride?: boolean
+  itemActionMode?: "manual" | "ai"
 }
 
 export function DragItem({
@@ -35,6 +36,7 @@ export function DragItem({
   toggleItem,
   onEditOverride,
   hasOverride,
+  itemActionMode = "manual",
 }: DragItemProps) {
   const [editingPosition, setEditingPosition] = useState("")
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -52,6 +54,7 @@ export function DragItem({
   }, [])
 
   const content = (item.content ?? {}) as Record<string, unknown>
+  const selectedForResume = !!isSelected(item.id)
   const isItemDragging =
     draggedItem?.sectionIndex === sectionIndex && draggedItem?.itemIndex === itemIndex
 
@@ -340,6 +343,7 @@ export function DragItem({
 
         <div className="flex items-center gap-2 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation()
               onEditOverride?.(item)
@@ -350,15 +354,34 @@ export function DragItem({
             className="relative p-1.5 rounded-md border transition-colors cursor-pointer"
             style={{
               borderColor: hasOverride ? "var(--accent)" : "var(--grid)",
-              color: hasOverride ? "var(--accent)" : "var(--ink-light)",
+              color:
+                itemActionMode === "ai" && !selectedForResume
+                  ? "var(--ink-light)"
+                  : hasOverride
+                    ? "var(--accent)"
+                    : "var(--ink-light)",
               backgroundColor: "var(--paper)",
+              opacity: itemActionMode === "ai" && !selectedForResume ? 0.5 : 1,
             }}
-            aria-label="Edit item for this resume"
+            disabled={itemActionMode === "ai" && !selectedForResume}
+            aria-label={
+              itemActionMode === "ai" ? "Tailor this item with AI" : "Edit item for this resume"
+            }
             title={
-              hasOverride ? "Edited for this resume (click to modify)" : "Edit for this resume"
+              itemActionMode === "ai"
+                ? selectedForResume
+                  ? "Tailor this selected item with AI"
+                  : "Select this item first to tailor with AI"
+                : hasOverride
+                  ? "Edited for this resume (click to modify)"
+                  : "Edit for this resume"
             }
           >
-            <Pencil className="w-3.5 h-3.5" />
+            {itemActionMode === "ai" ? (
+              <Sparkles className="w-3.5 h-3.5" />
+            ) : (
+              <Pencil className="w-3.5 h-3.5" />
+            )}
             {hasOverride && (
               <span
                 className="absolute -top-1 -right-1 w-2 h-2 rounded-full"

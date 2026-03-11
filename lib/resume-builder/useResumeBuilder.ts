@@ -30,6 +30,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     saveOverride,
     clearOverride,
     setTemplate,
+    setTailoringContext,
   } = useWorkingState()
 
   const getTypeName = useCallback(
@@ -165,6 +166,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     saveOverride,
     clearOverride,
     setTemplate,
+    setTailoringContext,
     getTypeName,
     sections,
     setSections,

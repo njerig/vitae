@@ -135,6 +135,26 @@ export const WorkingStateSchema = z.object({
   sections: z.array(SectionStateSchema),
   overrides: z.record(z.string().uuid(), OverrideSchema).optional(),
   template_id: z.string().optional(),
+  tailoring_context: z
+    .object({
+      context_type: z.enum(["job_description", "audience"]),
+      context_text: z.string(),
+      context_text_by_type: z
+        .object({
+          job_description: z.string().optional(),
+          audience: z.string().optional(),
+        })
+        .optional(),
+      axes: z
+        .object({
+          industry: z.number(),
+          tone: z.number(),
+          technicalDepth: z.number(),
+          length: z.number(),
+        })
+        .optional(),
+    })
+    .optional(),
 })
 
 // ─────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useState, useMemo, useCallback } from "react"
 import type { CanonItem, ItemType } from "@/lib/shared/types"
 
 type Section = {
@@ -18,6 +18,21 @@ type WorkingState = {
     item_ids: string[]
   }>
   overrides?: Record<string, OverrideData>
+  template_id?: string
+  tailoring_context?: {
+    context_type: "job_description" | "audience"
+    context_text: string
+    context_text_by_type?: {
+      job_description?: string
+      audience?: string
+    }
+    axes?: {
+      industry: number
+      tone: number
+      technicalDepth: number
+      length: number
+    }
+  }
 }
 
 export function useResumeSections(
@@ -112,6 +127,10 @@ export function useResumeSections(
           item_ids: section.items.map((item) => item.id),
         })),
         ...(workingState?.overrides ? { overrides: workingState.overrides } : {}),
+        ...(workingState?.template_id ? { template_id: workingState.template_id } : {}),
+        ...(workingState?.tailoring_context
+          ? { tailoring_context: workingState.tailoring_context }
+          : {}),
       }
       saveState(newWorkingState)
     },

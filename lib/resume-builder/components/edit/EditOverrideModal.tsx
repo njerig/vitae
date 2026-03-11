@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import type { CanonItem } from "@/lib/shared/types"
 import type { OverrideData } from "@/lib/working-state/useWorkingState"
 import type { FormError } from "@/lib/canon/useCanon"
@@ -23,6 +23,7 @@ type EditOverrideModalProps = {
   onReset: (itemId: string) => Promise<void>
   onClose: () => void
   saving?: boolean
+  onDirtyChange?: (dirty: boolean) => void
 }
 
 export function EditOverrideModal({
@@ -33,6 +34,7 @@ export function EditOverrideModal({
   onReset,
   onClose,
   saving,
+  onDirtyChange,
 }: EditOverrideModalProps) {
   const fields = useMemo(() => getFieldsForType(typeName), [typeName])
   const [error, setError] = useState<FormError>(null)
@@ -62,6 +64,20 @@ export function EditOverrideModal({
   }, [fields, item, override])
 
   const [form, setForm] = useState<Record<string, string>>(initialForm)
+
+  const isDirty = useMemo(() => {
+    const keys = new Set([...Object.keys(initialForm), ...Object.keys(form)])
+    for (const key of keys) {
+      if ((form[key] ?? "") !== (initialForm[key] ?? "")) {
+        return true
+      }
+    }
+    return false
+  }, [form, initialForm])
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty)
+  }, [isDirty, onDirtyChange])
 
   const hasError = (fieldName: string) => error?.fields.includes(fieldName) ?? false
 
@@ -217,11 +233,7 @@ export function EditOverrideModal({
               )}
             </button>
             {override && (
-              <button
-                onClick={handleReset}
-                disabled={saving}
-                className="card-action-delete-negative"
-              >
+              <button onClick={handleReset} disabled={saving} className="btn-secondary">
                 Reset to Original
               </button>
             )}
