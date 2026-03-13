@@ -172,14 +172,49 @@ export function useCanon() {
     [getTypeName]
   )
 
-  // Filter items by selected type and sort by type priority, then position
+  const parseDateMs = (value: unknown): number | null => {
+    if (typeof value !== "string" || value.trim() === "") return null
+    const timestamp = new Date(value).getTime()
+    return Number.isNaN(timestamp) ? null : timestamp
+  }
+
+  const getItemEndDateMs = (item: CanonItem<unknown>): number | null => {
+    const content = (item.content ?? {}) as Record<string, unknown>
+    return parseDateMs(content.end)
+  }
+
+  const getItemStartDateMs = (item: CanonItem<unknown>): number | null => {
+    const content = (item.content ?? {}) as Record<string, unknown>
+    return parseDateMs(content.start)
+  }
+
+  // Filter items by selected type and sort by:
+  // 1) type priority (when showing all types)
+  // 2) date within type (newest first)
+  // 3) position as fallback for stable ordering
   const filteredItems = useMemo(() => {
     const filtered = selectedTypeId
       ? items.filter((item) => item.item_type_id === selectedTypeId)
       : items
-    return filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const typeDiff = getTypePriority(a.item_type_id) - getTypePriority(b.item_type_id)
       if (typeDiff !== 0) return typeDiff
+
+      // Reverse-chronological within type:
+      // 1) end date (newest first)
+      // 2) start date (newest first) for ties/missing end
+      const endA = getItemEndDateMs(a)
+      const endB = getItemEndDateMs(b)
+      if (endA !== null && endB !== null && endA !== endB) return endB - endA
+      if (endA !== null && endB === null) return -1
+      if (endA === null && endB !== null) return 1
+
+      const startA = getItemStartDateMs(a)
+      const startB = getItemStartDateMs(b)
+      if (startA !== null && startB !== null && startA !== startB) return startB - startA
+      if (startA !== null && startB === null) return -1
+      if (startA === null && startB !== null) return 1
+
       return a.position - b.position
     })
   }, [items, selectedTypeId, getTypePriority])
