@@ -35,10 +35,10 @@ This document outlines the folder and file structure for the **Vitae** project.
 │   │   ├── use<Feature>.ts         # Hooks & State management & React logic (e.g., useCanon.ts) **camelCase**
 │   │   └── components/             # Specific UI components **PascalCase**
 │   │       └── <ComponentName>.tsx
-│   ├── <shared>/                   # Any components or logic that are used by multiple features
-│   ├── db.ts                       # Database configuration/connection
-│   ├── schemas.ts                  # Zod validation schemas
-│   ├── types.ts                    # Global TypeScript type definitions
-│   └── utils.ts                    # Generic shared helper functions
+│   └── <shared>/                   # Any components or logic that are used by multiple features
+│       ├── db.ts                   # Database configuration/connection
+│       ├── schemas.ts              # Zod validation schemas
+│       ├── types.ts                # Global TypeScript type definitions
+│       └── utils.ts                # Generic shared helper functions
 └── *                               # Root configurations (next.config.ts, jest.config.js, etc.)
 ```
