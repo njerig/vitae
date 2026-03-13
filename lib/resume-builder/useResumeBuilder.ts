@@ -119,6 +119,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
       URL.revokeObjectURL(url)
     } catch (e) {
       console.error("PDF export error:", e)
+      toast.error("PDF export failed")
     } finally {
       setExportingPdf(false)
     }
