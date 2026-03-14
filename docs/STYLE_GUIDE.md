@@ -8,6 +8,9 @@ This document outlines the coding style and documentation conventions for the pr
 - **Global Types:** Type definitions for database items should live in `/lib/shared/types.ts`.
 - **Local Types:** Component-local types or interfaces should live within their respective component files.
 - **Separation of Concerns:** There should be minimal state and network logic within `/app/<feature>`. Refactor and modularize complex logic into the corresponding `/lib/<feature>` directory.
+- **Naming:** Use clear and descriptive variable names.
+- **Functions:** Function names should describe what they do and, preferably, have a single purpose.
+- **DRY:** Avoid duplication.
 
 ## Documentation & Comments
 
