@@ -23,19 +23,23 @@ type AITargetItem = {
   content: Record<string, unknown>
 }
 
+// Represents a group of items (e.g. a section or single item) sent to the AI tailor modal
 type AITarget = {
   title: string
   subtitle?: string
   items: AITargetItem[]
 }
 
+// A per-item override carrying optional AI-rewritten bullet points
 type ItemTweaksOverride = {
   item_id: string
   content?: { bullets?: string[] }
 }
 
+// The full override map stored in working state: item ID → overridden title/content
 type OverrideRecord = Record<string, { title?: string; content?: Record<string, unknown> }>
 
+// Payload shape emitted by TailoringStudioCard when the user saves tailoring context
 type TailoringContextSavePayload = {
   contextType: "job_description" | "audience"
   contextText: string
@@ -54,6 +58,7 @@ function mergeItemOverrides(
   const nextOverrides: OverrideRecord = { ...(currentOverrides || {}) }
   for (const override of incomingOverrides) {
     const current = nextOverrides[override.item_id]
+    // Shallow-merge content so that AI bullet changes don't wipe unrelated fields
     nextOverrides[override.item_id] = {
       ...(current?.title ? { title: current.title } : {}),
       ...(current?.content || override.content
@@ -99,36 +104,36 @@ export default function ResumeBuilderClient({
 
   // Central hook: working state, overrides, drag-and-drop, template, and sync
   const {
-    editingItem,
+    editingItem, // The item currently open in the manual EditOverrideModal
     setEditingItem,
-    workingState,
-    workingStateSaving,
-    isDirty,
-    isSelected,
-    toggleItem,
-    updateStateLocally,
-    syncToBackend,
-    updatedAt,
-    getOverride,
-    saveOverride,
-    clearOverride,
-    setTemplate,
-    setTailoringContext,
-    getTypeName,
-    sections,
-    setSections,
-    previewSections,
-    previewProfile,
-    selectedTemplateId,
-    exportingPdf,
-    handleExportPdf,
-    draggedItem,
+    workingState, // The full in-memory resume state (sections, overrides, template, etc.)
+    workingStateSaving, // True while a backend save is in flight
+    isDirty, // True if there are unsaved changes to the overall resume state
+    isSelected, // (itemId) => boolean — whether an item is checked for AI tailoring
+    toggleItem, // Toggles an item's selected state
+    updateStateLocally, // Optimistic local state update (no network call)
+    syncToBackend, // Persists working state to the API
+    updatedAt, // Timestamp of the last successful backend save
+    getOverride, // (itemId) => override object or undefined
+    saveOverride, // Persists a manual override for a single item
+    clearOverride, // Removes the override for a single item
+    setTemplate, // Switches the active resume template and persists
+    setTailoringContext, // Saves the AI tailoring context (job description / audience)
+    getTypeName, // (typeId) => human-readable section name
+    sections, // Ordered array of resume sections with their items
+    setSections, // Directly update sections (used by drag-and-drop and tailoring)
+    previewSections, // Derived sections with overrides applied, used by the preview pane
+    previewProfile, // User profile data for the preview header
+    selectedTemplateId, // Currently active template ID
+    exportingPdf, // True while PDF export is in progress
+    handleExportPdf, // Triggers Typst-based PDF generation and download
+    draggedItem, // The item currently being dragged (for visual feedback)
     setDraggedItem,
-    draggedSection,
+    draggedSection, // The section currently being dragged
     setDraggedSection,
-    handleItemDragEnd,
-    isDragging,
-    isLoading,
+    handleItemDragEnd, // Finalizes item reorder and persists new order to backend
+    isDragging, // True if any drag operation is active (shows hint banner)
+    isLoading, // True while initial resume data is being fetched
   } = useResumeBuilder(userName, archivedItems)
 
   // Tailoring sliders + reorder action
@@ -159,6 +164,7 @@ export default function ResumeBuilderClient({
   const applyAiItemTweaks = async (overrides: ItemTweaksOverride[]) => {
     if (overrides.length === 0) return
 
+    // Build the next state with merged overrides, then push optimistically and sync
     const nextState = {
       ...workingState,
       overrides: mergeItemOverrides(workingState.overrides, overrides),
@@ -177,6 +183,7 @@ export default function ResumeBuilderClient({
       className="page-container"
       style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}
     >
+      {/* Toast notifications — rendered at top-center above all modals */}
       <Toaster
         position="top-center"
         containerStyle={{ zIndex: 99999 }}
@@ -284,9 +291,9 @@ export default function ResumeBuilderClient({
         <AIItemTailorModal
           title={aiTarget.title}
           subtitle={aiTarget.subtitle}
-          context={savedTailoringContext}
+          context={savedTailoringContext} // Passes saved job description / audience context
           items={aiTarget.items}
-          onApply={applyAiItemTweaks}
+          onApply={applyAiItemTweaks} // Merges AI output into working state on confirm
           onClose={() => setAiTarget(null)}
         />
       )}

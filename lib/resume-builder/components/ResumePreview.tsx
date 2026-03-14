@@ -32,11 +32,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     profile,
     selectedTemplate,
   })
-  // Container div where the SVG element is injected directly via the DOM
-  const { containerRef } = useResumePreviewDom({ svg })
-
-  // Computes the percentage positions of page-break dividers from the SVG's viewBox.
-  // divide the total SVG height by 792 pts to see how many pages there are with dividers
+  const containerRef = useRef<HTMLDivElement>(null)
   const pageBreakPercents = useMemo(() => {
     if (!svg) return []
     const parser = new DOMParser()
@@ -54,16 +50,41 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     const pageHeightPt = 792
     const rawPageCount = docHeight / pageHeightPt
     const roundedPageCount = Math.round(rawPageCount)
+    // Snap to integer page count if we're within 2% to avoids floating-point noise
     const pageCount =
       roundedPageCount >= 1 && Math.abs(rawPageCount - roundedPageCount) < 0.02
         ? roundedPageCount
         : Math.max(1, Math.floor(rawPageCount))
+    // Return one percentage per inter-page gap (no entry for the last page)
     return Array.from({ length: Math.max(0, pageCount - 1) }, (_, idx) => {
       return ((idx + 1) / pageCount) * 100
     })
   }, [svg])
 
-  // Show a spinner on initial load before any SVG has been generated
+  useEffect(() => {
+    if (containerRef.current && svg) {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(svg, "image/svg+xml")
+      const svgElement = doc.documentElement
+      if (!(svgElement instanceof SVGSVGElement)) {
+        containerRef.current.innerHTML = svg
+        return
+      }
+
+      svgElement.removeAttribute("width")
+      svgElement.removeAttribute("height")
+      svgElement.style.width = "100%"
+      svgElement.style.height = "auto"
+      svgElement.style.display = "block"
+      svgElement.style.background = "white"
+
+      containerRef.current.innerHTML = ""
+      containerRef.current.appendChild(svgElement)
+    } else if (containerRef.current && !svg) {
+      containerRef.current.innerHTML = ""
+    }
+  }, [svg])
+
   if (loading && !svg) {
     return (
       <div
@@ -78,6 +99,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     )
   }
 
+  // Show a fatal error state only when there's no prior SVG to fall back on
   if (error && !svg) {
     return (
       <div
@@ -96,6 +118,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     )
   }
 
+  // Empty state before the first render completes
   if (!svg) {
     return (
       <div
@@ -109,6 +132,8 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
 
   return (
     <div className="relative">
+      {/* Non-fatal error banner — shown over an existing SVG when a re-render fails.
+          Keeps the last good preview visible so the user isn't left with a blank pane. */}
       {errorForExistingSvg && (
         <div
           className="absolute top-4 left-4 right-4 px-3 py-2 rounded-lg text-sm z-10 border"
@@ -131,6 +156,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
       {/* Grey background */}
       <div style={{ backgroundColor: "#e8e8e8", padding: "2rem 1.5rem" }}>
         <div className="relative mx-auto w-full max-w-[8.5in]">
+          {/* Container where the SVG is injected directly via the DOM effect above */}
           <div
             ref={containerRef}
             className="relative bg-white"
