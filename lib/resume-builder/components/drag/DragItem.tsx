@@ -43,6 +43,8 @@ export function DragItem({
   // showing the visual indicator
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
 
+  // Clear the drop indicator on any dragend or drop event anywhere on the page,
+  // ensuring the indicator doesn't get stuck
   useEffect(() => {
     const clear = () => setDropPosition(null)
     window.addEventListener("dragend", clear)
@@ -54,7 +56,9 @@ export function DragItem({
   }, [])
 
   const content = (item.content ?? {}) as Record<string, unknown>
+  // Whether this item is checked for inclusion in the resume
   const selectedForResume = !!isSelected(item.id)
+  // True while this specific item is the one being dragged
   const isItemDragging =
     draggedItem?.sectionIndex === sectionIndex && draggedItem?.itemIndex === itemIndex
 
@@ -75,31 +79,39 @@ export function DragItem({
     setSections(newSections)
   }
 
+  // Handles the numeric position input — converts 1-based user input to 0-based index
   const handleItemPositionChange = (newPosition: number) => {
     if (!validatePosition(newPosition, section.items.length)) return
     applyMove(sectionIndex, itemIndex, newPosition - 1)
     setEditingKey(null)
   }
 
+  // Switches the position input to editing mode, pre-filling with the current position
   const handlePositionFocus = (key: string, currentValue: number) => {
     setEditingKey(key)
     setEditingPosition(String(currentValue))
   }
 
+  // Exits editing mode and clears the local editing buffer
   const handlePositionBlur = () => {
     setEditingKey(null)
     setEditingPosition("")
   }
 
+  // Determines whether the cursor is in the top or bottom half of the target element,
+  // used to decide whether to insert above or below
   const getDropHalf = (e: React.DragEvent): "above" | "below" => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     return e.clientY < rect.top + rect.height / 2 ? "above" : "below"
   }
 
+  // Only shows the drop indicator — no reordering happens here.
+  // Ignores section drags so they don't interfere with item drag logic.
   const handleItemDragOver = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
+    // Ignore section drags bubbling through this element
     if (e.dataTransfer.types.includes("application/drag-type-section")) return
 
     const source = draggedItem
@@ -111,6 +123,7 @@ export function DragItem({
     setDropPosition(getDropHalf(e))
   }
 
+  // Clears the drop indicator when the cursor leaves this item's bounds
   const handleItemDragLeave = (e: React.DragEvent) => {
     if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
       setDropPosition(null)
@@ -133,8 +146,10 @@ export function DragItem({
     // Calculate the correct insertion index
     let toIndex = itemIndex
     if (half === "below") {
+      // Dragging down: target index is already shifted, so use it directly
       toIndex = source.itemIndex < itemIndex ? itemIndex : itemIndex + 1
     } else {
+      // Dragging up: target index needs to shift back by one if source was below
       toIndex = source.itemIndex > itemIndex ? itemIndex : itemIndex - 1
     }
 
@@ -142,11 +157,16 @@ export function DragItem({
     setDraggedItem(null)
   }
 
+  // Clears the local drop indicator then delegates to the parent's drag-end handler
+  // (which persists the new order to the backend)
   const handleLocalDragEnd = (e: React.DragEvent) => {
     setDropPosition(null)
     handleItemDragEnd(e)
   }
 
+  // Extracts display fields from raw item content based on section type.
+  // Each section type stores its data under different field names, so this
+  // normalizes them into a consistent shape for rendering.
   const extractItemContent = (sectionName: string, content: Record<string, unknown>, item: any) => {
     const result = {
       title: "",
@@ -159,6 +179,7 @@ export function DragItem({
       technologies: [] as string[],
     }
 
+    // Look up which content field holds the title/subtitle for this section type
     const titleField = getTitleField(sectionName)
     const subtitleField = getSubtitleField(sectionName)
 
@@ -178,6 +199,7 @@ export function DragItem({
       if (!result.title) result.title = String(content.school || "")
       if (!result.subtitle && content.field) result.subtitle = String(content.field)
       result.location = String(content.location || "")
+      // Support multiple legacy field name variants for dates
       const startDate = content.start || content.start_date || content.startDate
       const endDate = content.end || content.end_date || content.endDate || content.graduation_date
       if (startDate) {
@@ -199,6 +221,7 @@ export function DragItem({
       result.bullets = Array.isArray(content.bullets) ? (content.bullets as string[]) : []
       if (result.subtitle !== content.description) {
         result.description = String(content.description || "")
+        // If there are no explicit bullets, promote the description into one
         if (result.bullets.length === 0 && result.description) {
           result.bullets = [result.description]
         }
@@ -206,6 +229,7 @@ export function DragItem({
       result.skills = Array.isArray(content.skills) ? (content.skills as string[]) : []
       result.technologies = result.skills
     } else if (sectionName === "Skill") {
+      // Skills may be stored as an array or as a comma-separated string
       if (Array.isArray(content.skills)) {
         result.skills = content.skills as string[]
       } else if (typeof content.skills === "string") {
@@ -216,9 +240,11 @@ export function DragItem({
     return result
   }
 
+  // Normalize raw item content into display-ready fields for this section type
   const extracted = extractItemContent(section.typeName, content, item)
 
   return (
+    // data-item-draggable lets the parent DragSection identify and ignore item drags
     <div
       data-item-draggable="true"
       onDragOver={handleItemDragOver}
@@ -240,10 +266,12 @@ export function DragItem({
         </div>
       )}
 
+      {/* Draggable item card */}
       <div
         draggable
         onDragStart={(e) => {
           e.stopPropagation()
+          // Tag this drag as an item drag so DragSection can distinguish it from section drags
           e.dataTransfer.setData("application/drag-type-item", "true")
           e.dataTransfer.effectAllowed = "move"
           setDraggedItem({ sectionIndex, itemIndex })
@@ -259,6 +287,7 @@ export function DragItem({
         }}
       >
         <div className="flex items-start gap-2 shrink-0">
+          {/* Checkbox — controls whether this item is included in the resume */}
           <input
             type="checkbox"
             checked={!!isSelected(item.id)}
@@ -273,11 +302,13 @@ export function DragItem({
             className="w-5 h-5 rounded border-gray-300 text-[#8b4513] focus:ring-[#8b4513] cursor-pointer mt-1"
             aria-label="Select item for resume"
           />
+          {/* Grip icon — fades in on hover to hint that the card is draggable */}
           <div className="mt-1 opacity-40 group-hover:opacity-100 transition-opacity">
             <GripVertical className="w-4 h-4 shrink-0" style={{ color: "var(--ink-light)" }} />
           </div>
         </div>
 
+        {/* Main content area — title, subtitle, dates, bullets, skills */}
         <div className="flex-1 min-w-0 space-y-2">
           <div>
             <div className="font-medium" style={{ color: "var(--ink)" }}>
@@ -314,12 +345,14 @@ export function DragItem({
             </ul>
           )}
 
+          {/* Only show plain description if there are no bullets to display */}
           {extracted.description && extracted.bullets.length === 0 && (
             <div className="text-sm" style={{ color: "var(--ink)" }}>
               {extracted.description}
             </div>
           )}
 
+          {/* Skill/technology tags — prefers technologies array if present */}
           {(extracted.skills.length > 0 || extracted.technologies.length > 0) && (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {(extracted.technologies.length > 0 ? extracted.technologies : extracted.skills).map(
@@ -341,7 +374,11 @@ export function DragItem({
           )}
         </div>
 
+        {/* Right-side controls: edit/tailor button and numeric position input */}
         <div className="flex items-center gap-2 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
+          {/* Edit/Tailor button — shows a pencil in manual mode and a sparkle in AI mode.
+              Disabled in AI mode when the item isn't selected, to enforce the
+              "select first, then tailor" workflow. A dot badge indicates an active override. */}
           <button
             type="button"
             onClick={(e) => {
@@ -382,6 +419,7 @@ export function DragItem({
             ) : (
               <Pencil className="w-3.5 h-3.5" />
             )}
+            {/* Orange dot badge — indicates this item has an active manual/AI override */}
             {hasOverride && (
               <span
                 className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
@@ -392,6 +430,7 @@ export function DragItem({
           <label className="text-xs" style={{ color: "var(--ink-light)" }}>
             #
           </label>
+          {/* Numeric position input — allows manual reordering by typing a position number */}
           <input
             type="text"
             value={

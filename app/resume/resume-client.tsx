@@ -21,6 +21,7 @@ import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
 
 // -- Types ---------------------------------------------------------------------
 
+// Represents a single resume item being targeted by the AI tailor modal
 type AITargetItem = {
   id: string
   type_name: string
@@ -28,19 +29,23 @@ type AITargetItem = {
   content: Record<string, unknown>
 }
 
+// Represents a group of items (e.g. a section or single item) sent to the AI tailor modal
 type AITarget = {
   title: string
   subtitle?: string
   items: AITargetItem[]
 }
 
+// A per-item override carrying optional AI-rewritten bullet points
 type ItemTweaksOverride = {
   item_id: string
   content?: { bullets?: string[] }
 }
 
+// The full override map stored in working state: item ID → overridden title/content
 type OverrideRecord = Record<string, { title?: string; content?: Record<string, unknown> }>
 
+// Payload shape emitted by TailoringStudioCard when the user saves tailoring context
 type TailoringContextSavePayload = {
   contextType: "job_description" | "audience"
   contextText: string
@@ -55,6 +60,9 @@ type TailoringContextSavePayload = {
 
 /**
  * Reads archived canon items restored for a specific parent version.
+ * When restoring an old version, useVersion writes the archived items to
+ * sessionStorage so this component can pick them up on mount without
+ * re-fetching from the backend.
  *
  * @param versionId - Parent version ID used as the storage key suffix.
  * @returns Archived items when available; otherwise null.
@@ -68,12 +76,14 @@ function readArchivedItemsFromSession(versionId: string): ArchivedCanonItem[] | 
   } catch {
     return null
   } finally {
+    // Always clear the key after reading — it's a one-time handoff
     sessionStorage.removeItem(key)
   }
 }
 
 /**
  * Merges AI bullet overrides into an existing override dictionary.
+ * Preserves any manually set title or content fields that the AI didn't touch.
  *
  * @param currentOverrides - Existing persisted override map.
  * @param incomingOverrides - New bullet overrides from the AI modal.
@@ -86,6 +96,7 @@ function mergeItemOverrides(
   const nextOverrides: OverrideRecord = { ...(currentOverrides || {}) }
   for (const override of incomingOverrides) {
     const current = nextOverrides[override.item_id]
+    // Shallow-merge content so that AI bullet changes don't wipe unrelated fields
     nextOverrides[override.item_id] = {
       ...(current?.title ? { title: current.title } : {}),
       ...(current?.content || override.content
@@ -103,13 +114,14 @@ function mergeItemOverrides(
 
 /**
  * Resume builder page client component.
+ * Owns the editing mode toggle (manual vs AI tailor), drag-and-drop sections,
+ * resume preview, and all modals (edit override, AI tailor, unsaved-changes prompt).
  *
- * @param props - Resume page shell metadata.
- * @param props.userName - Current user's display name.
- * @param props.versionName - Active version label, if any.
- * @param props.versionSavedAt - Active version save timestamp.
- * @param props.parentVersionId - Parent version ID used during restore.
- * @returns Resume builder page UI.
+ * @param props.userName - Display name shown in greetings/headers.
+ * @param props.versionName - Label of the active saved version, if restoring one.
+ * @param props.versionSavedAt - Save timestamp of the active version.
+ * @param props.parentVersionId - ID of the version being restored; used to
+ *   retrieve archived items from sessionStorage on mount.
  */
 export default function ResumeBuilderClient({
   userName,
@@ -125,21 +137,37 @@ export default function ResumeBuilderClient({
 }) {
   // -- Local State -------------------------------------------------------------
 
-  // When the user restores an old version, archived items that were deleted
-  // but referenced by the snapshot are stored in sessionStorage by useVersion.
-  // Read them here so the preview can render them without polluting the canon list.
+  // Archived items from a restored version — populated from sessionStorage on mount
   const [archivedItems, setArchivedItems] = useState<ArchivedCanonItem[]>([])
+
+  // Which editing mode the user is in: dragging/manual edits vs AI tailoring
   const [editMode, setEditMode] = useState<"manual" | "ai">("manual")
+
+  // Dirty flags track whether either mode has unapplied changes that would be
+  // lost if the user switches modes or closes a modal without saving
   const [manualDirty, setManualDirty] = useState(false)
   const [aiDirty, setAiDirty] = useState(false)
+
+  // Incrementing this signal tells TailoringStudioCard to reset its local state
   const [aiResetSignal, setAiResetSignal] = useState(0)
+
+  // Whether the AI Tailoring Studio panel is expanded
   const [aiStudioExpanded, setAiStudioExpanded] = useState(false)
+
+  // When a guarded transition is blocked by unsaved changes, the deferred action
+  // is stored here so it can be executed after the user confirms "Discard"
   const [pendingTransition, setPendingTransition] = useState<null | (() => void)>(null)
+
+  // Controls visibility of the unsaved-changes confirmation modal
   const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false)
+
+  // The item(s) currently targeted by the AI tailor modal (null = modal closed)
   const [aiTarget, setAiTarget] = useState<AITarget | null>(null)
 
   // -- Effects -----------------------------------------------------------------
 
+  // On mount (or when parentVersionId changes), attempt to hydrate archived items
+  // from sessionStorage. This is a one-shot read — the key is cleared after use.
   useEffect(() => {
     if (!parentVersionId) return
     const restoredItems = readArchivedItemsFromSession(parentVersionId)
@@ -150,39 +178,42 @@ export default function ResumeBuilderClient({
 
   // -- Data Hooks --------------------------------------------------------------
 
+  // Central hook that manages working state, section data, drag-and-drop,
+  // override CRUD, template selection, PDF export, and backend sync
   const {
-    editingItem,
+    editingItem, // The item currently open in the manual EditOverrideModal
     setEditingItem,
-    workingState,
-    workingStateSaving,
-    isDirty,
-    isSelected,
-    toggleItem,
-    updateStateLocally,
-    syncToBackend,
-    updatedAt,
-    getOverride,
-    saveOverride,
-    clearOverride,
-    setTemplate,
-    setTailoringContext,
-    getTypeName,
-    sections,
-    setSections,
-    previewSections,
-    previewProfile,
-    selectedTemplateId,
-    exportingPdf,
-    handleExportPdf,
-    draggedItem,
+    workingState, // The full in-memory resume state (sections, overrides, template, etc.)
+    workingStateSaving, // True while a backend save is in flight
+    isDirty, // True if there are unsaved changes to the overall resume state
+    isSelected, // (itemId) => boolean — whether an item is checked for AI tailoring
+    toggleItem, // Toggles an item's selected state
+    updateStateLocally, // Optimistic local state update (no network call)
+    syncToBackend, // Persists working state to the API
+    updatedAt, // Timestamp of the last successful backend save
+    getOverride, // (itemId) => override object or undefined
+    saveOverride, // Persists a manual override for a single item
+    clearOverride, // Removes the override for a single item
+    setTemplate, // Switches the active resume template and persists
+    setTailoringContext, // Saves the AI tailoring context (job description / audience)
+    getTypeName, // (typeId) => human-readable section name
+    sections, // Ordered array of resume sections with their items
+    setSections, // Directly update sections (used by drag-and-drop and tailoring)
+    previewSections, // Derived sections with overrides applied, used by the preview pane
+    previewProfile, // User profile data for the preview header
+    selectedTemplateId, // Currently active template ID
+    exportingPdf, // True while PDF export is in progress
+    handleExportPdf, // Triggers Typst-based PDF generation and download
+    draggedItem, // The item currently being dragged (for visual feedback)
     setDraggedItem,
-    draggedSection,
+    draggedSection, // The section currently being dragged
     setDraggedSection,
-    handleItemDragEnd,
-    isDragging,
-    isLoading,
+    handleItemDragEnd, // Finalizes item reorder and persists new order to backend
+    isDragging, // True if any drag operation is active (shows hint banner)
+    isLoading, // True while initial resume data is being fetched
   } = useResumeBuilder(userName, archivedItems)
 
+  // Manages AI tailoring slider axes and the tailor action that reorders sections/items
   const { tailoring, handleTailor } = useTailorPrioritization(
     sections,
     setSections,
@@ -190,15 +221,16 @@ export default function ResumeBuilderClient({
     updateStateLocally
   )
 
+  // Snapshot of saved tailoring context used to pre-populate the studio card
   const savedTailoringContext = workingState.tailoring_context
 
   // -- Event Handlers ----------------------------------------------------------
 
   /**
    * Persists global tailoring context and slider values.
+   * Called by TailoringStudioCard when the user clicks "Save context."
    *
    * @param payload - Context values from Tailoring Studio.
-   * @returns Promise that resolves when state is persisted.
    */
   const handleSaveTailoringContext = async (payload: TailoringContextSavePayload) => {
     await setTailoringContext(
@@ -214,13 +246,14 @@ export default function ResumeBuilderClient({
 
   /**
    * Applies AI-generated bullet overrides to working state and persists them.
+   * Merges incoming overrides with any existing ones so prior manual edits are preserved.
    *
    * @param overrides - Item-level bullet overrides generated by AI.
-   * @returns Promise that resolves after local and backend state updates.
    */
   const applyAiItemTweaks = async (overrides: ItemTweaksOverride[]) => {
     if (overrides.length === 0) return
 
+    // Build the next state with merged overrides, then push optimistically and sync
     const nextState = {
       ...workingState,
       overrides: mergeItemOverrides(workingState.overrides, overrides),
@@ -232,18 +265,21 @@ export default function ResumeBuilderClient({
   // -- Transition Guards -------------------------------------------------------
 
   /**
-   * Guards mode/modal transitions when there are unapplied edits.
+   * Generic guard for any action that could discard unsaved edits.
+   * If either dirty flag is set, stores the intended action and shows the
+   * "Unapplied changes" confirmation modal instead of running it immediately.
    *
-   * @param nextAction - Action to run after guard passes.
-   * @param discardCurrentContext - Action to clear local unsaved edits when discarding.
-   * @returns Void.
+   * @param nextAction - Action to run if no unsaved changes, or after "Discard."
+   * @param discardCurrentContext - Cleanup to run when the user chooses "Discard."
    */
   const requestTransition = (nextAction: () => void, discardCurrentContext: () => void) => {
     const hasUnappliedChanges = editMode === "manual" ? manualDirty : aiDirty
     if (!hasUnappliedChanges) {
+      // No unsaved changes — proceed immediately
       nextAction()
       return
     }
+    // Store the deferred action and show the confirmation modal
     setPendingTransition(() => () => {
       discardCurrentContext()
       nextAction()
@@ -253,24 +289,27 @@ export default function ResumeBuilderClient({
 
   /**
    * Requests switching between manual and AI modes with unsaved-change protection.
+   * Resets the outgoing mode's state if the user confirms "Discard."
    *
    * @param targetMode - Requested editing mode.
-   * @returns Void.
    */
   const requestModeChange = (targetMode: "manual" | "ai") => {
     if (targetMode === editMode) return
     requestTransition(
       () => {
         setEditMode(targetMode)
+        // Collapse the AI studio when switching into AI mode so the user sees
+        // the section list first rather than jumping straight into the panel
         if (targetMode === "ai") setAiStudioExpanded(false)
       },
       () => {
+        // Clean up the mode we're leaving
         if (editMode === "manual") {
           setEditingItem(null)
           setManualDirty(false)
         } else {
           setAiDirty(false)
-          setAiResetSignal((n) => n + 1)
+          setAiResetSignal((n) => n + 1) // Signal TailoringStudioCard to reset
           setAiStudioExpanded(false)
         }
       }
@@ -278,9 +317,8 @@ export default function ResumeBuilderClient({
   }
 
   /**
-   * Requests closing the manual edit modal with unsaved-change protection.
-   *
-   * @returns Void.
+   * Requests closing the manual EditOverrideModal with unsaved-change protection.
+   * If dirty, shows the confirmation modal before dismissing.
    */
   const requestManualClose = () => {
     requestTransition(
@@ -294,6 +332,7 @@ export default function ResumeBuilderClient({
 
   // -- Render ------------------------------------------------------------------
 
+  // Show a centered spinner while the initial resume data loads
   if (isLoading) {
     return (
       <div className="page-container">
@@ -318,28 +357,32 @@ export default function ResumeBuilderClient({
   }
 
   return (
-    // Full viewport height — no page-level scroll
+    // Full viewport height — no page-level scroll; each column handles its own overflow
     <div
       className="page-container"
       style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}
     >
+      {/* Toast notifications — rendered at top-center above all modals */}
       <Toaster
         position="top-center"
         containerStyle={{ zIndex: 99999 }}
         toastOptions={{ style: { zIndex: 99999 } }}
       />
+
+      {/* Fixed decorative background gradient (non-interactive) */}
       <div
         className="page-bg-gradient"
         style={{ position: "fixed", inset: 0, pointerEvents: "none" }}
       />
 
-      {/* Two-column body — each column scrolls independently, navbar offset at top */}
+      {/* Two-column layout — left: editor, right: preview. Both scroll independently. */}
       <div
         className="relative z-10 flex flex-1 min-h-0 gap-6 px-8"
         style={{ paddingTop: "calc(var(--navbar-height, 4rem) + 4rem)", paddingBottom: "1.5rem" }}
       >
-        {/* Left column — fixed height with internal scroll */}
+        {/* Left column — editor panel */}
         <div className="flex-1 min-w-0 flex flex-col relative" style={{ height: "100%" }}>
+          {/* Header bar: back link, title, dirty indicator, mode switch, save/export */}
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-2 z-20 shrink-0 mb-6">
             <div className="flex flex-row items-center gap-6">
               <Link href="/home">
@@ -352,6 +395,7 @@ export default function ResumeBuilderClient({
                 >
                   Resume Builder
                 </span>
+                {/* Shown whenever workingState has unsaved changes */}
                 {isDirty && (
                   <span className="text-xs" style={{ color: "var(--ink-fade)" }}>
                     Unsaved changes
@@ -361,7 +405,7 @@ export default function ResumeBuilderClient({
             </div>
             <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row items-center justify-center gap-2">
-                {/*Tailor Resume */}
+                {/* Toggle between Manual and AI Tailor editing modes */}
                 <SegmentedSwitch
                   value={editMode}
                   onChange={(next) => requestModeChange(next)}
@@ -374,14 +418,14 @@ export default function ResumeBuilderClient({
                   ariaLabel="Resume editing mode"
                 />
 
-                {/* Save Resume */}
+                {/* Saves a named version snapshot of the current resume state */}
                 <SaveResumeButton
                   workingState={workingState}
                   parentVersionId={parentVersionId}
                   syncToBackend={syncToBackend}
                 />
 
-                {/* Export Resume */}
+                {/* Triggers Typst PDF compilation and downloads the result */}
                 <button
                   type="button"
                   onClick={handleExportPdf}
@@ -401,10 +445,12 @@ export default function ResumeBuilderClient({
             </div>
           </div>
 
+          {/* Scrollable editor body */}
           <div
             className="flex-1 overflow-y-auto pb-8 space-y-6"
             style={{ scrollbarGutter: "stable" }}
           >
+            {/* Hint banner shown while any drag-and-drop operation is active */}
             {isDragging && (
               <div
                 className="rounded-xl p-4"
@@ -416,6 +462,7 @@ export default function ResumeBuilderClient({
               </div>
             )}
 
+            {/* AI Tailoring Studio — only visible in AI mode */}
             {editMode === "ai" && (
               <TailoringStudioCard
                 initialContextType={savedTailoringContext?.context_type}
@@ -432,6 +479,7 @@ export default function ResumeBuilderClient({
               />
             )}
 
+            {/* Empty state when the user has no career history items yet */}
             {sections.length === 0 ? (
               <div
                 className="bg-white rounded-2xl border p-12 text-center shadow-sm"
@@ -444,6 +492,7 @@ export default function ResumeBuilderClient({
                 </p>
               </div>
             ) : (
+              // Render one draggable section card per section type
               <div className="space-y-6">
                 {sections.map((section, sectionIndex) => (
                   <DragSection
@@ -462,13 +511,16 @@ export default function ResumeBuilderClient({
                     toggleItem={toggleItem}
                     onEditOverride={(item: CanonItem<unknown>) => {
                       if (editMode === "manual") {
+                        // Manual mode: open the EditOverrideModal for this item
                         setEditingItem(item)
                         return
                       }
+                      // AI mode: require the item to be selected before opening the modal
                       if (!isSelected(item.id)) {
                         toast("Select this item first to include it in AI tailoring.")
                         return
                       }
+                      // Open AI tailor modal targeting this single item
                       setAiTarget({
                         title: item.title || "Untitled item",
                         subtitle: section.typeName,
@@ -486,7 +538,9 @@ export default function ResumeBuilderClient({
                       typeName: string
                       items: CanonItem[]
                     }) => {
+                      // Section-level AI tailor: only runs in AI mode
                       if (editMode !== "ai") return
+                      // Filter down to only the items the user has selected
                       const selectedItems = sectionToTailor.items.filter((item) =>
                         isSelected(item.id)
                       )
@@ -494,6 +548,7 @@ export default function ResumeBuilderClient({
                         toast("Select at least one item in this section before AI tailoring.")
                         return
                       }
+                      // Open AI tailor modal targeting all selected items in this section
                       setAiTarget({
                         title: sectionToTailor.typeName,
                         subtitle: `${selectedItems.length} selected item(s)`,
@@ -514,13 +569,13 @@ export default function ResumeBuilderClient({
           </div>
         </div>
 
-        {/* Right column — fixed height with internal scroll */}
+        {/* Right column — resume preview (fixed height, internal scroll) */}
         <div className="flex-1 min-w-0 flex flex-col">
           <div
             className="bg-white rounded-2xl border shadow-sm flex flex-col flex-1 overflow-hidden"
             style={{ borderColor: "var(--grid)" }}
           >
-            {/* Preview header */}
+            {/* Preview header: title, template picker, version/timestamp info */}
             <div
               className="p-8 border-b shrink-0 bg-white z-10"
               style={{ borderColor: "var(--grid)" }}
@@ -533,7 +588,7 @@ export default function ResumeBuilderClient({
                   gap: "1rem",
                 }}
               >
-                {/* Left: title */}
+                {/* Left: section label */}
                 <h3
                   className="text-2xl font-semibold"
                   style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
@@ -541,6 +596,7 @@ export default function ResumeBuilderClient({
                   Resume Preview
                 </h3>
 
+                {/* Center: template picker dropdown */}
                 <TemplateSelectorButton
                   selectedTemplateId={workingState.template_id ?? "classic"}
                   onSelect={(id) => {
@@ -548,6 +604,7 @@ export default function ResumeBuilderClient({
                   }}
                 />
 
+                {/* Right: version name and last-updated timestamp (if available) */}
                 <div className="flex flex-col items-end gap-1">
                   {versionName && (
                     <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
@@ -563,11 +620,11 @@ export default function ResumeBuilderClient({
               </div>
             </div>
 
-            {/* Preview body */}
+            {/* Preview body — renders the live Typst-backed resume preview */}
             <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
               <div className="rounded-b-2xl overflow-clip">
                 <ResumeBuilderPreview
-                  sections={previewSections}
+                  sections={previewSections} // Overrides already applied
                   profile={previewProfile}
                   selectedTemplate={selectedTemplateId}
                 />
@@ -577,7 +634,7 @@ export default function ResumeBuilderClient({
         </div>
       </div>
 
-      {/* Edit Override Modal */}
+      {/* Manual Edit Override Modal — opens when user clicks edit on an item in manual mode */}
       {editingItem && (
         <EditOverrideModal
           item={editingItem}
@@ -585,12 +642,13 @@ export default function ResumeBuilderClient({
           override={getOverride(editingItem.id)}
           onSave={saveOverride}
           onReset={clearOverride}
-          onClose={requestManualClose}
+          onClose={requestManualClose} // Uses guarded close to catch unsaved changes
           saving={workingStateSaving}
           onDirtyChange={setManualDirty}
         />
       )}
 
+      {/* Unsaved Changes Confirmation Modal — shown when transitioning away from dirty state */}
       {showUnsavedPrompt && (
         <div className="modal-overlay">
           <div className="modal" style={{ maxWidth: "420px" }}>
@@ -601,6 +659,7 @@ export default function ResumeBuilderClient({
               You have unapplied changes. Stay to keep editing, or discard to continue.
             </p>
             <div className="flex justify-end gap-3">
+              {/* Stay: dismiss modal and cancel the pending transition */}
               <button
                 type="button"
                 className="btn-secondary"
@@ -611,6 +670,7 @@ export default function ResumeBuilderClient({
               >
                 Stay
               </button>
+              {/* Discard: run the pending transition, discarding unsaved edits */}
               <button
                 type="button"
                 className="card-action-delete-negative"
@@ -628,13 +688,14 @@ export default function ResumeBuilderClient({
         </div>
       )}
 
+      {/* AI Item Tailor Modal — opens when a user targets an item or section in AI mode */}
       {aiTarget && (
         <AIItemTailorModal
           title={aiTarget.title}
           subtitle={aiTarget.subtitle}
-          context={savedTailoringContext}
+          context={savedTailoringContext} // Passes saved job description / audience context
           items={aiTarget.items}
-          onApply={applyAiItemTweaks}
+          onApply={applyAiItemTweaks} // Merges AI output into working state on confirm
           onClose={() => setAiTarget(null)}
         />
       )}

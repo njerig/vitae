@@ -13,8 +13,10 @@ export function TemplateSelectorButton({
   onSelect,
 }: TemplateSelectorButtonProps) {
   const [open, setOpen] = useState(false)
+  // Ref used to detect clicks outside the dropdown so it can be closed
   const ref = useRef<HTMLDivElement>(null)
 
+  // Fall back to the first template if the given ID doesn't match any known template
   const activeTemplate =
     RESUME_TEMPLATES.find((t) => t.id === selectedTemplateId) ?? RESUME_TEMPLATES[0]
 
@@ -32,7 +34,7 @@ export function TemplateSelectorButton({
 
   return (
     <div ref={ref} style={{ position: "relative", display: "flex", justifyContent: "center" }}>
-      {/* Trigger button */}
+      {/* Trigger button — shows the active template name and toggles the dropdown */}
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -104,7 +106,7 @@ export function TemplateSelectorButton({
           />
         </svg>
         <span style={{ color: "var(--ink, #111)", fontWeight: 600 }}>{activeTemplate.name}</span>
-        {/* Chevron */}
+        {/* Chevron — rotates 180° when the dropdown is open */}
         <svg
           width="10"
           height="10"
@@ -127,7 +129,7 @@ export function TemplateSelectorButton({
         </svg>
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown — centered below the trigger button */}
       {open && (
         <div
           style={{
@@ -160,9 +162,11 @@ export function TemplateSelectorButton({
             Choose a template
           </p>
 
+          {/* 5-column grid of template thumbnail buttons */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.5rem" }}>
             {RESUME_TEMPLATES.map((template) => {
               const isActive = template.id === selectedTemplateId
+              // Templates marked "Coming soon" are rendered as disabled placeholders
               const isWip = template.description === "Coming soon"
               return (
                 <button
@@ -218,6 +222,7 @@ export function TemplateSelectorButton({
                     }}
                   >
                     {isWip ? (
+                      // WIP placeholder — just shows a "WIP" label instead of a real thumbnail
                       <span
                         style={{
                           fontSize: "0.55rem",
@@ -584,6 +589,7 @@ export function TemplateSelectorButton({
                       </svg>
                     )}
                   </div>
+                  {/* Template name label — bold and accent-colored when active */}
                   <span
                     style={{
                       fontSize: "0.65rem",
