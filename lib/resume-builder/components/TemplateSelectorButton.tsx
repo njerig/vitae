@@ -602,7 +602,8 @@ export function TemplateSelectorButton({
                       display: "flex",
                       alignItems: "flex-start",
                       justifyContent: "center",
-                      wordBreak: "break-word",
+                      wordBreak: "keep-all",
+                      overflowWrap: "normal",
                     }}
                   >
                     {template.name}
