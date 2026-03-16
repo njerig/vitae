@@ -8,7 +8,7 @@ import { Spinner } from "@/lib/shared/components/Spinner"
 import { SegmentedSwitch } from "@/lib/shared/components/SegmentedSwitch"
 import { SaveResumeButton } from "@/lib/versions/components/save/SaveResumeButton"
 import { ChevronLeft, Download } from "lucide-react"
-import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumeBuilderPreview"
+import { ResumePreview } from "@/lib/resume-builder/components/ResumePreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/components/TemplateSelectorButton"
 import { EditOverrideModal } from "@/lib/resume-builder/components/edit/EditOverrideModal"
 import { TailoringStudioCard } from "@/lib/resume-builder/tailor/ai/components/TailoringStudioCard"
@@ -90,11 +90,11 @@ function mergeItemOverrides(
       ...(current?.title ? { title: current.title } : {}),
       ...(current?.content || override.content
         ? {
-          content: {
-            ...(current?.content || {}),
-            ...(override.content || {}),
-          },
-        }
+            content: {
+              ...(current?.content || {}),
+              ...(override.content || {}),
+            },
+          }
         : {}),
     }
   }
@@ -566,7 +566,7 @@ export default function ResumeBuilderClient({
             {/* Preview body */}
             <div className="flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
               <div className="rounded-b-2xl overflow-clip">
-                <ResumeBuilderPreview
+                <ResumePreview
                   sections={previewSections}
                   profile={previewProfile}
                   selectedTemplate={selectedTemplateId}

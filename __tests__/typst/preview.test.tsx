@@ -9,7 +9,7 @@
  * 5) stale response protection.
  */
 import { render, screen, act } from "@testing-library/react"
-import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumeBuilderPreview"
+import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumePreview"
 
 /**
  * Flushes queued promise callbacks so React state updates from async work settle.

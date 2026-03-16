@@ -26,11 +26,7 @@ type ResumeBuilderPreviewProps = {
   selectedTemplate?: string
 }
 
-export function ResumeBuilderPreview({
-  sections,
-  profile,
-  selectedTemplate,
-}: ResumeBuilderPreviewProps) {
+export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBuilderPreviewProps) {
   const { svg, loading, error, errorForExistingSvg } = useResumeBuilderPreview({
     sections,
     profile,

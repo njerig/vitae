@@ -249,10 +249,10 @@ export function AIItemTailorModal({
                                     ? { backgroundColor: "#dcfce7", color: "#166534" }
                                     : part.kind === "removed"
                                       ? {
-                                        backgroundColor: "#fee2e2",
-                                        color: "#991b1b",
-                                        textDecoration: "line-through",
-                                      }
+                                          backgroundColor: "#fee2e2",
+                                          color: "#991b1b",
+                                          textDecoration: "line-through",
+                                        }
                                       : undefined
                                 }
                               >
