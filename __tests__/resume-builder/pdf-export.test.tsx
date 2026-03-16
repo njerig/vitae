@@ -1,194 +1,259 @@
-import { renderHook, act } from "@testing-library/react"
-import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
+/**
+ * Integration tests for the PDF export button flow on the resume builder page.
+ *
+ * Scope:
+ * - user clicks Export PDF
+ * - request is sent to `/api/resume/compile/pdf`
+ * - browser download flow is triggered
+ * - loading/disabled state and retry UX behave correctly
+ */
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import ResumeBuilderPage from "@/app/resume/resume-client"
+import { useWorkingState } from "@/lib/working-state/useWorkingState"
+import { useCanon } from "@/lib/canon/useCanon"
 import type { CanonItem, ItemType } from "@/lib/shared/types"
 
-const mockCompileResumeToPdf = jest.fn()
-jest.mock("@/lib/resume-builder/api", () => ({
-  compileResumeToPdf: (...args: unknown[]) => mockCompileResumeToPdf(...args),
-}))
+const toastErrorMock = jest.fn()
 
 jest.mock("react-hot-toast", () => ({
   __esModule: true,
   default: {
     loading: jest.fn(),
     dismiss: jest.fn(),
-    error: jest.fn(),
+    success: jest.fn(),
+    error: (...args: unknown[]) => toastErrorMock(...args),
   },
+  Toaster: () => null,
 }))
 
-const mockUseCanon = jest.fn()
-jest.mock("@/lib/canon/useCanon", () => ({
-  useCanon: () => mockUseCanon(),
+jest.mock("@/lib/working-state/useWorkingState")
+jest.mock("@/lib/canon/useCanon")
+jest.mock("next/link", () => {
+  return ({ children, href }: any) => <a href={href}>{children}</a>
+})
+
+jest.mock("@/lib/resume-builder/components/ResumeBuilderPreview", () => ({
+  ResumeBuilderPreview: ({ sections, profile }: any) => (
+    <div data-testid="resume-preview">
+      <div>Preview for {profile.name}</div>
+      <div>{sections.length} sections</div>
+    </div>
+  ),
 }))
 
-const mockUseWorkingState = jest.fn()
-jest.mock("@/lib/working-state/useWorkingState", () => ({
-  useWorkingState: () => mockUseWorkingState(),
-}))
+const makeItemType = (overrides?: Partial<ItemType>): ItemType => ({
+  id: "work",
+  display_name: "Work",
+  user_id: "user_123",
+  created_at: "2024-01-01",
+  ...overrides,
+})
 
-const mockUseResumeSections = jest.fn()
-jest.mock("@/lib/resume-builder/useResumeSection", () => ({
-  useResumeSections: (...args: unknown[]) => mockUseResumeSections(...args),
-}))
+const mockItemTypes: ItemType[] = [
+  makeItemType({ id: "work", display_name: "Work Experience" }),
+]
 
-const mockUseDragState = jest.fn()
-jest.mock("@/lib/resume-builder/useDragState", () => ({
-  useDragState: (...args: unknown[]) => mockUseDragState(...args),
-}))
+const mockItems: CanonItem[] = [
+  {
+    id: "item-1",
+    item_type_id: "work",
+    position: 0,
+    title: "Senior Developer",
+    content: { role: "Senior Developer", org: "Company A" },
+    user_id: "user_123",
+    created_at: "2024-01-01",
+    updated_at: "2024-01-01",
+  } as CanonItem,
+]
 
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  let reject!: (error?: unknown) => void
-  const promise = new Promise<T>((res, rej) => {
+const makeWorkingStateMock = (overrides = {}) => ({
+  state: { sections: [], overrides: {}, template_id: "classic" },
+  loading: false,
+  saving: false,
+  isDirty: false,
+  isSelected: jest.fn().mockReturnValue(false),
+  toggleItem: jest.fn(),
+  updateStateLocally: jest.fn(),
+  syncToBackend: jest.fn().mockResolvedValue(undefined),
+  updatedAt: null,
+  getOverride: jest.fn(),
+  saveOverride: jest.fn().mockResolvedValue(undefined),
+  clearOverride: jest.fn().mockResolvedValue(undefined),
+  setTemplate: jest.fn().mockResolvedValue(undefined),
+  setTailoringContext: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+})
+
+/**
+ * Creates a pending `Response` promise so tests can assert UI state while
+ * export is still in-flight (e.g., button disabled).
+ */
+function deferredResponse() {
+  let resolve!: (value: Response) => void
+  const promise = new Promise<Response>((res) => {
     resolve = res
-    reject = rej
   })
-  return { promise, resolve, reject }
+  return { promise, resolve }
 }
 
-describe("useResumeBuilder PDF export", () => {
-  const itemTypes: ItemType[] = [
-    { id: "work", display_name: "Work Experience", user_id: "u1", created_at: "" },
-  ]
-  const items: CanonItem[] = [
-    {
-      id: "item-1",
-      item_type_id: "work",
-      title: "Developer",
-      position: 0,
-      user_id: "u1",
-      created_at: "",
-      updated_at: "",
-      content: { role: "Developer" },
-    } as CanonItem,
-  ]
-  const sections = [{ typeId: "work", typeName: "Work Experience", items }]
-
+describe("Resume Builder PDF export flow", () => {
   let createElementSpy: jest.SpyInstance
   let anchorClickSpy: jest.Mock
+  let lastCreatedDownloadAnchor: HTMLAnchorElement | null
   let originalCreateObjectURL: ((obj: Blob | MediaSource) => string) | undefined
   let originalRevokeObjectURL: ((url: string) => void) | undefined
 
   beforeEach(() => {
     jest.clearAllMocks()
 
-    mockUseCanon.mockReturnValue({
-      allItems: items,
-      itemTypes,
-      loading: false,
-    })
+      // Provide stable canon + working-state defaults for each scenario.
+      ; (useCanon as jest.Mock).mockReturnValue({
+        allItems: mockItems,
+        itemTypes: mockItemTypes,
+        loading: false,
+        patch: jest.fn(),
+      })
 
-    mockUseWorkingState.mockReturnValue({
-      state: { sections: [], overrides: {}, template_id: "classic" },
-      loading: false,
-      saving: false,
-      isDirty: false,
-      isSelected: jest.fn().mockReturnValue(false),
-      toggleItem: jest.fn(),
-      updateStateLocally: jest.fn(),
-      syncToBackend: jest.fn(),
-      updatedAt: null,
-      getOverride: jest.fn(),
-      saveOverride: jest.fn(),
-      clearOverride: jest.fn(),
-      setTemplate: jest.fn(),
-      setTailoringContext: jest.fn(),
-    })
+      ; (useWorkingState as jest.Mock).mockReturnValue(makeWorkingStateMock())
 
-    mockUseResumeSections.mockReturnValue({
-      sections,
-      setSections: jest.fn(),
-    })
+      ; (global.fetch as unknown as jest.Mock) = jest.fn()
 
-    mockUseDragState.mockReturnValue({
-      draggedItem: null,
-      setDraggedItem: jest.fn(),
-      draggedSection: null,
-      setDraggedSection: jest.fn(),
-      handleItemDragEnd: jest.fn(),
-      isDragging: false,
-    })
-
+    // Stub blob URL APIs used by the download implementation.
     originalCreateObjectURL = (URL as any).createObjectURL
     originalRevokeObjectURL = (URL as any).revokeObjectURL
-    ;(URL as any).createObjectURL = jest.fn(() => "blob:resume-url")
-    ;(URL as any).revokeObjectURL = jest.fn()
+      ; (URL as any).createObjectURL = jest.fn(() => "blob:resume-url")
+      ; (URL as any).revokeObjectURL = jest.fn()
 
+    // Capture and stub anchor click calls to verify download trigger behavior.
     anchorClickSpy = jest.fn()
+    lastCreatedDownloadAnchor = null
     const originalCreateElement = document.createElement.bind(document)
     createElementSpy = jest.spyOn(document, "createElement").mockImplementation((tagName: string) => {
       const node = originalCreateElement(tagName)
       if (tagName.toLowerCase() === "a") {
-        ;(node as HTMLAnchorElement).click = anchorClickSpy
+        const anchor = node as HTMLAnchorElement
+        anchor.click = anchorClickSpy
+        lastCreatedDownloadAnchor = anchor
       }
       return node
     })
   })
 
   afterEach(() => {
-    ;(URL as any).createObjectURL = originalCreateObjectURL
-    ;(URL as any).revokeObjectURL = originalRevokeObjectURL
+    ; (URL as any).createObjectURL = originalCreateObjectURL
+      ; (URL as any).revokeObjectURL = originalRevokeObjectURL
     createElementSpy.mockRestore()
   })
 
-  it("exports a PDF and triggers a resume.pdf download", async () => {
-    mockCompileResumeToPdf.mockResolvedValue(new Blob(["pdf-content"], { type: "application/pdf" }))
-
-    const { result } = renderHook(() => useResumeBuilder("Test User"))
-
-    await act(async () => {
-      await result.current.handleExportPdf()
+  // Scenario 1: successful export path.
+  it("requests PDF export and starts resume.pdf download", async () => {
+    ; (global.fetch as unknown as jest.Mock).mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(["pdf-bytes"], { type: "application/pdf" }),
     })
 
-    expect(mockCompileResumeToPdf).toHaveBeenCalledWith(
-      {
-        profile: { name: "Test User" },
-        sections,
-      },
-      "classic"
+    render(
+      <ResumeBuilderPage
+        userName="Test User"
+        userId="user_123"
+        versionName={null}
+        versionSavedAt={null}
+        parentVersionId={null}
+      />
     )
-    expect((URL as any).createObjectURL).toHaveBeenCalled()
-    expect(anchorClickSpy).toHaveBeenCalledTimes(1)
 
-    const anchor = createElementSpy.mock.results.find(
-      (r) => r.type === "return" && r.value instanceof HTMLAnchorElement
-    )?.value as HTMLAnchorElement
-    expect(anchor.href).toBe("blob:resume-url")
-    expect(anchor.download).toBe("resume.pdf")
-    expect((URL as any).revokeObjectURL).toHaveBeenCalledWith("blob:resume-url")
+    fireEvent.click(screen.getByRole("button", { name: /Export PDF/i }))
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/resume/compile/pdf",
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+    })
+
+    await waitFor(() => {
+      expect(anchorClickSpy).toHaveBeenCalledTimes(1)
+    })
+
+    expect(lastCreatedDownloadAnchor).toBeTruthy()
+    expect(lastCreatedDownloadAnchor?.download).toBe("resume.pdf")
   })
 
-  it("sets exportingPdf during export and resets after completion", async () => {
-    const pending = deferred<Blob>()
-    mockCompileResumeToPdf.mockReturnValue(pending.promise)
-    const { result } = renderHook(() => useResumeBuilder("Test User"))
+  // Scenario 2: in-flight state / duplicate-click protection.
+  it("button enters loading/disabled state and resets after completion", async () => {
+    const pending = deferredResponse()
+      ; (global.fetch as unknown as jest.Mock).mockReturnValue(pending.promise)
 
-    let exportPromise: Promise<void>
-    act(() => {
-      exportPromise = result.current.handleExportPdf()
+    render(
+      <ResumeBuilderPage
+        userName="Test User"
+        userId="user_123"
+        versionName={null}
+        versionSavedAt={null}
+        parentVersionId={null}
+      />
+    )
+
+    const exportButton = screen.getByRole("button", { name: /Export PDF/i })
+    fireEvent.click(exportButton)
+
+    await waitFor(() => {
+      expect(exportButton).toBeDisabled()
     })
 
-    expect(result.current.exportingPdf).toBe(true)
+    pending.resolve({
+      ok: true,
+      blob: async () => new Blob(["pdf-bytes"], { type: "application/pdf" }),
+    } as unknown as Response)
 
-    await act(async () => {
-      pending.resolve(new Blob(["pdf-content"], { type: "application/pdf" }))
-      await exportPromise
+    await waitFor(() => {
+      expect(exportButton).not.toBeDisabled()
     })
-
-    expect(result.current.exportingPdf).toBe(false)
   })
 
-  it("resets exportingPdf when export fails", async () => {
-    jest.spyOn(console, "error").mockImplementation(() => {})
-    mockCompileResumeToPdf.mockRejectedValue(new Error("Export failed"))
-    const { result } = renderHook(() => useResumeBuilder("Test User"))
+  // Scenario 3: failure feedback + ability to retry.
+  it("on failure shows feedback and allows retry", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => { })
+      ; (global.fetch as unknown as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: "pdf failed" }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          blob: async () => new Blob(["pdf-bytes"], { type: "application/pdf" }),
+        })
 
-    await act(async () => {
-      await result.current.handleExportPdf()
+    render(
+      <ResumeBuilderPage
+        userName="Test User"
+        userId="user_123"
+        versionName={null}
+        versionSavedAt={null}
+        parentVersionId={null}
+      />
+    )
+
+    const exportButton = screen.getByRole("button", { name: /Export PDF/i })
+    fireEvent.click(exportButton)
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith("PDF export failed")
+    })
+    await waitFor(() => {
+      expect(exportButton).not.toBeDisabled()
     })
 
-    expect(result.current.exportingPdf).toBe(false)
-    expect(console.error).toHaveBeenCalled()
-    ;(console.error as jest.Mock).mockRestore()
+    fireEvent.click(exportButton)
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+      expect(anchorClickSpy).toHaveBeenCalledTimes(1)
+    })
+
+      ; (console.error as jest.Mock).mockRestore()
   })
 })
