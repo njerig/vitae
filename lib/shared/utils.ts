@@ -1,6 +1,3 @@
-// lib/utils.ts
-// Shared utility functions
-
 /**
  * Formats a date string to a localized format with date and time
  * @param dateString - ISO date string
