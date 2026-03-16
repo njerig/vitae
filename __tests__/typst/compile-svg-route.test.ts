@@ -113,4 +113,3 @@ describe("/api/resume/compile/svg (route handler)", () => {
     expect(mockReadFile).toHaveBeenCalledTimes(6)
   })
 })
-
