@@ -6,7 +6,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { pool, ensureUserWithDefaults } from "@/lib/shared/db"
 import { CreateItemTypeSchema } from "@/lib/shared/schemas"
 
-// GET /api/item-types - List all item types for the user
+/**
+ * GET /api/item-types
+ * Retrieves a list of all item types for the authenticated user.
+ *
+ * @returns A JSON response containing an array of item types or an error message.
+ */
 export async function GET() {
   const { userId } = await auth()
   if (!userId) {
@@ -26,7 +31,13 @@ export async function GET() {
   return NextResponse.json(rows)
 }
 
-// POST /api/item-types - Create a new item type
+/**
+ * POST /api/item-types
+ * Creates a new item type for the authenticated user.
+ *
+ * @param request The incoming request containing the new item type data.
+ * @returns A JSON response containing the newly created item type or an error message.
+ */
 export async function POST(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
