@@ -11,11 +11,11 @@ import { ChevronLeft, Download } from "lucide-react"
 import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumeBuilderPreview"
 import { TemplateSelectorButton } from "@/lib/resume-builder/components/TemplateSelectorButton"
 import { EditOverrideModal } from "@/lib/resume-builder/components/edit/EditOverrideModal"
-import { TailoringStudioCard } from "@/lib/tailor/components/TailoringStudioCard"
-import { AIItemTailorModal } from "@/lib/tailor/components/AIItemTailorModal"
-import { useTailorPrioritization } from "@/lib/tailor/useTailorPrioritization"
+import { TailoringStudioCard } from "@/lib/resume-builder/tailor/components/ai/TailoringStudioCard"
+import { AIItemTailorModal } from "@/lib/resume-builder/tailor/components/ai/ItemTailorModal"
+import { useTailorPrioritization } from "@/lib/resume-builder/tailor/useTailorPrioritization"
 import type { ArchivedCanonItem, CanonItem } from "@/lib/shared/types"
-import type { TailoringAxes } from "@/lib/tailor/options"
+import type { TailoringAxes } from "@/lib/resume-builder/tailor/options"
 import { formatDateTime, formatDate } from "@/lib/shared/utils"
 import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
 
@@ -90,11 +90,11 @@ function mergeItemOverrides(
       ...(current?.title ? { title: current.title } : {}),
       ...(current?.content || override.content
         ? {
-            content: {
-              ...(current?.content || {}),
-              ...(override.content || {}),
-            },
-          }
+          content: {
+            ...(current?.content || {}),
+            ...(override.content || {}),
+          },
+        }
         : {}),
     }
   }

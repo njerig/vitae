@@ -3,8 +3,12 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { GeminiConfigurationError, generateGeminiJson, geminiConfigured } from "@/lib/ai/gemini"
-import { buildPrioritizationPrompt } from "@/lib/tailor/prompts/buildPrioritizationPrompt"
+import {
+  GeminiConfigurationError,
+  generateGeminiJson,
+  geminiConfigured,
+} from "@/lib/resume-builder/tailor/ai/gemini"
+import { buildPrioritizationPrompt } from "@/lib/resume-builder/tailor/prompts/buildPrioritizationPrompt"
 
 type SectionPayload = {
   item_type_id: string

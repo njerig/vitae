@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react"
 import toast from "react-hot-toast"
-import { tailorPrioritize } from "@/lib/tailor/api"
+import { tailorPrioritize } from "./api"
 import type { CanonItem } from "@/lib/shared/types"
 
 // -- Types --------------------------------------------------------------------

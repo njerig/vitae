@@ -1,9 +1,16 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
-import { GeminiConfigurationError, generateGeminiJson, geminiConfigured } from "@/lib/ai/gemini"
-import { mapTailoringAxesToPromptParams, TailoringAxesSchema } from "@/lib/tailor/options"
-import { buildItemTweaksPrompt } from "@/lib/tailor/prompts/buildItemTweaksPrompt"
+import {
+  GeminiConfigurationError,
+  generateGeminiJson,
+  geminiConfigured,
+} from "@/lib/resume-builder/tailor/ai/gemini"
+import {
+  mapTailoringAxesToPromptParams,
+  TailoringAxesSchema,
+} from "@/lib/resume-builder/tailor/options"
+import { buildItemTweaksPrompt } from "@/lib/resume-builder/tailor/prompts/buildItemTweaksPrompt"
 
 const TailorTweakItemRequestSchema = z.object({
   context_type: z.enum(["job_description", "audience"]),

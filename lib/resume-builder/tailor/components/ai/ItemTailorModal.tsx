@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { Spinner } from "@/lib/shared/components/Spinner"
-import { tailorTweakItem } from "@/lib/tailor/api"
-import type { TailoringAxes } from "@/lib/tailor/options"
+import { tailorTweakItem } from "../../api"
+import type { TailoringAxes } from "../../options"
 
 type WordDiffPart = {
   text: string
@@ -249,10 +249,10 @@ export function AIItemTailorModal({
                                     ? { backgroundColor: "#dcfce7", color: "#166534" }
                                     : part.kind === "removed"
                                       ? {
-                                          backgroundColor: "#fee2e2",
-                                          color: "#991b1b",
-                                          textDecoration: "line-through",
-                                        }
+                                        backgroundColor: "#fee2e2",
+                                        color: "#991b1b",
+                                        textDecoration: "line-through",
+                                      }
                                       : undefined
                                 }
                               >

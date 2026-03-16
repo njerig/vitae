@@ -1,4 +1,4 @@
-import type { TailoringAxes, TailoringPromptParams } from "@/lib/tailor/options"
+import type { TailoringAxes, TailoringPromptParams } from "../options"
 
 type ItemPayload = {
   id: string

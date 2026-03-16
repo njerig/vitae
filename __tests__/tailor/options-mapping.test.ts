@@ -2,7 +2,7 @@ import {
   DEFAULT_TAILORING_AXES,
   mapTailoringAxesToPromptParams,
   normalizeTailoringAxes,
-} from "@/lib/tailor/options"
+} from "@/lib/resume-builder/tailor/options"
 
 describe("tailoring axis-to-prompt mapping", () => {
   it("maps default axis values to mid-level prompt parameters", () => {
