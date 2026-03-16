@@ -1,4 +1,4 @@
-import type { TailoringAxes, TailoringPromptParams } from "../options"
+import type { TailoringAxes, TailoringPromptParams } from "@/lib/resume-builder/tailor/options"
 
 type ItemPayload = {
   id: string
