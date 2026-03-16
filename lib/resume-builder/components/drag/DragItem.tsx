@@ -65,7 +65,7 @@ export function DragItem({
   const validatePosition = (position: number, max: number) =>
     position >= 1 && position <= max && !isNaN(position)
 
-  // Perform the actual move — only ever called on drop or manual input.
+  // Perform the actual move, only ever called on drop or manual input.
   // setSections updates workingState via useResumeSections, so the new order
   // is captured automatically when the user clicks Save Resume.
   const applyMove = (fromSectionIndex: number, fromItemIndex: number, toItemIndex: number) => {
@@ -105,7 +105,7 @@ export function DragItem({
     return e.clientY < rect.top + rect.height / 2 ? "above" : "below"
   }
 
-  // Only shows the drop indicator — no reordering happens here.
+  // Only shows the drop indicator so no reordering happens here
   // Ignores section drags so they don't interfere with item drag logic.
   const handleItemDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -130,7 +130,7 @@ export function DragItem({
     }
   }
 
-  // THE KEY CHANGE: reorder happens here on drop, not during dragover
+  // Reorder happens here on drop, not during dragover
   const handleItemDrop = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -188,6 +188,7 @@ export function DragItem({
       result.subtitle = String(content[subtitleField])
     }
 
+    // extract and display fields from content
     if (sectionName === "Work Experience") {
       const startDate = content.start ? formatDate(String(content.start)) : ""
       const endDate = content.end ? formatDate(String(content.end)) : ""
@@ -308,7 +309,7 @@ export function DragItem({
           </div>
         </div>
 
-        {/* Main content area — title, subtitle, dates, bullets, skills */}
+        {/* Main content area like title, subtitle, dates, bullets, skills */}
         <div className="flex-1 min-w-0 space-y-2">
           <div>
             <div className="font-medium" style={{ color: "var(--ink)" }}>

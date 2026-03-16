@@ -68,9 +68,10 @@ export type TailorTweakItemResponse = {
 /**
  * Sends the job description and current resume sections to the tailor API
  * for AI-powered prioritization.
- * @param jobDescription - The pasted job description text
- * @param sections - Current resume sections with item details
- * @returns Prioritized sections matching WorkingState.sections shape
+ *
+ * @param jobDescription The pasted job description text.
+ * @param sections Current resume sections with item details.
+ * @returns Prioritized sections matching WorkingState.sections shape.
  */
 export async function tailorPrioritize(
   jobDescription: string,
@@ -90,6 +91,14 @@ export async function tailorPrioritize(
   return res.json()
 }
 
+/**
+ * Generates tailored resume content and overrides based on the provided context
+ * and current resume sections.
+ *
+ * @param payload An object containing the tailoring context, axes, and sections.
+ * @param signal (Optional) An AbortSignal to cancel the request.
+ * @returns A TailorComposeResponse.
+ */
 export async function tailorCompose(
   payload: TailorComposePayload,
   signal?: AbortSignal
@@ -110,6 +119,13 @@ export async function tailorCompose(
   return res.json()
 }
 
+/**
+ * Tweaks specific resume items based on the provided context (e.g., job description or audience).
+ *
+ * @param payload An object containing the tailoring context, axes, and items to tweak.
+ * @param signal (Optional) An AbortSignal to cancel the request.
+ * @returns A TailorTweakItemResponse containing the tweaked item overrides.
+ */
 export async function tailorTweakItem(
   payload: TailorTweakItemPayload,
   signal?: AbortSignal

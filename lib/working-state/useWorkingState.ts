@@ -2,36 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import toast from "react-hot-toast"
+import { getWorkingState, updateWorkingState } from "./api"
+import type { WorkingState, OverrideData } from "./api"
 
-type SectionState = {
-  item_type_id: string
-  item_ids: string[]
-}
-
-export type OverrideData = {
-  title?: string
-  content?: Record<string, unknown>
-}
-
-type WorkingState = {
-  sections: SectionState[]
-  overrides?: Record<string, OverrideData>
-  template_id?: string
-  tailoring_context?: {
-    context_type: "job_description" | "audience"
-    context_text: string
-    context_text_by_type?: {
-      job_description?: string
-      audience?: string
-    }
-    axes?: {
-      industry: number
-      tone: number
-      technicalDepth: number
-      length: number
-    }
-  }
-}
+export type { OverrideData, WorkingState }
 
 export function useWorkingState() {
   const [state, setState] = useState<WorkingState>({ sections: [] })
@@ -46,14 +20,11 @@ export function useWorkingState() {
   useEffect(() => {
     async function fetchState() {
       try {
-        const res = await fetch("/api/working-state")
-        if (res.ok) {
-          const data = await res.json()
-          const loaded = data.state || { sections: [] }
-          setState(loaded)
-          stateRef.current = loaded
-          setUpdatedAt(data.updated_at || null)
-        }
+        const data = await getWorkingState()
+        const loaded = data.state || { sections: [] }
+        setState(loaded)
+        stateRef.current = loaded
+        setUpdatedAt(data.updated_at || null)
       } catch (error) {
         console.error("Failed to fetch working state:", error)
         toast.error("Failed to load your working state")
@@ -68,24 +39,14 @@ export function useWorkingState() {
     return stateRef.current.sections.some((section) => section.item_ids.includes(itemId))
   }, [])
 
-  /** Persist the current (or a given) state to the backend. Call this explicitly. */
+  // Persist the current (or a given) state to the backend. Call this explicitly.
   const syncToBackend = useCallback(async (newState?: WorkingState) => {
     const toSave = newState ?? stateRef.current
     setSaving(true)
     try {
-      const res = await fetch("/api/working-state", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toSave),
-      })
-      if (!res.ok) {
-        console.error("Failed to save working state")
-        toast.error("Failed to save your working state")
-      } else {
-        const data = await res.json()
-        setUpdatedAt(data.updated_at || null)
-        setIsDirty(false)
-      }
+      const data = await updateWorkingState(toSave)
+      setUpdatedAt(data.updated_at || null)
+      setIsDirty(false)
     } catch (error) {
       console.error("Error saving working state:", error)
       toast.error("Failed to save your working state")
@@ -94,7 +55,7 @@ export function useWorkingState() {
     }
   }, [])
 
-  /** Update state locally only — no network request. */
+  // Update state locally only — no network request.
   const toggleItem = useCallback((itemId: string, itemTypeId: string) => {
     setState((prev) => {
       const newState = { ...prev, sections: [...prev.sections] }
@@ -124,7 +85,7 @@ export function useWorkingState() {
     })
   }, [])
 
-  /** Update state locally (used for drag reorder) — no network request. */
+  // Update state locally (used for drag reorder) — no network request.
   const updateStateLocally = useCallback((newState: WorkingState) => {
     setState(newState)
     stateRef.current = newState
@@ -215,7 +176,7 @@ export function useWorkingState() {
     isSelected,
     toggleItem,
     updateStateLocally,
-    /** Call this to persist to the backend (e.g. on Save Resume button press) */
+    // Call this to persist to the backend (e.g. on Save Resume button press)
     syncToBackend,
     updatedAt,
     getOverride,
