@@ -10,7 +10,7 @@ import {
   mapTailoringAxesToPromptParams,
   TailoringAxesSchema,
 } from "@/lib/resume-builder/tailor/options"
-import { buildItemTweaksPrompt } from "@/lib/resume-builder/tailor/prompts/buildItemTweaksPrompt"
+import { buildItemTweaksPrompt } from "@/lib/resume-builder/tailor/ai/prompts/buildItemTweaksPrompt"
 
 const TailorTweakItemRequestSchema = z.object({
   context_type: z.enum(["job_description", "audience"]),

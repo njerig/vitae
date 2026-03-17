@@ -24,8 +24,8 @@ jest.mock("next/link", () => {
 })
 
 // Lightweight preview stub - avoids heavy rendering outside the scope of these tests
-jest.mock("@/lib/resume-builder/components/ResumeBuilderPreview", () => ({
-  ResumeBuilderPreview: ({ sections, profile }: any) => (
+jest.mock("@/lib/resume-builder/components/ResumePreview", () => ({
+  ResumePreview: ({ sections, profile }: any) => (
     <div data-testid="resume-preview">
       <div>Preview for {profile.name}</div>
       <div>{sections.length} sections</div>

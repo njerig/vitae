@@ -10,7 +10,7 @@ import {
   mapTailoringAxesToPromptParams,
   TailoringAxesSchema,
 } from "@/lib/resume-builder/tailor/options"
-import { buildComposePrompt } from "@/lib/resume-builder/tailor/prompts/buildComposePrompt"
+import { buildComposePrompt } from "@/lib/resume-builder/tailor/ai/prompts/buildComposePrompt"
 
 const TailorComposeRequestSchema = z.object({
   context_type: z.enum(["job_description", "audience"]),

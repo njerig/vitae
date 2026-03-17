@@ -36,7 +36,7 @@ export type UseResumePreviewDomArgs = {
 }
 
 export type UseResumePreviewDomResult = {
-  containerRef: RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement | null>
 }
 
 export function useResumePreviewData({

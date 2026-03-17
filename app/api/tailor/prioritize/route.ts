@@ -8,7 +8,7 @@ import {
   generateGeminiJson,
   geminiConfigured,
 } from "@/lib/resume-builder/tailor/ai/gemini"
-import { buildPrioritizationPrompt } from "@/lib/resume-builder/tailor/prompts/buildPrioritizationPrompt"
+import { buildPrioritizationPrompt } from "@/lib/resume-builder/tailor/ai/prompts/buildPrioritizationPrompt"
 
 type SectionPayload = {
   item_type_id: string

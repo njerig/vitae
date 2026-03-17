@@ -32,8 +32,8 @@ jest.mock("next/link", () => {
   return ({ children, href }: any) => <a href={href}>{children}</a>
 })
 
-jest.mock("@/lib/resume-builder/components/ResumeBuilderPreview", () => ({
-  ResumeBuilderPreview: ({ sections, profile }: any) => (
+jest.mock("@/lib/resume-builder/components/ResumePreview", () => ({
+  ResumePreview: ({ sections, profile }: any) => (
     <div data-testid="resume-preview">
       <div>Preview for {profile.name}</div>
       <div>{sections.length} sections</div>
