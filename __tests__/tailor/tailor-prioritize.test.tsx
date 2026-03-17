@@ -1,4 +1,4 @@
-import { tailorPrioritize } from "@/lib/tailor/api"
+import { tailorPrioritize } from "@/lib/resume-builder/tailor/api"
 
 const mockFetch = jest.fn()
 global.fetch = mockFetch

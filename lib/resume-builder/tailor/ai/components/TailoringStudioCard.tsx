@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react"
 import { ChevronDown, ChevronRight, Sparkles } from "lucide-react"
-import { DEFAULT_TAILORING_AXES, type TailoringAxes } from "@/lib/tailor/options"
+import { DEFAULT_TAILORING_AXES, type TailoringAxes } from "../../options"
 
 // -- Types ---------------------------------------------------------------------
 

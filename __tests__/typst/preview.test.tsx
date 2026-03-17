@@ -9,7 +9,7 @@
  * 5) stale response protection.
  */
 import { render, screen, act } from "@testing-library/react"
-import { ResumeBuilderPreview } from "@/lib/resume-builder/components/ResumeBuilderPreview"
+import { ResumePreview } from "@/lib/resume-builder/components/ResumePreview"
 
 /**
  * Flushes queued promise callbacks so React state updates from async work settle.
@@ -34,7 +34,7 @@ function deferred<T>() {
   return { promise, resolve, reject }
 }
 
-describe("ResumeBuilderPreview", () => {
+describe("ResumePreview", () => {
   beforeEach(() => {
     jest.useFakeTimers()
       ; (global.fetch as unknown) = jest.fn()
@@ -48,7 +48,7 @@ describe("ResumeBuilderPreview", () => {
 
   // Scenario 1: shows loading state on initial preview
   it("shows loading state on initial preview", () => {
-    render(<ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />)
+    render(<ResumePreview sections={[]} profile={{ name: "Test" }} />)
 
     expect(screen.getByText("Generating preview...")).toBeInTheDocument()
   })
@@ -60,7 +60,7 @@ describe("ResumeBuilderPreview", () => {
       text: async () => "<svg><text>initial</text></svg>",
     })
 
-    const { container } = render(<ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />)
+    const { container } = render(<ResumePreview sections={[]} profile={{ name: "Test" }} />)
 
     await act(async () => {
       jest.advanceTimersByTime(500)
@@ -84,7 +84,7 @@ describe("ResumeBuilderPreview", () => {
       })
 
     const { container, rerender } = render(
-      <ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />
+      <ResumePreview sections={[]} profile={{ name: "Test" }} />
     )
 
     await act(async () => {
@@ -94,7 +94,7 @@ describe("ResumeBuilderPreview", () => {
     expect(container.innerHTML).toContain("v1")
 
     rerender(
-      <ResumeBuilderPreview
+      <ResumePreview
         sections={[{ typeName: "Work", typeId: "1", items: [{ id: "item-1" }] as any[] }]}
         profile={{ name: "Test" }}
       />
@@ -114,7 +114,7 @@ describe("ResumeBuilderPreview", () => {
       json: async () => ({ error: "0: bad typst" }),
     })
 
-    render(<ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />)
+    render(<ResumePreview sections={[]} profile={{ name: "Test" }} />)
 
     await act(async () => {
       jest.advanceTimersByTime(500)
@@ -138,7 +138,7 @@ describe("ResumeBuilderPreview", () => {
       })
 
     const { container, rerender } = render(
-      <ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />
+      <ResumePreview sections={[]} profile={{ name: "Test" }} />
     )
 
     await act(async () => {
@@ -149,7 +149,7 @@ describe("ResumeBuilderPreview", () => {
     expect(container.innerHTML).toContain("<svg")
 
     rerender(
-      <ResumeBuilderPreview
+      <ResumePreview
         sections={[{ typeName: "Work", typeId: "1", items: [] }]}
         profile={{ name: "Test" }}
       />
@@ -182,7 +182,7 @@ describe("ResumeBuilderPreview", () => {
       })
 
     const { container, rerender } = render(
-      <ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />
+      <ResumePreview sections={[]} profile={{ name: "Test" }} />
     )
 
     await act(async () => {
@@ -191,7 +191,7 @@ describe("ResumeBuilderPreview", () => {
     })
 
     rerender(
-      <ResumeBuilderPreview
+      <ResumePreview
         sections={[{ typeName: "Work", typeId: "1", items: [] }]}
         profile={{ name: "Test" }}
       />
@@ -204,7 +204,7 @@ describe("ResumeBuilderPreview", () => {
     expect(screen.getByText("Preview update failed")).toBeInTheDocument()
 
     rerender(
-      <ResumeBuilderPreview
+      <ResumePreview
         sections={[{ typeName: "Work", typeId: "1", items: [{ id: 1 }] as any[] }]}
         profile={{ name: "Test" }}
       />
@@ -229,7 +229,7 @@ describe("ResumeBuilderPreview", () => {
         .mockImplementationOnce(() => fast.promise)
 
     const { container, rerender } = render(
-      <ResumeBuilderPreview sections={[]} profile={{ name: "Test" }} />
+      <ResumePreview sections={[]} profile={{ name: "Test" }} />
     )
 
     await act(async () => {
@@ -238,7 +238,7 @@ describe("ResumeBuilderPreview", () => {
     })
 
     rerender(
-      <ResumeBuilderPreview
+      <ResumePreview
         sections={[{ typeName: "Work", typeId: "1", items: [] }]}
         profile={{ name: "Test" }}
       />

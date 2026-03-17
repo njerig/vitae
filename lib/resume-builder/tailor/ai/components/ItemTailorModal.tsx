@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { Spinner } from "@/lib/shared/components/Spinner"
-import { tailorTweakItem } from "@/lib/tailor/api"
-import type { TailoringAxes } from "@/lib/tailor/options"
+import { tailorTweakItem } from "../../api"
+import type { TailoringAxes } from "../../options"
 
 type WordDiffPart = {
   text: string

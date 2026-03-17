@@ -3,7 +3,7 @@
  * Sends job description and current resume sections to the prioritize endpoint.
  */
 
-import type { TailoringAxes } from "@/lib/tailor/options"
+import type { TailoringAxes } from "./options"
 
 export type SectionPayload = {
   item_type_id: string

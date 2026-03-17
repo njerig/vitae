@@ -10,7 +10,7 @@
  */
 import { render, screen, fireEvent } from "@testing-library/react"
 import type { ComponentProps } from "react"
-import { TailoringStudioCard } from "@/lib/tailor/components/TailoringStudioCard"
+import { TailoringStudioCard } from "@/lib/resume-builder/tailor/ai/components/TailoringStudioCard"
 
 type TailoringStudioProps = ComponentProps<typeof TailoringStudioCard>
 

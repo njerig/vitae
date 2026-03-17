@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
+import { useMemo, useEffect, useRef } from "react"
 import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
 export type { ResumeTemplate } from "@/lib/resume-builder/templates"
 export { RESUME_TEMPLATES }
-import { useResumeBuilderPreview } from "@/lib/resume-builder/useResumeBuilderPreview"
+import { useResumePreviewData, useResumePreviewDom } from "@/lib/resume-builder/useResumePreview"
 
 type Section = {
   typeName: string
@@ -26,15 +26,8 @@ type ResumeBuilderPreviewProps = {
   selectedTemplate?: string
 }
 
-export function ResumeBuilderPreview({
-  sections,
-  profile,
-  selectedTemplate,
-}: ResumeBuilderPreviewProps) {
-  // Fetches/recomputes the SVG string from the Typst compiler via useResumeBuilderPreview.
-  // loading/error reflect the current render attempt; errorForExistingSvg is a non-fatal
-  // error that occurred while trying to update an already-displayed SVG.
-  const { svg, loading, error, errorForExistingSvg } = useResumeBuilderPreview({
+export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBuilderPreviewProps) {
+  const { svg, loading, error, errorForExistingSvg } = useResumePreviewData({
     sections,
     profile,
     selectedTemplate,

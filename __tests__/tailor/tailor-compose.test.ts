@@ -1,4 +1,4 @@
-import { tailorCompose } from "@/lib/tailor/api"
+import { tailorCompose } from "@/lib/resume-builder/tailor/api"
 
 const mockFetch = jest.fn()
 global.fetch = mockFetch
