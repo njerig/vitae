@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Toaster } from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import { EditOverrideModal } from "@/lib/resume-builder/components/edit/EditOverrideModal"
 import { ResumeLoadingView } from "@/lib/resume-builder/components/ResumeLoadingView"
 import { AIItemTailorModal } from "@/lib/resume-builder/tailor/ai/components/ItemTailorModal"
@@ -90,30 +90,11 @@ export default function ResumeBuilderClient({
   const [aiResetSignal, setAiResetSignal] = useState(0)
 
   // Whether the AI Tailoring Studio panel is expanded
-  // Whether the AI Tailoring Studio panel is expanded
   const [aiStudioExpanded, setAiStudioExpanded] = useState(false)
-
-  // When a guarded transition is blocked by unsaved changes, the deferred action
-  // is stored here so it can be executed after the user confirms "Discard"
-  const [pendingTransition, setPendingTransition] = useState<null | (() => void)>(null)
-
-  // Controls visibility of the unsaved-changes confirmation modal
-  const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false)
 
   // The item(s) currently targeted by the AI tailor modal (null = modal closed)
   const [aiTarget, setAiTarget] = useState<AITarget | null>(null)
 
-  // -- Effects -----------------------------------------------------------------
-
-  // On mount (or when parentVersionId changes), attempt to hydrate archived items
-  // from sessionStorage. This is a one-shot read — the key is cleared after use.
-  useEffect(() => {
-    if (!parentVersionId) return
-    const restoredItems = readArchivedItemsFromSession(parentVersionId)
-    if (!restoredItems) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setArchivedItems(restoredItems)
-  }, [parentVersionId])
   const {
     editMode,
     showUnsavedPrompt,
@@ -223,191 +204,6 @@ export default function ResumeBuilderClient({
         style={{ paddingTop: "calc(var(--navbar-height, 4rem) + 4rem)", paddingBottom: "1.5rem" }}
       >
         <div className="flex-1 min-w-0 flex flex-col relative" style={{ height: "100%" }}>
-          {/* Header bar: back link, title, dirty indicator, mode switch, save/export */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-row justify-between items-center gap-2 z-20 shrink-0 mb-6">
-            <div className="flex flex-row items-center gap-6">
-              <Link href="/home">
-                <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
-              </Link>
-              <div className="flex flex-col gap-0.5">
-                <span
-                  className="text-2xl font-semibold whitespace-nowrap"
-                  style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
-                >
-                  Resume Builder
-                </span>
-                {/* Shown whenever workingState has unsaved changes */}
-                {isDirty && (
-                  <span className="text-xs" style={{ color: "var(--ink-fade)" }}>
-                    Unsaved changes
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-row items-center gap-4">
-              <div className="flex flex-row items-center justify-center gap-2">
-                {/* Toggle between Manual and AI Tailor editing modes */}
-                <SegmentedSwitch
-                  value={editMode}
-                  onChange={(next) => requestModeChange(next)}
-                  options={[
-                    { value: "manual", label: "Manual" },
-                    { value: "ai", label: "AI Tailor" },
-                  ]}
-                  variant="primary"
-                  size="sm"
-                  ariaLabel="Resume editing mode"
-                />
-
-                {/* Saves a named version snapshot of the current resume state */}
-                <SaveResumeButton
-                  workingState={workingState}
-                  parentVersionId={parentVersionId}
-                  syncToBackend={syncToBackend}
-                />
-
-                {/* Triggers Typst PDF compilation and downloads the result */}
-                <button
-                  type="button"
-                  onClick={handleExportPdf}
-                  disabled={exportingPdf}
-                  className="btn-secondary h-14 rounded-lg flex items-center justify-center gap-1.5 w-32"
-                  style={{ padding: "0.8rem", fontSize: "0.8rem" }}
-                  title="Download resume as PDF"
-                >
-                  {exportingPdf ? (
-                    <Spinner size={13} color="var(--ink)" />
-                  ) : (
-                    <Download className="w-6 h-6" />
-                  )}
-                  Export PDF
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Scrollable editor body */}
-          <div
-            className="flex-1 overflow-y-auto pb-8 space-y-6"
-            style={{ scrollbarGutter: "stable" }}
-          >
-            {/* Hint banner shown while any drag-and-drop operation is active */}
-            {isDragging && (
-              <div
-                className="rounded-xl p-4"
-                style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent-hover)" }}
-              >
-                <p className="text-sm" style={{ color: "var(--paper)" }}>
-                  <strong>Drop to reorder.</strong> Item order will be saved automatically.
-                </p>
-              </div>
-            )}
-
-            {/* AI Tailoring Studio — only visible in AI mode */}
-            {editMode === "ai" && (
-              <TailoringStudioCard
-                initialContextType={savedTailoringContext?.context_type}
-                initialContextText={savedTailoringContext?.context_text}
-                initialContextTexts={savedTailoringContext?.context_text_by_type}
-                initialAxes={savedTailoringContext?.axes}
-                onSaveContext={handleSaveTailoringContext}
-                onTailor={handleTailor}
-                tailoring={tailoring}
-                expanded={aiStudioExpanded}
-                onExpandedChange={setAiStudioExpanded}
-                onDirtyChange={setAiDirty}
-                resetSignal={aiResetSignal}
-              />
-            )}
-
-            {/* Empty state when the user has no career history items yet */}
-            {sections.length === 0 ? (
-              <div
-                className="bg-white rounded-2xl border p-12 text-center shadow-sm"
-                style={{
-                  borderColor: "var(--grid)",
-                }}
-              >
-                <p style={{ color: "var(--ink-fade)" }}>
-                  No items yet. Add some items to your Career History to get started!
-                </p>
-              </div>
-            ) : (
-              // Render one draggable section card per section type
-              <div className="space-y-6">
-                {sections.map((section, sectionIndex) => (
-                  <DragSection
-                    key={section.typeId}
-                    section={section}
-                    sectionIndex={sectionIndex}
-                    sections={sections}
-                    setSections={setSections}
-                    draggedSection={draggedSection}
-                    setDraggedSection={setDraggedSection}
-                    draggedItem={draggedItem}
-                    setDraggedItem={setDraggedItem}
-                    formatDate={formatDate}
-                    handleItemDragEnd={handleItemDragEnd}
-                    isSelected={isSelected}
-                    toggleItem={toggleItem}
-                    onEditOverride={(item: CanonItem<unknown>) => {
-                      if (editMode === "manual") {
-                        // Manual mode: open the EditOverrideModal for this item
-                        setEditingItem(item)
-                        return
-                      }
-                      // AI mode: require the item to be selected before opening the modal
-                      if (!isSelected(item.id)) {
-                        toast("Select this item first to include it in AI tailoring.")
-                        return
-                      }
-                      // Open AI tailor modal targeting this single item
-                      setAiTarget({
-                        title: item.title || "Untitled item",
-                        subtitle: section.typeName,
-                        items: [
-                          {
-                            id: item.id,
-                            type_name: section.typeName,
-                            title: item.title || "Untitled item",
-                            content: (item.content ?? {}) as Record<string, unknown>,
-                          },
-                        ],
-                      })
-                    }}
-                    onTailorSection={(sectionToTailor: {
-                      typeName: string
-                      items: CanonItem[]
-                    }) => {
-                      // Section-level AI tailor: only runs in AI mode
-                      if (editMode !== "ai") return
-                      // Filter down to only the items the user has selected
-                      const selectedItems = sectionToTailor.items.filter((item) =>
-                        isSelected(item.id)
-                      )
-                      if (selectedItems.length === 0) {
-                        toast("Select at least one item in this section before AI tailoring.")
-                        return
-                      }
-                      // Open AI tailor modal targeting all selected items in this section
-                      setAiTarget({
-                        title: sectionToTailor.typeName,
-                        subtitle: `${selectedItems.length} selected item(s)`,
-                        items: selectedItems.map((item) => ({
-                          id: item.id,
-                          type_name: sectionToTailor.typeName,
-                          title: item.title || "Untitled item",
-                          content: (item.content ?? {}) as Record<string, unknown>,
-                        })),
-                      })
-                    }}
-                    getOverride={getOverride}
-                    itemActionMode={editMode}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
           <ResumeBuilderToolbar
             isDirty={isDirty}
             editMode={editMode}
