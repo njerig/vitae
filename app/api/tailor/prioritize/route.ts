@@ -54,22 +54,26 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Build the prompt
   const prompt = buildPrioritizationPrompt({
     jobDescription: job_description,
     sections,
   })
 
   try {
+    // generate result
     const parsed = await generateGeminiJson<PrioritizationResponse>(prompt, {
       model: "gemini-2.5-flash-lite",
     })
 
+    // validate and parse result
     if (!parsed.sections || !Array.isArray(parsed.sections)) {
       return NextResponse.json({ error: "Invalid AI response format" }, { status: 502 })
     }
 
     const validIds = new Set(sections.flatMap((s) => s.items.map((i) => i.id)))
 
+    // Filter out any sections that don't have valid item IDs
     const sanitizedSections = parsed.sections
       .map((s: { item_type_id: string; item_ids: string[] }) => ({
         item_type_id: s.item_type_id,
