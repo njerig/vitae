@@ -65,6 +65,8 @@ export function EditOverrideModal({
 
   const [form, setForm] = useState<Record<string, string>>(initialForm)
 
+  // Checks if the form is dirty has any changes, if so, then call onDirtyChange to update the parent component's dirty state
+  // which will trigger a save prompt if the user tries to close the modal or switch modes
   const isDirty = useMemo(() => {
     const keys = new Set([...Object.keys(initialForm), ...Object.keys(form)])
     for (const key of keys) {

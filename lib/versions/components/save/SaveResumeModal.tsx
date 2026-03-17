@@ -79,6 +79,7 @@ export function SaveResumeModal({
     let parentVersionId: string | null = null
     let groupName = resumeName.trim()
 
+    // If not saving a new resume, find the group and set the parent version ID
     if (!isNewResume) {
       const group = groups.find((g) => g.resume_group_id === selectedGroupId)
       if (group) {

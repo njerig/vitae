@@ -32,7 +32,7 @@ export function SaveResumeButton({
     workingState.sections.some((section) => section.item_ids.length > 0)
 
   const handleOpenModal = async () => {
-    // Flush any pending local changes to the backend before opening the save dialog
+    // Flush any pending local changes to the working state to the  backend before opening the save dialog
     await syncToBackend()
     setIsModalOpen(true)
   }

@@ -40,5 +40,6 @@ This document outlines the folder and file structure for the **Vitae** project.
 │       ├── schemas.ts              # Zod validation schemas
 │       ├── types.ts                # Global TypeScript type definitions
 │       └── utils.ts                # Generic shared helper functions
+├── RELEASE_DOCS/                   # CSE115A Release Documents
 └── *                               # Root configurations (next.config.ts, jest.config.js, etc.)
 ```
