@@ -66,7 +66,7 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
     // Build type name lookup for archived items whose type may not be in `sections`
     const typeNameById = new Map(itemTypes.map((t) => [t.id, t.display_name]))
 
-    // Use workingState.sections as the canonical order — it is updated on every
+    // Use workingState.sections as the canonical order, it is updated on every
     // drag-to-reorder so the preview always reflects the user's chosen section/item order.
     // For each section in the working state, resolve item IDs to actual item objects
     // (including archived ones). Sections with no resolvable items are dropped.
@@ -77,9 +77,11 @@ export function useResumeBuilder(userName: string, archivedItems: ArchivedCanonI
             const item = itemById.get(id)
             if (!item) return null
 
+            // check if there any overrides
             const override = workingState.overrides?.[id]
             if (!override) return item
 
+            // if there are overrides, then apply them
             return {
               ...item,
               title: override.title ?? item.title,
