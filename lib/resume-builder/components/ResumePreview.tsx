@@ -1,10 +1,10 @@
 "use client"
 
 import { useMemo } from "react"
+import { useResumePreviewData, useResumePreviewDom } from "@/lib/resume-builder/useResumePreview"
 import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
 export type { ResumeTemplate } from "@/lib/resume-builder/templates"
 export { RESUME_TEMPLATES }
-import { useResumePreviewData, useResumePreviewDom } from "@/lib/resume-builder/useResumePreview"
 
 type Section = {
   typeName: string
@@ -32,15 +32,11 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     profile,
     selectedTemplate,
   })
-<<<<<<< Updated upstream
-  const containerRef = useRef<HTMLDivElement>(null)
-=======
   // Container div where the SVG element is injected directly via the DOM
   const { containerRef } = useResumePreviewDom({ svg })
 
   // Computes the percentage positions of page-break dividers from the SVG's viewBox.
   // divide the total SVG height by 792 pts to see how many pages there are with dividers
->>>>>>> Stashed changes
   const pageBreakPercents = useMemo(() => {
     if (!svg) return []
     const parser = new DOMParser()
@@ -69,34 +65,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     })
   }, [svg])
 
-<<<<<<< Updated upstream
-  useEffect(() => {
-    if (containerRef.current && svg) {
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(svg, "image/svg+xml")
-      const svgElement = doc.documentElement
-      if (!(svgElement instanceof SVGSVGElement)) {
-        containerRef.current.innerHTML = svg
-        return
-      }
-
-      svgElement.removeAttribute("width")
-      svgElement.removeAttribute("height")
-      svgElement.style.width = "100%"
-      svgElement.style.height = "auto"
-      svgElement.style.display = "block"
-      svgElement.style.background = "white"
-
-      containerRef.current.innerHTML = ""
-      containerRef.current.appendChild(svgElement)
-    } else if (containerRef.current && !svg) {
-      containerRef.current.innerHTML = ""
-    }
-  }, [svg])
-
-=======
   // Show a spinner on initial load before any SVG has been generated
->>>>>>> Stashed changes
   if (loading && !svg) {
     return (
       <div

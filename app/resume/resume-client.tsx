@@ -199,7 +199,7 @@ export default function ResumeBuilderClient({
         className="relative z-10 flex flex-1 min-h-0 gap-6 px-8"
         style={{ paddingTop: "calc(var(--navbar-height, 4rem) + 4rem)", paddingBottom: "1.5rem" }}
       >
-        <div className="flex-1 min-w-0 flex flex-col relative" style={{ height: "100%" }}>
+        <div className="flex-1 min-w-0 flex flex-col relative min-h-0">
           <ResumeBuilderToolbar
             isDirty={isDirty}
             editMode={editMode}
