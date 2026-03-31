@@ -94,7 +94,7 @@ export function ResumeEditorPane({
   aiResetSignal,
 }: ResumeEditorPaneProps) {
   return (
-    <div className="flex-1 min-w-0 flex flex-col relative" style={{ height: "100%" }}>
+    <div className="flex-1 min-w-0 flex flex-col relative min-h-0">
       <div className="flex-1 overflow-y-auto pb-8 space-y-6" style={{ scrollbarGutter: "stable" }}>
         {isDragging && (
           <div

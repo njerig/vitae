@@ -1,10 +1,10 @@
 "use client"
 
 import { useMemo } from "react"
+import { useResumePreviewData, useResumePreviewDom } from "@/lib/resume-builder/useResumePreview"
 import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
 export type { ResumeTemplate } from "@/lib/resume-builder/templates"
 export { RESUME_TEMPLATES }
-import { useResumePreviewData, useResumePreviewDom } from "@/lib/resume-builder/useResumePreview"
 
 type Section = {
   typeName: string
