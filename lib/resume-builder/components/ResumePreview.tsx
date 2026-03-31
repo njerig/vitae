@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useEffect, useRef } from "react"
+import { useMemo } from "react"
 import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
 export type { ResumeTemplate } from "@/lib/resume-builder/templates"
 export { RESUME_TEMPLATES }
@@ -33,7 +33,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     selectedTemplate,
   })
   // Container div where the SVG element is injected directly via the DOM
-  const containerRef = useRef<HTMLDivElement>(null)
+  const { containerRef } = useResumePreviewDom({ svg })
 
   // Computes the percentage positions of page-break dividers from the SVG's viewBox.
   // divide the total SVG height by 792 pts to see how many pages there are with dividers
@@ -63,35 +63,6 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     return Array.from({ length: Math.max(0, pageCount - 1) }, (_, idx) => {
       return ((idx + 1) / pageCount) * 100
     })
-  }, [svg])
-
-  // Inject the SVG directly into the DOM rather than using dangerouslySetInnerHTML,
-  // so we can strip fixed width/height attributes and make the SVG scale responsively.
-  useEffect(() => {
-    if (containerRef.current && svg) {
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(svg, "image/svg+xml")
-      const svgElement = doc.documentElement
-      if (!(svgElement instanceof SVGSVGElement)) {
-        // Fallback: if parsing didn't yield a proper SVG element, inject raw HTML
-        containerRef.current.innerHTML = svg
-        return
-      }
-
-      // Remove fixed dimensions so the SVG stretches to fill its container
-      svgElement.removeAttribute("width")
-      svgElement.removeAttribute("height")
-      svgElement.style.width = "100%"
-      svgElement.style.height = "auto"
-      svgElement.style.display = "block"
-      svgElement.style.background = "white"
-
-      containerRef.current.innerHTML = ""
-      containerRef.current.appendChild(svgElement)
-    } else if (containerRef.current && !svg) {
-      // Clear the container if there's no SVG to show
-      containerRef.current.innerHTML = ""
-    }
   }, [svg])
 
   // Show a spinner on initial load before any SVG has been generated
