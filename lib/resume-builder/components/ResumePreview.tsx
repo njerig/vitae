@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useEffect, useRef } from "react"
+import { useMemo } from "react"
 import { RESUME_TEMPLATES } from "@/lib/resume-builder/templates"
 export type { ResumeTemplate } from "@/lib/resume-builder/templates"
 export { RESUME_TEMPLATES }
@@ -32,7 +32,15 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     profile,
     selectedTemplate,
   })
+<<<<<<< Updated upstream
   const containerRef = useRef<HTMLDivElement>(null)
+=======
+  // Container div where the SVG element is injected directly via the DOM
+  const { containerRef } = useResumePreviewDom({ svg })
+
+  // Computes the percentage positions of page-break dividers from the SVG's viewBox.
+  // divide the total SVG height by 792 pts to see how many pages there are with dividers
+>>>>>>> Stashed changes
   const pageBreakPercents = useMemo(() => {
     if (!svg) return []
     const parser = new DOMParser()
@@ -61,6 +69,7 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     })
   }, [svg])
 
+<<<<<<< Updated upstream
   useEffect(() => {
     if (containerRef.current && svg) {
       const parser = new DOMParser()
@@ -85,6 +94,9 @@ export function ResumePreview({ sections, profile, selectedTemplate }: ResumeBui
     }
   }, [svg])
 
+=======
+  // Show a spinner on initial load before any SVG has been generated
+>>>>>>> Stashed changes
   if (loading && !svg) {
     return (
       <div
