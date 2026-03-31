@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import type { MouseEvent as ReactMouseEvent } from "react"
 import { GripVertical } from "./GripVertical"
 import { Pencil, Sparkles } from "lucide-react"
 import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
@@ -42,6 +43,31 @@ export function DragItem({
   const [editingKey, setEditingKey] = useState<string | null>(null)
   // showing the visual indicator
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
+
+  const isInteractiveTarget = (target: EventTarget | null) => {
+    const element = target as HTMLElement | null
+    if (!element) return false
+    return Boolean(
+      element.closest("input, button, textarea, select, label, a, [data-prevent-item-drag]")
+    )
+  }
+
+  const handleCardMouseDown = (event: ReactMouseEvent<HTMLElement>) => {
+    if (event.button !== 0) return
+    if (isInteractiveTarget(event.target)) return
+    window.getSelection()?.removeAllRanges()
+  }
+
+  const handleCardDragStart = (event: React.DragEvent<HTMLElement>) => {
+    if (isInteractiveTarget(event.target)) {
+      event.preventDefault()
+      return
+    }
+    event.stopPropagation()
+    event.dataTransfer.setData("application/drag-type-item", "true")
+    event.dataTransfer.effectAllowed = "move"
+    setDraggedItem({ sectionIndex, itemIndex })
+  }
 
   // Clear the drop indicator on any dragend or drop event anywhere on the page,
   // ensuring the indicator doesn't get stuck
@@ -310,7 +336,12 @@ export function DragItem({
         </div>
 
         {/* Main content area like title, subtitle, dates, bullets, skills */}
-        <div className="flex-1 min-w-0 space-y-2">
+        <div
+          className="flex-1 min-w-0 space-y-2"
+          draggable
+          onMouseDown={handleCardMouseDown}
+          onDragStart={handleCardDragStart}
+        >
           <div>
             <div className="font-medium" style={{ color: "var(--ink)" }}>
               {extracted.title}
