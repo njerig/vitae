@@ -47,9 +47,7 @@ export function DragItem({
   const isInteractiveTarget = (target: EventTarget | null) => {
     const element = target as HTMLElement | null
     if (!element) return false
-    return Boolean(
-      element.closest("input, button, textarea, select, label, a, [data-prevent-item-drag]")
-    )
+    return Boolean(element.closest("[data-drag-exempt='checkbox']"))
   }
 
   const handleCardMouseDown = (event: ReactMouseEvent<HTMLElement>) => {
@@ -296,24 +294,20 @@ export function DragItem({
       {/* Draggable item card */}
       <div
         draggable
-        onDragStart={(e) => {
-          e.stopPropagation()
-          // Tag this drag as an item drag so DragSection can distinguish it from section drags
-          e.dataTransfer.setData("application/drag-type-item", "true")
-          e.dataTransfer.effectAllowed = "move"
-          setDraggedItem({ sectionIndex, itemIndex })
-        }}
+        onMouseDown={handleCardMouseDown}
+        onDragStart={handleCardDragStart}
         onDragEnd={handleLocalDragEnd}
-        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 ${
+        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 select-none ${
           isItemDragging ? "opacity-40 scale-[0.98]" : "opacity-100"
         }`}
         style={{
           borderColor: isItemDragging ? "var(--accent)" : "var(--grid)",
           backgroundColor: "var(--paper)",
-          cursor: "grab",
+          cursor: isItemDragging ? "grabbing" : "grab",
+          userSelect: "none",
         }}
       >
-        <div className="flex items-start gap-2 shrink-0">
+        <div className="flex items-start gap-2 shrink-0" data-drag-exempt="checkbox">
           {/* Checkbox — controls whether this item is included in the resume */}
           <input
             type="checkbox"
