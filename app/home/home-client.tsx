@@ -53,64 +53,57 @@ export default function HomeClient() {
       <div className="relative z-10 pt-32 pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-            <PageHeader
-              title="My Career History"
-              subtitle="Add, edit, and manage your career items."
-              actions={
-                <>
-                  <button
-                    onClick={startAdd}
-                    className="btn-primary flex items-center gap-2 rounded-lg"
-                    disabled={saving || loading || itemTypes.length === 0}
-                  >
-                    Add Item
-                    {saving || loading ? (
-                      <Spinner size={20} color="white" inline />
-                    ) : (
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                  <Link href="/resume">
-                    <button className="btn-secondary rounded-lg flex items-center gap-2">
-                      Resume Builder
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
+          <PageHeader
+            title="My Career History"
+            subtitle="Add, edit, and manage your career items."
+            actions={
+              <>
+                <button
+                  onClick={startAdd}
+                  className="btn-primary flex items-center gap-2 rounded-lg"
+                  disabled={saving || loading || itemTypes.length === 0}
+                >
+                  Add Item
+                  {saving || loading ? (
+                    <Spinner size={20} color="white" inline />
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         strokeWidth={2}
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </Link>
-                </>
-              }
-            >
-              <div className="pt-4 border-t" style={{ borderColor: "var(--grid)" }}>
-                <Timeline items={items} itemTypes={itemTypes} />
-                {getLastEditedDate() && (
-                  <p className="text-xs text-right" style={{ color: "var(--ink)", opacity: 0.4 }}>
-                    Last edited: {getLastEditedDate()}
-                  </p>
-                )}
-              </div>
-            </PageHeader>
-          </div>
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  )}
+                </button>
+                <Link href="/resume">
+                  <button className="btn-secondary rounded-lg flex items-center gap-2">
+                    Resume Builder
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </Link>
+              </>
+            }
+          >
+            <div className="pt-4 border-t mt-6" style={{ borderColor: "var(--grid)" }}>
+              <Timeline items={items} itemTypes={itemTypes} />
+              {getLastEditedDate() && (
+                <p className="text-xs text-right" style={{ color: "var(--ink)", opacity: 0.4 }}>
+                  Last edited: {getLastEditedDate()}
+                </p>
+              )}
+            </div>
+          </PageHeader>
 
           {/* Form */}
           {isAddingItem && (

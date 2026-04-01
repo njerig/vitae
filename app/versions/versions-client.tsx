@@ -72,33 +72,31 @@ export default function VersionsClient({ userName }: VersionsClientProps) {
       <div className="relative z-10 pt-32 pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-            <PageHeader
-              title="Version History"
-              subtitle="Manage your saved resume versions"
-              actions={
-                <div className="flex items-center gap-2">
-                  {/* Toggle diff checker panel */}
-                  {groups.length > 0 && (
-                    <button
-                      onClick={() => setShowDiff((v) => !v)}
-                      className={`btn-secondary rounded-lg flex items-center gap-2 ${showDiff ? "ring-2 ring-offset-1" : ""}`}
-                      style={{ fontSize: "0.8rem", padding: "0.8rem" }}
-                    >
-                      <GitCompare className="h-4 w-4" />
-                      Compare Versions
-                    </button>
-                  )}
-                  <Link href="/resume">
-                    <button className="btn-primary rounded-lg flex items-center gap-2">
-                      Resume Builder
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </Link>
-                </div>
-              }
-            />
-          </div>
+          <PageHeader
+            title="Version History"
+            subtitle="Manage your saved resume versions"
+            actions={
+              <div className="flex items-center gap-2">
+                {/* Toggle diff checker panel */}
+                {groups.length > 0 && (
+                  <button
+                    onClick={() => setShowDiff((v) => !v)}
+                    className={`btn-secondary rounded-lg flex items-center gap-2 ${showDiff ? "ring-2 ring-offset-1" : ""}`}
+                    style={{ fontSize: "0.8rem", padding: "0.8rem" }}
+                  >
+                    <GitCompare className="h-4 w-4" />
+                    Compare Versions
+                  </button>
+                )}
+                <Link href="/resume">
+                  <button className="btn-primary rounded-lg flex items-center gap-2">
+                    Resume Builder
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </Link>
+              </div>
+            }
+          />
 
           {/* Diff Checker - shown when user clicks the Diff Check button */}
           {groups.length > 0 && showDiff && (

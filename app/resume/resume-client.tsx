@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Toaster } from "react-hot-toast"
+import { ChevronLeft, Download } from "lucide-react"
 import { EditOverrideModal } from "@/lib/resume-builder/components/edit/EditOverrideModal"
 import { ResumeLoadingView } from "@/lib/resume-builder/components/ResumeLoadingView"
 import { AIItemTailorModal } from "@/lib/resume-builder/tailor/ai/components/ItemTailorModal"
@@ -12,9 +14,12 @@ import { useResumeBuilder } from "@/lib/resume-builder/useResumeBuilder"
 import { useRestoredArchivedItems } from "@/lib/resume-builder/useRestoredArchivedItems"
 import { useUnsavedChangesGuard } from "@/lib/resume-builder/useUnsavedChangesGuard"
 import { UnsavedChangesModal } from "@/lib/resume-builder/components/UnsavedChangesModal"
-import { ResumeBuilderToolbar } from "@/lib/resume-builder/components/ResumeBuilderToolbar"
 import { ResumeEditorPane } from "@/lib/resume-builder/components/ResumeEditorPane"
 import { ResumePreviewPane } from "@/lib/resume-builder/components/ResumePreviewPane"
+import { PageHeader } from "@/lib/shared/components/PageHeader"
+import { SegmentedSwitch } from "@/lib/shared/components/SegmentedSwitch"
+import { Spinner } from "@/lib/shared/components/Spinner"
+import { SaveResumeButton } from "@/lib/versions/components/save/SaveResumeButton"
 
 type AITargetItem = {
   id: string
@@ -196,69 +201,111 @@ export default function ResumeBuilderClient({
       />
 
       <div
-        className="relative z-10 flex flex-1 min-h-0 gap-6 px-8"
+        className="relative z-10 flex flex-1 min-h-0 flex-col gap-6 px-8"
         style={{ paddingTop: "calc(var(--navbar-height, 4rem) + 4rem)", paddingBottom: "1.5rem" }}
       >
-        <div className="flex-1 min-w-0 flex flex-col relative min-h-0">
-          <ResumeBuilderToolbar
-            isDirty={isDirty}
-            editMode={editMode}
-            onEditModeChange={(next) =>
-              requestModeChange(next, {
-                onSwitchToAi: () => setAiStudioExpanded(false),
-                onDiscardManual: () => setEditingItem(null),
-                onDiscardAi: () => {
-                  setAiResetSignal((n) => n + 1)
-                  setAiStudioExpanded(false)
-                },
-              })
-            }
-            workingState={workingState}
-            parentVersionId={parentVersionId}
-            syncToBackend={() => syncToBackend()}
-            onExportPdf={handleExportPdf}
-            exportingPdf={exportingPdf}
-          />
+        <PageHeader
+          title="Resume Builder"
+          subtitle="Craft and tailor your resume."
+          leading={
+            <Link href="/home">
+              <ChevronLeft className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors" />
+            </Link>
+          }
+          actions={
+            <>
+              <SegmentedSwitch
+                value={editMode}
+                onChange={(next) =>
+                  requestModeChange(next, {
+                    onSwitchToAi: () => setAiStudioExpanded(false),
+                    onDiscardManual: () => setEditingItem(null),
+                    onDiscardAi: () => {
+                      setAiResetSignal((n) => n + 1)
+                      setAiStudioExpanded(false)
+                    },
+                  })
+                }
+                options={[
+                  { value: "manual", label: "Manual" },
+                  { value: "ai", label: "AI Tailor" },
+                ]}
+                variant="primary"
+                size="sm"
+                ariaLabel="Resume editing mode"
+              />
 
-          <ResumeEditorPane
-            sections={sections}
-            setSections={setSections}
-            draggedSection={draggedSection}
-            setDraggedSection={setDraggedSection}
-            draggedItem={draggedItem}
-            setDraggedItem={setDraggedItem}
-            formatDate={formatDate}
-            handleItemDragEnd={handleItemDragEnd}
-            isSelected={isSelected}
-            toggleItem={toggleItem}
-            onEditOverride={setEditingItem}
-            onSetAiTarget={setAiTarget}
-            getOverride={getOverride}
-            isDragging={isDragging}
-            editMode={editMode}
-            savedTailoringContext={savedTailoringContext}
-            onSaveTailoringContext={handleSaveTailoringContext}
-            onTailor={handleTailor}
-            tailoring={tailoring}
-            aiStudioExpanded={aiStudioExpanded}
-            onAiStudioExpandedChange={setAiStudioExpanded}
-            onAiDirtyChange={setAiDirty}
-            aiResetSignal={aiResetSignal}
+              <SaveResumeButton
+                workingState={workingState}
+                parentVersionId={parentVersionId}
+                syncToBackend={syncToBackend}
+              />
+
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={exportingPdf}
+                className="btn-secondary h-14 rounded-lg flex items-center justify-center gap-1.5 w-32"
+                style={{ padding: "0.8rem", fontSize: "0.8rem" }}
+                title="Download resume as PDF"
+              >
+                {exportingPdf ? (
+                  <Spinner size={13} color="var(--ink)" />
+                ) : (
+                  <Download className="w-6 h-6" />
+                )}
+                Export PDF
+              </button>
+            </>
+          }
+        >
+          <p className={`text-xs ${isDirty ? "" : "hidden"}`} style={{ color: "var(--ink-fade)" }}>
+            Unsaved changes
+          </p>
+        </PageHeader>
+
+        <div className="flex flex-1 min-h-0 gap-6">
+          <div className="flex-1 min-w-0 flex flex-col relative min-h-0">
+            <ResumeEditorPane
+              sections={sections}
+              setSections={setSections}
+              draggedSection={draggedSection}
+              setDraggedSection={setDraggedSection}
+              draggedItem={draggedItem}
+              setDraggedItem={setDraggedItem}
+              formatDate={formatDate}
+              handleItemDragEnd={handleItemDragEnd}
+              isSelected={isSelected}
+              toggleItem={toggleItem}
+              onEditOverride={setEditingItem}
+              onSetAiTarget={setAiTarget}
+              getOverride={getOverride}
+              isDragging={isDragging}
+              editMode={editMode}
+              savedTailoringContext={savedTailoringContext}
+              onSaveTailoringContext={handleSaveTailoringContext}
+              onTailor={handleTailor}
+              tailoring={tailoring}
+              aiStudioExpanded={aiStudioExpanded}
+              onAiStudioExpandedChange={setAiStudioExpanded}
+              onAiDirtyChange={setAiDirty}
+              aiResetSignal={aiResetSignal}
+            />
+          </div>
+          <ResumePreviewPane
+            versionName={versionName}
+            versionSavedAt={versionSavedAt}
+            updatedAt={updatedAt}
+            selectedTemplateId={selectedTemplateId}
+            currentTemplateId={workingState.template_id}
+            onTemplateSelect={(id) => {
+              void setTemplate(id)
+            }}
+            formatDateTime={formatDateTime}
+            previewSections={previewSections}
+            previewProfile={previewProfile}
           />
         </div>
-        <ResumePreviewPane
-          versionName={versionName}
-          versionSavedAt={versionSavedAt}
-          updatedAt={updatedAt}
-          selectedTemplateId={selectedTemplateId}
-          currentTemplateId={workingState.template_id}
-          onTemplateSelect={(id) => {
-            void setTemplate(id)
-          }}
-          formatDateTime={formatDateTime}
-          previewSections={previewSections}
-          previewProfile={previewProfile}
-        />
       </div>
 
       {/* Manual edit modal for a single item */}
