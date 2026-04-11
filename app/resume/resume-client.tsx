@@ -315,6 +315,7 @@ export default function ResumeBuilderClient({
       {/* Manual edit modal for a single item */}
       {editingItem && (
         <EditOverrideModal
+          key={editingItem.id}
           item={editingItem}
           typeName={getTypeName(editingItem.item_type_id)}
           override={getOverride(editingItem.id)}

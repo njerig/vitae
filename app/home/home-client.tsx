@@ -109,6 +109,7 @@ export default function HomeClient() {
           {isAddingItem && (
             <div ref={formRef}>
               <CanonForm
+                key={editingItem?.id ?? "new"}
                 itemTypes={itemTypes}
                 editing={editingItem}
                 defaultTypeId={selectedTypeId ?? undefined}
