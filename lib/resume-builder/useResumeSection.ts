@@ -120,12 +120,18 @@ export function useResumeSections(
   const setSections = useCallback(
     (next: Section[]) => {
       setLocalSections((prev) => (prev === next ? prev : next))
+      // Preserve the user's checkbox selection — workingState.sections only holds
+      // selected item IDs. localSections holds all items for visual ordering, so we
+      // must filter out unselected items before writing back to working state.
+      const selectedIds = new Set(workingState?.sections.flatMap((s) => s.item_ids) ?? [])
       // Update locally — saving is manual now
       const newWorkingState: WorkingState = {
-        sections: next.map((section) => ({
-          item_type_id: section.typeId,
-          item_ids: section.items.map((item) => item.id),
-        })),
+        sections: next
+          .map((section) => ({
+            item_type_id: section.typeId,
+            item_ids: section.items.map((item) => item.id).filter((id) => selectedIds.has(id)),
+          }))
+          .filter((s) => s.item_ids.length > 0),
         ...(workingState?.overrides ? { overrides: workingState.overrides } : {}),
         ...(workingState?.template_id ? { template_id: workingState.template_id } : {}),
         ...(workingState?.tailoring_context
