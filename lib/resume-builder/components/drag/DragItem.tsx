@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import type { MouseEvent as ReactMouseEvent } from "react"
 import { GripVertical } from "./GripVertical"
 import { Pencil, Sparkles } from "lucide-react"
 import { getTitleField, getSubtitleField } from "@/lib/shared/fields"
@@ -44,26 +43,10 @@ export function DragItem({
   // showing the visual indicator
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null)
 
-  const isInteractiveTarget = (target: EventTarget | null) => {
-    const element = target as HTMLElement | null
-    if (!element) return false
-    return Boolean(element.closest("[data-drag-exempt='checkbox']"))
-  }
-
-  const handleCardMouseDown = (event: ReactMouseEvent<HTMLElement>) => {
-    if (event.button !== 0) return
-    if (isInteractiveTarget(event.target)) return
-    window.getSelection()?.removeAllRanges()
-  }
-
-  const handleCardDragStart = (event: React.DragEvent<HTMLElement>) => {
-    if (isInteractiveTarget(event.target)) {
-      event.preventDefault()
-      return
-    }
-    event.stopPropagation()
-    event.dataTransfer.setData("application/drag-type-item", "true")
-    event.dataTransfer.effectAllowed = "move"
+  const handleItemDragStart = (e: React.DragEvent<HTMLElement>) => {
+    e.stopPropagation()
+    e.dataTransfer.setData("application/drag-type-item", "true")
+    e.dataTransfer.effectAllowed = "move"
     setDraggedItem({ sectionIndex, itemIndex })
   }
 
@@ -293,21 +276,24 @@ export function DragItem({
 
       {/* Draggable item card */}
       <div
-        draggable
-        onMouseDown={handleCardMouseDown}
-        onDragStart={handleCardDragStart}
-        onDragEnd={handleLocalDragEnd}
-        className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 select-none ${
+        className={`relative group flex items-start gap-3 p-4 rounded-lg border transition-all duration-150 select-none ${
           isItemDragging ? "opacity-40 scale-[0.98]" : "opacity-100"
         }`}
         style={{
           borderColor: isItemDragging ? "var(--accent)" : "var(--grid)",
           backgroundColor: "var(--paper)",
-          cursor: isItemDragging ? "grabbing" : "grab",
-          userSelect: "none",
         }}
       >
-        <div className="flex items-start gap-2 shrink-0" data-drag-exempt="checkbox">
+        {/* Transparent Drag Overlay */}
+        <div
+          draggable
+          onDragStart={handleItemDragStart}
+          onDragEnd={handleLocalDragEnd}
+          className="absolute inset-0 z-20"
+          style={{ cursor: isItemDragging ? "grabbing" : "grab" }}
+        />
+
+        <div className="relative z-30 flex items-start gap-2 shrink-0">
           {/* Checkbox — controls whether this item is included in the resume */}
           <input
             type="checkbox"
@@ -324,18 +310,13 @@ export function DragItem({
             aria-label="Select item for resume"
           />
           {/* Grip icon — fades in on hover to hint that the card is draggable */}
-          <div className="mt-1 opacity-40 group-hover:opacity-100 transition-opacity">
+          <div className="mt-1 opacity-40 group-hover:opacity-100 transition-opacity pointer-events-none">
             <GripVertical className="w-4 h-4 shrink-0" style={{ color: "var(--ink-light)" }} />
           </div>
         </div>
 
         {/* Main content area like title, subtitle, dates, bullets, skills */}
-        <div
-          className="flex-1 min-w-0 space-y-2"
-          draggable
-          onMouseDown={handleCardMouseDown}
-          onDragStart={handleCardDragStart}
-        >
+        <div className="flex-1 min-w-0 space-y-2">
           <div>
             <div className="font-medium" style={{ color: "var(--ink)" }}>
               {extracted.title}
@@ -401,7 +382,10 @@ export function DragItem({
         </div>
 
         {/* Right-side controls: edit/tailor button and numeric position input */}
-        <div className="flex items-center gap-2 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
+        <div
+          className="relative z-30 flex items-center gap-2 shrink-0"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           {/* Edit/Tailor button — shows a pencil in manual mode and a sparkle in AI mode.
               Disabled in AI mode when the item isn't selected, to enforce the
               "select first, then tailor" workflow. A dot badge indicates an active override. */}
