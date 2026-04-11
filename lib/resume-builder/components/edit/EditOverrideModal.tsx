@@ -22,6 +22,8 @@ type EditOverrideModalProps = {
   onSave: (itemId: string, override: OverrideData) => Promise<void>
   onReset: (itemId: string) => Promise<void>
   onClose: () => void
+  // Called after a successful save or reset — skips the unsaved-changes guard
+  onDone: () => void
   saving?: boolean
   onDirtyChange?: (dirty: boolean) => void
 }
@@ -33,6 +35,7 @@ export function EditOverrideModal({
   onSave,
   onReset,
   onClose,
+  onDone,
   saving,
   onDirtyChange,
 }: EditOverrideModalProps) {
@@ -138,7 +141,7 @@ export function EditOverrideModal({
     try {
       await onSave(item.id, { title, content })
       toast.success("Override saved successfully")
-      onClose()
+      onDone()
     } catch {
       toast.error("Failed to save override")
     }
@@ -149,7 +152,7 @@ export function EditOverrideModal({
     try {
       await onReset(item.id)
       toast.success("Reset to original")
-      onClose()
+      onDone()
     } catch {
       toast.error("Failed to reset override")
     }

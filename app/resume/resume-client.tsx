@@ -321,6 +321,10 @@ export default function ResumeBuilderClient({
           override={getOverride(editingItem.id)}
           onSave={saveOverride}
           onReset={clearOverride}
+          onDone={() => {
+            setManualDirty(false)
+            setEditingItem(null)
+          }}
           onClose={() =>
             requestManualClose(
               () => setEditingItem(null),
